@@ -325,7 +325,7 @@ Orderby will also accept an array of multiple identifiers.
 			eros. Integer elementum urna.",
 		"excerpt": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus 
 			eros. Integer elementum urna.</p>",
-		"content_raw": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequat
+		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequat
 			nibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita
 			cursus nulla congue. 
 			
@@ -344,7 +344,7 @@ Orderby will also accept an array of multiple identifiers.
 			Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas
 			Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpi
 			egestas. Maecenas et nibh mauris.",
-		"content": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequat
+		"content_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequat
 			nibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita
 			cursus nulla congue. Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum
 			Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat loborti
