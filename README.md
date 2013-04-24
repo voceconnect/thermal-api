@@ -1,6 +1,3 @@
-wp-json-api
-===========
-
 # WP JSON API v0.1
 ## Overview
 ### Versions
@@ -306,79 +303,204 @@ Orderby will also accept an array of multiple identifiers.
 ##### Request
     GET {api root}/posts/{id}
 
-##### Response
+##### Post JSON Schema
+	{
+        "title": "Post Object",
+        "description": "A representation of a single post object",
+        "type": "object",
+        "id": "#post",
+        "properties": {
+            "author": {
+                "description": "The user set as the author of the post.",
+                "type": {
+                    "$ref": "#user"
+                },
+                "required": true
+            },
+            "comment_count": {
+                "description": "The number of comments for this post.",
+                "type": "integer",
+                "minimum": 0,
+                "required": true
+            },
+            "comment_status": {
+                "description": "The current status determining whether the post is accepting comments.",
+                "enum": ["open", "closed"],
+                "required": true
+            },
+            "content_filtered": {
+                "description": "The content of the post after it has been run through the set 'the_content' filters.",
+                "type": "string",
+                "required": true
+            },
+            "content": {
+                "description": "The raw content of the post as it's stored in the database.",
+                "type": "string",
+                "required": true
+            },
+            "date": {
+                "description": "The post's creation time in iso 8601 format.",
+                "type": "string",
+                "format": "date-time",
+                "required": true
+            },
+            "excerpt_filtered": {
+                "description": "The excerpt of the post after it has been run through the 'the_excerpt' filters.",
+                "type": "string",
+                "required": true
+            },
+            "excerpt": {
+                "description": "The raw excerpt as it is stored in the database.",
+                "type": "string",
+                "required": true
+            },
+            "id_str": {
+                "description": "The ID of the post represented as a string.",
+                "type": "string",
+                "required": true
+            },
+            "id": {
+                "description": "The ID of the post",
+                "type": "integer",
+                "minimum": 1,
+                "required": true
+            },
+            "media": {
+                "type": "array",
+                "required": false,
+                "items": {
+                    "type": {
+                        "$ref": "#mediaItem"
+                    }
+                }
+            },
+            "meta": {
+                "description": "Additional data for the Post object.  Handling must be provided by other plugins to expand the provided meta beyond core properties.",
+                "type": "object",
+                "required": false,
+                "default": {},
+                "additionalProperties": {
+                    "featuredImage": {
+                        "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }
+            },
+            "mime_type": {
+                "description": "The mime type of the represented object",
+                "type": "string",
+                "required": true,
+                "default": "text/html"
+            },
+            "modified": {
+                "type": "string",
+                "format": "date-time",
+                "required": true
+            },
+            "name": {
+                "description": "The name (slug) for the post, used in URLs.",
+                "type": "string",
+                "required": true
+            },
+            "parent_str": {
+                "description": "The ID of the post's parent as a string, if it has one.",
+                "type": "string",
+                "required": false
+            },
+            "parent": {
+                "description": "The ID of the post's parent as a string, if it has one.",
+                "type": "integer",
+                "required": false
+            },
+            "permalink": {
+                "description": "The full permalink URL to the post.",
+                "type": "string",
+                "formate": "uri",
+                "required": true
+            },
+            "status": {
+                "description": "The status of the post.",
+                "type": {
+                    "enum": ["publish", "draft", "pending", "future", "trash"]
+                },
+                "required": true
+            },
+            "taxonomies": {
+                "description": "Key/Value pairs of taxonomies that exist for the given post where the Key is the name of the taxonomy.",
+                "type": "object",
+                "required": false,
+                "default": {},
+                "additionalProperties": {
+                    "category": {
+                        "type": "array",
+                        "items": {
+                            "type": {
+                                "$ref": "#term"
+                            }
+                        },
+                        "required": false
+                    },
+                    "post_tag": {
+                        "type": "array",
+                        "items": {
+                            "type": {
+                                "$ref": "#term"
+                            }
+                        },
+                        "required": false
+                    }
+                }
+            },
+            "title": {
+                "description": "The title of the Post.",
+                "type": "string",
+                "required": true
+            }
+        }
+    }
+	
+##### Example Post Response
 	{
 		"id" : 1234567,
 		"id_str" : "1234567",
 		"permalink": "http://example.com/posts/foobar/",
 		"parent": 12345,
-		"parent_str": "12345"
+		"parent_str": "12345",
 		"date": "2012-01-01T12:59:59+00:00",
 		"modified": "2012-01-01T12:59:59+00:00",
 		"status": "publish",
 		"comment_status":"open",
 		"comment_count": 99,
 		"menu_order": 99,
-		"title": "Lorem Ipsum Dolor!"
-		"name": "loerm-ipsum-dolor"		
-		"excerpt_raw": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus
-			eros. Integer elementum urna.",
-		"excerpt": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus 
-			eros. Integer elementum urna.</p>",
-		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequat
-			nibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita
-			cursus nulla congue. 
-			
-			<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft 
-			size-medium wp-image-17115\" alt="Lorem ipsum doler set amut.\" />
-			
-			Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum
-			Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat loborti
-			ut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci
-			Suspendisse at augue in ipsum convallis semper.
-
-			[gallery ids=\"1,2,3,4\"]
-			
-			Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum libero
-			quis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque
-			Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas
-			Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpi
-			egestas. Maecenas et nibh mauris.",
-		"content_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequat
-			nibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita
-			cursus nulla congue. Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum
-			Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat loborti
-			ut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci
-			Suspendisse at augue in ipsum convallis semper.</p>
-
-			<div class=\"gallery\">…</div>
-			
-			<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum libero
-			quis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque
-			Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas
-			Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpi
-			egestas. Maecenas et nibh mauris.</p>",
+		"title": "Lorem Ipsum Dolor!",
+		"name": "loerm-ipsum-dolor"	,
+		"excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.",
+		"excerpt_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
+		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.\n\n[gallery ids=\"1,2,3,4\"]\n\nNullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas",
+		"content_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
 		"author": [User Object],
 		"mime_type": "",
 		"meta": {
+			"featuredImage": 123456
 		},
 		"taxonomies": {
-			category: [
-				[Term Object]
+			"category": [
+				[Term Object],
 				….
 			],
-			post_tag: [
-				[Term Object]
+			"post_tag": [
+				[Term Object],
 				….
 			],
 			….
-			
 		},
-		"media": {
-			"featured_image": {
-				"id": 1234,
-				"id_str": 1234
-				"alt_text": "Lorem ipsum doler set amut.",
+		"media": [
+			{
+				"type":
+				"id": 123456,
+				"id_str": ""123445",
+				"altText": "Lorem ipsum doler set amut.",
 				"mime_type": "image/jpg",
 				"sizes": [
 					{
@@ -390,26 +512,8 @@ Orderby will also accept an array of multiple identifiers.
 					….
 				]
 			},
-			"images": [
-				{
-					"id": 1234,
-					"id_str": 1234
-					"alt_text": "Lorem ipsum doler set amut.",
-					"mime_type": "image/jpg",
-					"sizes": [
-						{
-							"name": "thumbnail",
-							"width": 100,
-							"height": 80,
-							"url": "http://example.com/wp-content/uploads/2012/02/foobar-100x80.jpg"
-						},
-						….
-					]
-				}
-				….
-			]
-			
-		}
+			….
+		]
 	}
 
 
@@ -511,14 +615,86 @@ Orderby will also accept an array of multiple identifiers.
 ##### Request
     GET {api root}/users/{id}
 
-##### Response
+##### User JSON Schema
+	{
+        "description": "Representation of a single sytem user or author.",
+        "id": "#user",
+        "type": "object",
+        "properties": {
+            "id_str": {
+                "description": "The ID of the User object as a string.",
+                "type": "integer",
+                "required": true
+            },
+            "id": {
+                "description": "The ID of the User object.",
+                "type": "integer",
+                "required": true
+            },
+            "nicename": {
+                "description": "The user's slug, or url safe name.",
+                "type": "string",
+                "required": false
+            },
+            "display_name": {
+                "description": "The user's name as shown publicly.",
+                "type": "string",
+                "required": false
+            },
+            "postsUrl": {
+                "description": "The URL to the user's posts.",
+                "type": "string",
+                "format": "uri",
+                "required": false
+            },
+            "userUrl": {
+                "description": "The User's personal URL.",
+                "type": "string",
+                "required": false
+            },
+            "avatar": {
+                "description": "An array of images/sizes available for the User's avatar.",
+                "type": "array",
+                "items": {
+                    "description": "Image information for a User's Avatar.",
+                    "type": "object",
+                    "properties": {
+                        "height": {
+                            "description": "Height of the image in pixels.",
+                            "type": "integer",
+                            "required": true
+                        },
+                        "url": {
+                            "description": "Full URL to the image resource.",
+                            "type": "string",
+                            "format": "uri",
+                            "required": true
+                        },
+                        "width": {
+                            "description": "Width of the image in pixels.",
+                            "type": "integer",
+                            "required": true
+                        }
+                    }
+                }
+            },
+            "meta": {
+                "description": "Extended User data.",
+                "type": "object"
+            }
+        }
+
+    }
+                     
+
+##### Example User Response
 	{
 		"id" : 1234567,
 		"id_str" : "1234567",
-		"user_nicename": "john-doe",
+		"nicename": "john-doe",
 		"display_name":"John Doe",
-		"posts_url": "http://example.com/author/john-doe/",
-		"user_url": "http://vocecomm.com",
+		"postsUrl": "http://example.com/author/john-doe/",
+		"userUrl": "http://vocecomm.com",
 		"avatar": [
 			{
 				"url":"http://1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64",
@@ -576,8 +752,58 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/taxonomies/{name}
+    
+##### Taxonomy JSON Schema
+	{
+        "id": "#taxonomy",
+        "descrption": "A representation of a taxonomy.",
+        "type": "object",
+        "properties": {
+            "name": {
+                "description": "The name/unique identifier for the taxonomy.",
+                "type": "string",
+                "required": true
+            },
+            "post_type": {
+                "description": "An array of post types the taxony is tied to.",
+                "type": "array",
+                "items": {
+                    "description": "The post_type string.",
+                    "type": "string"
+                }
+            },
+            "hierarchical": {
+                "description": "Indicates whether the taxonomy is hierarchical or allows parent/child relationships.",
+                "type": "boolean",
+                "default": false
+            },
+            "query_var": {
+                "description": "The query_var tied to this taxonomy.  Useful when processing rewrite rules to determine the proper API query.",
+                "type": "string",
+                "required": false
+            },
+            "labels": {
+                "description": "The user displayed name representing the taxonomy.",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "description": "The plural name of the taxonomy.",
+                        "type": "string"
+                    },
+                    "singularName": {
+                        "description": "The singular name of the taxonomy.",
+                        "type": "string"
+                    }
+                }
+            },
+            "meta": {
+                "description": "Extended Taxonomy data.",
+                "type": "object"
+            }
+        }
+    }
 
-##### Response
+##### Example Taxonomy Response
 	{
 		"name": "category",
 		"post_types": [
@@ -586,10 +812,10 @@ Orderby will also accept an array of multiple identifiers.
 			….
 		],
 		"hierarchical": true,
-		"query_var":"category",
+		"queryVar":"category",
 		"labels": {
 			"name": "Categories",
-			"singular_name": "Category"
+			"singularName": "Category"
 		},
 		"meta":{
 		}
@@ -707,10 +933,85 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/taxonomies/{name}/terms/{term_id}
-
-##### Response
+    
+#### Term JSON Schema
 	{
-		"term_id": 123456,
+        "type": "object",
+        "required": false,
+        "properties": {
+            "description": {
+                "description": "A long text describing the term.",
+                "type": "string",
+                "required": false
+            },
+            "meta": {
+                "description": "Extended Term data.",
+                "type": "object",
+            },
+            "name": {
+                "description": "The title/name of the term as displayed to users.",
+                "type": "string",
+                "required": false
+            },
+            "parent_str": {
+                "description": "The ID of the parent term as a string, if exists.",
+                "type": "string",
+                "required": false
+            },
+            "parent": {
+                "description": "The ID of the parent term, if exists.",
+                "type": "number",
+                "required": false
+            },
+            "post_count_padded": {
+                "description": "The distinct count of posts attached to this term and all child terms.  This only includes posts of type 'post'.",
+                "type": "number",
+                "required": false
+            },
+            "post_count": {
+                "description": "The distinct count of posts attached to this term.  This only includes posts of type 'post'.",
+                "type": "number",
+                "required": false
+            },
+            "slug": {
+                "description": "The name (slug) of the term as used in URLs.",
+                "type": "string",
+                "required": false
+            },
+            "taxonomy": {
+                "type": "string",
+                "required": false
+            },
+            "id_str": {
+                "description": "The ID of the term as a string.",
+                "type": "string",
+                "id": "http://jsonschema.net/term_id_str",
+                "required": false
+            },
+            "id": {
+                "description": "The ID of the term.",
+                "type": "number",
+                "id": "http://jsonschema.net/term_id",
+                "required": false
+            },
+            "term_taxonomy_id_str": {
+                "description": "The ID that uniquely represents this term/taxonomy as ing asterms are shared across multiple taxonomies.",
+                "type": "string",
+                "id": "http://jsonschema.net/term_taxonomy_id_str",
+                "required": false
+            },
+            "term_taxonomy_id": {
+                "description": "The ID that uniquely represents this term/taxonomy as terms are shared across multiple taxonomies.",
+                "type": "number",
+                "id": "http://jsonschema.net/term_taxonomy_id",
+                "required": false
+            }
+        }
+    }
+
+##### Example Term Response
+	{
+		"ID": 123456,
 		"term_id_str": "123456",
 		"term_taxonomy_id": 123456789,
 		"term_taxonomy_id_str": "123456789",
@@ -735,7 +1036,43 @@ Orderby will also accept an array of multiple identifiers.
 ##### Request
     GET {api root}/rewrite_rules
 
-##### Response
+#### Rewrite Rules JSON Schema
+	{
+        "id": "#rewrite_rules",
+        "description": "Rewrite Rules represent the URL structure on the hosting API site.  Providing these to the client, allows the client to override internal links with sequential API requests.",
+        "type": "object",
+        "properties": {
+            "base_url": {
+                "description": "The root URL which all rewrite rules are based.",
+                "type": "string",
+                "format": "uri",
+                "required": true
+            },
+            "rewrite_rules": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "query_expression": {
+                            "description": "The format string used to build the resulting query parameters for the rewrite rules from the components matched from the regex.",
+                            "type": "string",
+                            "required": true
+                        },
+                        "regex": {
+                            "description": "The regular expression used to break down the requested URL into components.",
+                            "type": "string",
+                            "format": "regex",
+                            "required": true
+                        }
+                    }
+                }
+
+
+            }
+        }
+    }
+
+##### Example Rewrite Rules Response
 	{
 		"base_url": "http://example.com/",
 		"rewrite_rules": [
