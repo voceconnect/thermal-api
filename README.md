@@ -13,11 +13,12 @@ The URL root of the API will be the version number of the API prefixed by the si
 ## Resource Types
 The following resources are available
 
-* [Posts](#Posts)
-* [Users](#Users)
-* [Taxonomies](#Taxonomies)
-* [Terms](#Terms)
-* [Rewrite Rules](#Rewrite_Rules)
+* [Posts](#posts)
+* [Users](#users)
+* [Taxonomies](#taxonomies)
+* [Terms](#terms)
+* [Rewrite Rules](#rewrite_rules)
+* [Media Items](media_items)
 
 
 ## Posts
@@ -1083,6 +1084,102 @@ Orderby will also accept an array of multiple identifiers.
 			….
 		]
 	}
+
+## Media Items
+<span id="media_items">Below are the schemas for media items.
+
+### Base Media Items JSON Schema
+    {
+        "description": "Base media object",
+        "id": "mediaItem",
+        "type": "object",
+        "properties": {
+            "type": {
+                "description": "The subclass of media object being represented.",
+                "type": "string",
+                "required": true
+            }
+        }
+
+    }
+
+### Internal Media Item Base JSON Schema
+    {
+        "description": "An internal media item hosted by this WP instance that is backed by a Post Object",
+        "type": "object",
+        "id": "#internalMediaItem",
+        "extends": {
+            "$ref": "#mediaItem"
+        },
+        "properties": {
+            "idStr": {
+                "description": "The ID of the Post object representing this media attachment as a string.",
+                "type": "integer",
+                "required": true
+            },
+            "id": {
+                "description": "The ID of the Post object representing this media attachment.",
+                "type": "integer",
+                "required": true
+            },
+            "mimeType": {
+                "description": "The mime type of the attched media object",
+                "type": "string",
+                "required": true
+            },
+        }
+    }
+
+### Internal Image Media Item JSON Schema
+    {
+        "description": "An internal image item hosted by this WP instance",
+        "type": "object",
+        "id": "#internalMediaItem",
+        "extends": {
+            "$ref": "#mediaItem"
+        },
+        "properties": {
+            "altText": {
+                "description": "The alternate text for the image.  Maps to post_meta key '_wp_attachment_image_alt'.",
+                "type": "string",
+                "required": false
+            },
+            "sizes": {
+                "description": "Listing of available sizes of the image allowing the proper size to be used for the client device.",
+                "type": "array",
+                "required": true,
+                "items": {
+                    "type": "object",
+                    "required": true,
+                    "properties": {
+                        "height": {
+                            "description": "Height of the image in pixels.",
+                            "type": "integer",
+                            "required": true
+                        },
+                        "name": {
+                            "description": "The identifier for the size that generated this size of the image.",
+                            "type": "string",
+                            "required": true
+                        },
+                        "url": {
+                            "description": "Full URL to the image resource.",
+                            "type": "string",
+                            "format": "uri",
+                            "required": true
+                        },
+                        "width": {
+                            "description": "Width of the image in pixels.",
+                            "type": "integer",
+                            "required": true
+                        }
+                    }
+                }
+
+
+            }
+        }
+    }
 
 
 ##Notes
