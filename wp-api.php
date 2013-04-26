@@ -11,9 +11,6 @@
 
 namespace WP_API;
 
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-
 if ( !defined( 'WP_API_BASE' ) )
 	define( 'WP_API_BASE', '/wp_api' );
 
@@ -27,41 +24,27 @@ class API_Dispatcher {
 		//if requested url starts with api_base_url()
 		//add_action('wp_loaded', array($this, 'dispatch_api'));
 		if ( false !== strpos( $_SERVER['REQUEST_URI'], WP_API_BASE ) ) {
-			add_action( 'init', array( $this, 'setup' ) );
 			add_action( 'wp_loaded', array( $this, 'dispatch_api' ) );
 		}
 	}
 
-	public function setup() {
-		require_once __DIR__ . '/api/iAPI.php';
-		spl_autoload_register( function($className) {
-				if ( 0 === strpos( $className, 'Symfony\Component\HttpFoundation' ) ) {
-					$className = ltrim( $className, '\\' );
-					$fileName = '';
-					$namespace = '';
-					if ( $lastNsPos = strrpos( $className, '\\' ) ) {
-						$namespace = substr( $className, 0, $lastNsPos );
-						$className = substr( $className, $lastNsPos + 1 );
-						$fileName = str_replace( '\\', DIRECTORY_SEPARATOR, $namespace ) . DIRECTORY_SEPARATOR;
-					}
-					$fileName .= str_replace( '_', DIRECTORY_SEPARATOR, $className ) . '.php';
-
-					require __DIR__ . '/lib/'. $fileName;
-				}
-			} );
-	}
-
 	public function dispatch_api() {
 		//determine API version
-		require_once __DIR__ . '/api/v1/API.php';
+		require_once('lib/Slim/Slim.php');
 
-		//$api = correct api version
-		$api = new API();
-		$request = Request::createFromGlobals();
-		$response = new Response();
-		$api->handleRequest( $request, $response );
-		$response->send();
-		die();
+		\Slim\Slim::registerAutoloader();
+
+		$app = new \Slim\Slim();
+
+		$app->get(WP_API_BASE . '/v1/math/add/', function() {
+			echo 1;
+		});
+
+		$app->get(WP_API_BASE . '/v2/math/add/', function() {
+			echo 2;
+		});
+
+		$app->run();
 	}
 
 }
