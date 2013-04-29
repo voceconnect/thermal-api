@@ -8,10 +8,10 @@ class APIv1 extends API_Base {
 
 	public function __construct( \Slim\Slim $slim ) {
 		parent::__construct( $slim );
-		$this->registerRoute( 'GET', 'users/:id', array( __CLASS__, 'get_users' ) );
-		$this->registerRoute( 'GET', 'posts/:id', array( __CLASS__, 'get_posts' ) );
-		$this->registerRoute( 'GET', 'taxonomies', array( __CLASS__, 'get_taxonomies' ) );
-		$this->registerRoute( 'GET', 'terms', array( __CLASS__, 'get_terms' ) );
+		$this->registerRoute( 'GET', 'users(/:id)', array( __CLASS__, 'get_users' ) );
+		$this->registerRoute( 'GET', 'posts(/:id)', array( __CLASS__, 'get_posts' ) );
+		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( __CLASS__, 'get_taxonomies' ) );
+		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( __CLASS__, 'get_terms' ) );
 	}
 
 	public static function get_users( $id = null ) {

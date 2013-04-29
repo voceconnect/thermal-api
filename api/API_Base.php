@@ -1,4 +1,5 @@
 <?php
+
 namespace WP_JSON_API;
 
 abstract class API_Base {
@@ -13,7 +14,7 @@ abstract class API_Base {
 	 *
 	 * @var string $version API version
 	 */
-	public $version = '';
+	protected $version = '';
 
 
 	/**
@@ -43,9 +44,9 @@ abstract class API_Base {
 	 * @param string $pattern The path pattern to match
 	 * @param callback $callback Callback function for route
 	 */
-	public function registerRoute( string $method, string $pattern, $callback ) {
+	public function registerRoute( $method, $pattern, $callback ) {
 		$method = strtolower( $method );
-		return $this->app->$method( trailingslashit( PW_API_BASE ) . trailingslashit( $this->version ) . $pattern, $callback);
+		return $this->app->$method( trailingslashit( WP_API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern, $callback);
 	}
 
 }
