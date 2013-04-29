@@ -44,6 +44,7 @@ abstract class API_Base {
 	 * @param callback $callback Callback function for route
 	 */
 	public function registerRoute( string $method, string $pattern, $callback ) {
+		$method = strtolower( $method );
 		return $this->app->$method( trailingslashit( PW_API_BASE ) . trailingslashit( $this->version ) . $pattern, $callback);
 	}
 
