@@ -2,18 +2,21 @@
 
 namespace WP_JSON_API;
 
-class API implements iAPI {
+class API extends API_Base {
 
-	public function getVersion() {
-		return 1;
+	protected $version = '1';
+
+	public function __construct( \Slim\Slim $slim ) {
+		parent::__construct( $slim );
+		$this->registerRoute( 'GET', 'users/:id', array( __CLASS__, 'users' ) );
+		$this->registerRoute( 'GET', 'posts', array( __CLASS__, 'posts' ) );
 	}
 
-	/**
-	 * Routes the request to the correct handler and fills the response accordingly
-	 * 
-	 */
-	public function handleRequest( Request $request, Response $response ) {
-		throw new Exception( "Method Not Implemented" );
+	public static function users( $id = null ) {
+		echo WP_API_BASE . '/users/' . $id;
 	}
 
+	public static function posts() {
+		echo WP_API_BASE . '/posts';
+	}
 }
