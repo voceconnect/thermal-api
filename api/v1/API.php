@@ -15,18 +15,18 @@ class APIv1 extends API_Base {
 	}
 
 	public static function get_users( $id = null ) {
-		echo WP_API_BASE . '/users/' . $id;
+		return WP_API_BASE . '/users/' . $id;
 	}
 
 	public static function get_posts( $id = null ) {
-		echo WP_API_BASE . '/posts/' . $id;
+		return WP_API_BASE . '/posts/' . $id;
 	}
 
 	public static function get_taxonomies( $name = null ) {
-		echo WP_API_BASE . '/taxonomies/' . $name;
+		return WP_API_BASE . '/taxonomies/' . $name;
 	}
 
 	public static function get_terms( $name, $term_id = null ) {
-		echo WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
+		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
 	}
 }

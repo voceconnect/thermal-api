@@ -55,7 +55,17 @@ abstract class API_Base {
 			return false;
 		}
 
-		return $this->app->$method( \trailingslashit( WP_API_BASE ) . \trailingslashit( 'v' . $this->version ) . $pattern, $callback );
+		$match = \trailingslashit( WP_API_BASE ) . \trailingslashit( 'v' . $this->version ) . $pattern;
+
+		$app = $this->app;
+
+		return $this->app->$method( $match, function() use ( $app, $callback ) {
+			$data = call_user_func_array( $callback, func_get_args() );
+
+			$res = $app->response();
+			$app->contentType('application/json');
+			$res->write(json_encode($data), true);
+		});
 	}
 
 }
