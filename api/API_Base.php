@@ -46,6 +46,12 @@ abstract class API_Base {
 	 */
 	public function registerRoute( $method, $pattern, $callback ) {
 		$method = strtolower( $method );
+
+		$valid_methods = array( 'get', 'post', 'delete', 'put', 'head', 'options' );
+
+		if ( !in_array( $method, $valid_methods ) )
+			return false;
+
 		return $this->app->$method( trailingslashit( WP_API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern, $callback);
 	}
 
