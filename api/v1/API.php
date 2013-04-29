@@ -6,10 +6,10 @@ class API extends API_Base {
 
 	protected $version = '1';
 
-	public function __construct() {
-		parent::__construct( new \Slim\Slim() );
-		$this->registerRoute( 'GET', WP_API_BASE . '/users/:id', array( __CLASS__, 'users' ) );
-		$this->registerRoute( 'GET', WP_API_BASE . '/posts', array( __CLASS__, 'posts' ) );
+	public function __construct( \Slim\Slim $slim ) {
+		parent::__construct( $slim );
+		$this->registerRoute( 'GET', 'users/:id', array( __CLASS__, 'users' ) );
+		$this->registerRoute( 'GET', 'posts', array( __CLASS__, 'posts' ) );
 	}
 
 	public static function users( $id = null ) {
