@@ -30,7 +30,6 @@ class API_Dispatcher {
 	public function dispatch_api() {
 		//determine API version
 		require_once( 'lib/Slim/Slim/Slim.php' );
-		require_once( 'JsonResponder.php' );
 		require_once( 'api/API_Base.php' );
 		require_once( 'api/v1/API.php' );
 

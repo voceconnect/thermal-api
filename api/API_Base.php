@@ -63,7 +63,7 @@ abstract class API_Base {
 			$data = call_user_func_array( $callback, func_get_args() );
 
 			$res = $app->response();
-			$app->contentType('application/json');
+			$app->contentType( 'application/json' );
 			$res->write(json_encode($data), true);
 		});
 	}
