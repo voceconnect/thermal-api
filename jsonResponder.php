@@ -1,6 +1,6 @@
 <?php
 
-require_once('lib/Slim/Middleware.php');
+require_once('lib/Slim/Slim/Middleware.php');
 
 class JsonResponder extends \Slim\Middleware {
 	function call() {
