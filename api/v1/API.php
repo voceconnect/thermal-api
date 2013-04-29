@@ -2,14 +2,14 @@
 
 namespace WP_JSON_API;
 
-class API extends API_Base {
+class APIv1 extends API_Base {
 
 	protected $version = '1';
 
 	public function __construct( \Slim\Slim $slim ) {
 		parent::__construct( $slim );
 		$this->registerRoute( 'GET', 'users/:id', array( __CLASS__, 'get_users' ) );
-		$this->registerRoute( 'GET', 'posts', array( __CLASS__, 'get_posts' ) );
+		$this->registerRoute( 'GET', 'posts/:id', array( __CLASS__, 'get_posts' ) );
 		$this->registerRoute( 'GET', 'taxonomies', array( __CLASS__, 'get_taxonomies' ) );
 		$this->registerRoute( 'GET', 'terms', array( __CLASS__, 'get_terms' ) );
 	}
@@ -18,8 +18,8 @@ class API extends API_Base {
 		echo WP_API_BASE . '/users/' . $id;
 	}
 
-	public static function get_posts() {
-		echo WP_API_BASE . '/posts';
+	public static function get_posts( $id = null ) {
+		echo WP_API_BASE . '/posts/' . $id;
 	}
 
 	public static function get_taxonomies( $name = null ) {
