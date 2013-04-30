@@ -13,8 +13,8 @@ class APIv1 extends API_Base {
 
 	public function __construct( \Slim\Slim $app ) {
 		parent::__construct( $app );
-		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
 		$this->registerRoute( 'GET', 'posts(/:id)', array( $this, 'get_posts' ) );
+		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
 		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( $this, 'get_taxonomies' ) );
 		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( $this, 'get_terms' ) );
 	}
