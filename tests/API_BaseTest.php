@@ -2,6 +2,12 @@
 
 global $wp, $wp_the_query, $wp_query;
 
+$_SERVER['SERVER_PROTOCOL'] = "HTTP/1.1";
+$_SERVER['REQUEST_METHOD'] = 'GET';
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+$_SERVER['SERVER_NAME'] = 'test';
+$_SERVER['SERVER_PORT'] = '80';
+
 define( 'WP_API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 require_once( dirname( __FILE__ ) . '/../../../../wp-blog-header.php' );
@@ -69,9 +75,9 @@ class API_BaseTest extends PHPUnit_Framework_TestCase {
 
 		$apiTest = new Version_API_Test_1( $slim );
 
-		$testData = array( 'testKey' => WP_API_BASE . '/test/' . $var );
+		$testData = array( 'testKey' => WP_API_BASE . '/test' );
 
-		$apiTest->registerRoute( 'GET', 'test(/:var)', function ( $var = null ) use ( $testData ) {
+		$apiTest->registerRoute( 'GET', 'test', function () use ( $testData ) {
 			return $testData;
 		});
 
