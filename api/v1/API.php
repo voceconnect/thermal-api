@@ -28,6 +28,10 @@ class APIv1 extends API_Base {
 
 		$args = $_GET;
 
+		if ( ! is_null( $id ) ) {
+			$args['p'] = (int)$id;
+		}
+
 		if ( isset( $_GET['taxonomy'] ) && is_array( $_GET['taxonomy'] ) ) {
 			$args['tax_query'] = array(
 				'relation' => 'OR',
@@ -57,7 +61,6 @@ class APIv1 extends API_Base {
 				return $where;
 			} );
 		}
-
 
 		if ( isset( $_GET['author'] ) ) {
 			if ( is_array( $_GET['author'] ) ) {
