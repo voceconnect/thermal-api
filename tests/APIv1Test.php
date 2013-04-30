@@ -9,6 +9,43 @@ require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
 
 class APIv1Test extends WP_UnitTestCase {
 
+	protected function _upload_file( $filename ) {
+
+		$contents = file_get_contents($filename);
+
+		$upload = wp_upload_bits(basename($filename), null, $contents);
+
+		return $upload;
+	}
+
+	protected function _make_attachment($upload, $parent_post_id = -1 ) {
+
+		$type = '';
+		if ( !empty($upload['type']) ) {
+			$type = $upload['type'];
+		} else {
+			$mime = wp_check_filetype( $upload['file'] );
+			if ($mime)
+				$type = $mime['type'];
+		}
+
+		$attachment = array(
+			'post_title' => basename( $upload['file'] ),
+			'post_content' => '',
+			'post_type' => 'attachment',
+			'post_parent' => $parent_post_id,
+			'post_mime_type' => $type,
+			'guid' => $upload[ 'url' ],
+		);
+
+		// Save the data
+		$id = wp_insert_attachment( $attachment, $upload[ 'file' ], $parent_post_id );
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
+
+		return $id;
+
+	}
+
 	public function setUp() {
 
 		\Slim\Slim::registerAutoloader();
@@ -216,6 +253,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'content'          => "<p>This is the content.</p>\n",
 			'content_filtered' => '',
 			'mime_type'        => '',
+			'meta'             => array(),
 		);
 
 		$test_post = get_post( $test_post_id );
@@ -223,6 +261,41 @@ class APIv1Test extends WP_UnitTestCase {
 		$actual = $api->format_post( $test_post );
 
 		$this->assertEquals( $expected, $actual );
+
+	}
+
+	public function testPostMetaFeaturedID() {
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$test_post_id = wp_insert_post( array(
+			'post_status'           => 'publish',
+			'post_type'             => 'post',
+			'post_author'           => 1,
+			'post_parent'           => 0,
+			'menu_order'            => 0,
+			'post_content_filtered' => '',
+			'post_excerpt'          => 'This is the excerpt.',
+			'post_content'          => 'This is the content.',
+			'post_title'            => 'Hello World!',
+			'post_date'             => '2013-04-30 20:33:36',
+			'post_date_gmt'         => '2013-04-30 20:33:36',
+			'comment_status'        => 'open',
+		) );
+
+		$filename = __DIR__ . '/data/250x250.png';
+		$upload = $this->_upload_file( $filename );
+		$attachment_id = $this->_make_attachment($upload, $test_post_id);
+
+		set_post_thumbnail( $test_post_id, $attachment_id );
+
+		$formatted_post = $api->format_post( get_post( $test_post_id ) );
+
+		$this->assertArrayHasKey( 'meta', $formatted_post );
+		$this->assertArrayHasKey( 'featured_image', $formatted_post['meta'] );
+		$this->assertEquals( $attachment_id, $formatted_post['meta']['featured_image'] );
 
 	}
 
