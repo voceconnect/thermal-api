@@ -14,7 +14,24 @@ class APIv1Test extends WP_UnitTestCase {
 		\Slim\Slim::registerAutoloader();
     }
 
-	// All parameters are correct
+ 	public function getPostsSetUp( $query_args, $id = null ) {
+
+		$query_string = build_query( $query_args );
+
+		\Slim\Environment::mock( array(
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => WP_API_BASE . '/v1/test',
+			'QUERY_STRING' => $query_string,
+        ));
+
+		$app = new \Slim\Slim();
+
+		$apiv1 = new \WP_JSON_API\APIv1( $app );
+
+		return $apiv1->get_post_query( $app->request(), $id );
+	}
+
+	// All parameters are correct, using arrays for parameters when possible
 	public function testGetPosts() {
 
 		$test_args = array(
@@ -30,19 +47,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'paged'    => 1 // also should set 'found_posts'
 		);
 
-		$query_string = build_query( $test_args );
-
-		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/test',
-			'QUERY_STRING' => $query_string,
-        ));
-
-		$slim = new \Slim\Slim();
-
-		$apiv1 = new \WP_JSON_API\APIv1( $slim );
-
-		$apiv1_get_posts = $apiv1->get_post_query( $slim->request() );
+		$apiv1_get_posts = $this->getPostsSetUp( $test_args );
 
 		$query_vars = $apiv1_get_posts->query_vars;
 
@@ -52,18 +57,18 @@ class APIv1Test extends WP_UnitTestCase {
 			array(
 				'taxonomy' => 'post_tag',
 				'terms'    => array( '1', '2', '3' ),
-				'field' => 'term_id',
+				'field'    => 'term_id',
 			),
 			array(
 				'taxonomy' => 'category',
 				'terms'    => array( '7', '8'),
-				'field' => 'term_id',
+				'field'    => 'term_id',
 				'include_children' => false,
 			),
 			array(
 				'taxonomy' => 'category',
-				'terms' => array( '9' ),
-				'field' => 'term_id',
+				'terms'    => array( '9' ),
+				'field'    => 'term_id',
 				'operator' => 'NOT IN',
 				'include_children' => false,
 			),
@@ -95,18 +100,46 @@ class APIv1Test extends WP_UnitTestCase {
 
 	}
 
-	// Expect the found_posts filter to be set
-	public function testGetPostsPaged() {
-		$args = array(
-			'paged' => 1
+	// Parameters correct and use strings when possible
+	public function testGetPostsStringParameters() {
+		$test_args = array(
+			'author'  => '1',
+			'cat'     => '7',
+			'orderby' => 'author',
 		);
+
+		$apiv1_get_posts = $this->getPostsSetUp( $test_args );
+
+		$query_vars = $apiv1_get_posts->query_vars;
+
+		//Author
+		$this->assertEquals( '1', $query_vars['author'] );
+
+		//Categories
+		$tax_array = array(
+			array(
+				'taxonomy' => 'category',
+				'terms'    => '7',
+				'field'    => 'term_id',
+				'include_children' => false,
+			)
+		);
+		$tax_object = new WP_Tax_Query( $tax_array );
+
+		$this->assertEquals( $tax_object, $apiv1_get_posts->tax_query );
+
+		//Orderby
+		$this->assertEquals( 'author', $query_vars['orderby'] );
 	}
 
-	// All parameters incorrect
-	public function testGetPostsIncorrectParameters() {
-		$args = array(
+	public function testGetPost() {
 
-		);
+		$apiv1_get_posts = $this->getPostsSetUp( array(), 5 );
+
+		$query_vars = $apiv1_get_posts->query_vars;
+
+		//Post
+		$this->assertEquals( 5, $query_vars['p'] );
 	}
 
 	public function testPostFormat() {

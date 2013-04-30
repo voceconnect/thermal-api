@@ -50,6 +50,7 @@ class APIv1 extends API_Base {
 		
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
+			return new \WP_Query( array_merge( $defaults, $args ) );
 		}
 
 		if ( isset( $args['taxonomy'] ) && is_array( $args['taxonomy'] ) ) {
