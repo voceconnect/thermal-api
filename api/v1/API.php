@@ -83,6 +83,27 @@ class APIv1 extends API_Base {
 	 * @param \WP_User $user
 	 * @return Array Formatted user data
 	 */
-	public static function format_user( \WP_User $user ) {}
+	public static function format_user( \WP_User $user ) {
+
+		$data = array(
+			'id' => $user->ID,
+			'id_str' => (string)$user->ID,
+			'nicename' => $user->data->user_nicename,
+			'display_name' => $user->data->display_name,
+			'userUrl' => $user->data->user_url,
+
+			'postsUrl' => 'http=>//example.com/author/john-doe/',
+			'avatar' => array(
+				array(
+					'url' => 'http=>//1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64',
+					'width' => 64,
+					'height' => 64,
+				),
+			),
+			'meta' => array()
+		);
+
+		return $data;
+	}
 
 }
