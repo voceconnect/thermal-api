@@ -148,6 +148,33 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( 5, $query_vars['p'] );
 	}
 
+	public function testGetPostInvalidData() {
+		$test_args = array(
+			'after'    => 'incorrect',             // Will work with unexpected time result
+			'before'   => 'time',                  // Will work with unexpected time result
+			'author'   => array( -1, -5, -6 ),     // No author filter
+			'cat'      => '',                      // WP should ignore
+			'orderby'  => array( 'ID', 'WRONG' ),  // using a orderby that is not valid
+			'per_page' => 20                       // MAX_POSTS_PER_PAGE set to 10 in API
+		);
+
+		$apiv1_get_posts = $this->getPostsSetUp( $test_args );
+
+		$query_vars = $apiv1_get_posts->query_vars;
+
+		//Author
+		$this->assertEmpty( $query_vars['author'] );
+
+		//Categories
+		$this->assertEmpty( $query_vars['cat'] );
+
+		//Orderby
+		$this->assertEquals( 'ID', $query_vars['orderby'] );
+
+		//PerPage
+		$this->assertEquals( 10, $query_vars['posts_per_page'] );
+	}
+
 	public function testPostFormat() {
 
 		$slim = new \Slim\Slim();
