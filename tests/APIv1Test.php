@@ -1,27 +1,18 @@
 <?php
 
-global $wp, $wp_the_query, $wp_query;
-
-$_SERVER['SERVER_PROTOCOL'] = "HTTP/1.1";
-$_SERVER['REQUEST_METHOD'] = 'GET';
-$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-$_SERVER['SERVER_NAME'] = 'test';
-$_SERVER['SERVER_PORT'] = '80';
-
 define( 'WP_API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
-require_once( __DIR__ . '/../../../../wp-blog-header.php' );
-require_once( __DIR__ . '/../api/API_Base.php' );
+require_once( __DIR__ . '/../api/v1/API.php' );
 require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
 
-require_once( __DIR__ . '/../api/v1/API.php' );
 
-class API_BaseTest extends PHPUnit_Framework_TestCase {
+class APIv1Test extends WP_UnitTestCase {
 
 	public function setUp() {
+
 		\Slim\Slim::registerAutoloader();
-	}
+    }
 
 	// All parameters are correct
 	public function testGetPosts() {
@@ -44,9 +35,9 @@ class API_BaseTest extends PHPUnit_Framework_TestCase {
 		\Slim\Environment::mock( array(
             'REQUEST_METHOD' => 'GET',
             'PATH_INFO' => WP_API_BASE . '/v1/test',
-			'QUERY_STRING' => $query_string
+			'QUERY_STRING' => $query_string,
         ));
-		
+
 		$slim = new \Slim\Slim();
 
 		$apiv1 = new \WP_JSON_API\APIv1( $slim );
@@ -61,22 +52,20 @@ class API_BaseTest extends PHPUnit_Framework_TestCase {
 			array(
 				'taxonomy' => 'post_tag',
 				'terms'    => array( '1', '2', '3' ),
-				'field' => 'term_id'
+				'field' => 'term_id',
 			),
 			array(
 				'taxonomy' => 'category',
 				'terms'    => array( '7', '8'),
 				'field' => 'term_id',
-				'include_children' => false
+				'include_children' => false,
 			),
 			array(
 				'taxonomy' => 'category',
-				'terms'    => array(
-					'9'
-				),
+				'terms' => array( '9' ),
 				'field' => 'term_id',
 				'operator' => 'NOT IN',
-				'include_children' => false
+				'include_children' => false,
 			),
 		);
 		$tax_object = new WP_Tax_Query( $tax_array );
@@ -119,4 +108,37 @@ class API_BaseTest extends PHPUnit_Framework_TestCase {
 
 		);
 	}
+
+	public function testPostFormat() {
+
+		$slim = new \Slim\Slim();
+
+		$apitest = new \WP_JSON_API\APIv1( $slim );
+
+		$expected = array (
+			'id' => 1,
+			'id_str' => '1',
+			'permalink' => 'http://wp.voceconnect.dev/2013/04/hello-world/',
+			'parent' => 0,
+			'parent_str' => '0',
+			'date' => '2013-04-29T12:54:02+00:00',
+			'modified' => '2013-04-30T15:00:52+00:00',
+			'status' => 'publish',
+			'comment_status' => 'open',
+			'comment_count' => 1,
+			'menu_order' => 0,
+			'title' => 'Hello world!',
+			'name' => 'hello-world',
+			'excerpt_raw' => 'This is an excerpt.',
+			'excerpt' => "<p>This is an excerpt.</p>\n",
+			'content_raw' => 'Welcome to WordPress. This is your first post. Edit or delete it, then start blogging!',
+			'content' => "<p>Welcome to WordPress. This is your first post. Edit or delete it, then start blogging!</p>\n",
+			'content_filtered' => '',
+			'mime_type' => '',
+		);
+
+//		$apitest = $apitest->postregisterRoute( 'yum', 'abc', function(){} );
+		$this->assertFalse( false );
+	}
+
 }

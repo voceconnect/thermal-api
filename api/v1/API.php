@@ -5,6 +5,8 @@ namespace WP_JSON_API;
 if ( ! defined( 'MAX_POSTS_PER_PAGE' ) )
 	define( 'MAX_POSTS_PER_PAGE', 10 );
 
+require_once( __DIR__ . '/../API_Base.php' );
+
 class APIv1 extends API_Base {
 
 	protected $version = '1';
@@ -17,13 +19,22 @@ class APIv1 extends API_Base {
 		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( $this, 'get_terms' ) );
 	}
 
-	public function get_users( $id = null ) {
-		return WP_API_BASE . '/users/' . $id;
-	}
-
 	public function get_posts( $id = null ) {
-		$request = $this->app->request();
-		return $this->get_post_query( $request, $id );
+		$posts = array();
+		if ( $id ) {
+			$posts[] = $this->format_post( get_post( $id ) );
+			return compact( 'posts' );
+		}
+		else {
+			$request = $this->app->request();
+			$wp_query_posts = $this->get_post_query( $request, $id );
+
+			if ( $wp_query_posts->have_posts() ) {
+				
+			}
+		}
+
+		return WP_API_BASE . '/posts/' . $id;
 	}
 
 	/**
@@ -123,6 +134,16 @@ class APIv1 extends API_Base {
 		return new \WP_Query( array_merge( $defaults, $args ) );
 	}
 
+	public function get_users( $id = null ) {
+		$users = array();
+		if ( $id ) {
+			$users[] = self::format_user( get_user_by( 'id', $id ) );
+			return compact( 'users' );
+		}
+
+		return WP_API_BASE . '/users/' . $id;
+	}
+
 	public function get_taxonomies( $name = null ) {
 		return WP_API_BASE . '/taxonomies/' . $name;
 	}
@@ -130,4 +151,67 @@ class APIv1 extends API_Base {
 	public function get_terms( $name, $term_id = null ) {
 		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
 	}
+
+	/**
+	 * Format post data
+	 * @param \WP_Post $post
+	 * @return Array Formatted post data
+	 */
+	public function format_post( \WP_Post $post ) {
+		$GLOBALS['post'] = $post;
+		setup_postdata( $post );
+		$data = array(
+			'id'               => $post->ID,
+			'id_str'           => (string)$post->ID,
+			'permalink'        => get_permalink( $post ),
+			'parent'           => $post->post_parent,
+			'parent_str'       => (string)$post->post_parent,
+			'date'             => get_the_time( 'c', $post ),
+			'modified'         => get_post_modified_time( 'c', true, $post ),
+			'status'           => $post->post_status,
+			'comment_status'   => $post->comment_status,
+			'comment_count'    => (int)$post->comment_count,
+			'menu_order'       => $post->menu_order,
+			'title'            => $post->post_title,
+			'name'             => $post->post_name,
+			'excerpt_raw'      => $post->post_excerpt,
+			'excerpt'          => apply_filters( 'the_excerpt', get_the_excerpt() ),
+			'content_raw'      => $post->post_content,
+			'content'          => apply_filters( 'the_content', get_the_content() ),
+			'content_filtered' => $post->post_content_filtered,
+			'mime_type'        => $post->post_mime_type,
+		);
+		wp_reset_postdata();
+
+		return $data;
+	}
+
+	/**
+	 * Format user data
+	 * @param \WP_User $user
+	 * @return Array Formatted user data
+	 */
+	public function format_user( \WP_User $user ) {
+
+		$data = array(
+			'id' => $user->ID,
+			'id_str' => (string)$user->ID,
+			'nicename' => $user->data->user_nicename,
+			'display_name' => $user->data->display_name,
+			'userUrl' => $user->data->user_url,
+
+			'postsUrl' => 'http=>//example.com/author/john-doe/',
+			'avatar' => array(
+				array(
+					'url' => 'http=>//1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64',
+					'width' => 64,
+					'height' => 64,
+				),
+			),
+			'meta' => array()
+		);
+
+		return $data;
+	}
+
 }

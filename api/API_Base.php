@@ -55,7 +55,7 @@ abstract class API_Base {
 			return false;
 		}
 
-		$match = \trailingslashit( WP_API_BASE ) . \trailingslashit( 'v' . $this->version ) . $pattern;
+		$match = trailingslashit( WP_API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern;
 
 		$app = $this->app;
 
