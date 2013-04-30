@@ -20,17 +20,21 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_posts( $id = null ) {
+		$found = 0;
 		$posts = array();
 
 		$request = $this->app->request();
+		$args = $request->get();
 		$wp_query_posts = $this->get_post_query( $request, $id );
 
 		if ( $wp_query_posts->have_posts() ) {
+			$found = $wp_query_posts->post_count;
 			foreach ( $wp_query_posts->posts as $query_post ) {
 				$posts[] = $this->format_post( $query_post );
 			}
-			return compact( 'posts' );
 		}
+
+		return ! empty( $args['include_found'] ) ? compact( 'found', 'posts' ) : compact( 'posts' );
 	}
 
 	/**
