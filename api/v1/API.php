@@ -28,7 +28,7 @@ class APIv1 extends API_Base {
 		$wp_query_posts = $this->get_post_query( $request, $id );
 
 		if ( $wp_query_posts->have_posts() ) {
-			$found = $wp_query_posts->post_count;
+			$found = $wp_query_posts->found_posts;
 			foreach ( $wp_query_posts->posts as $query_post ) {
 				$posts[] = $this->format_post( $query_post );
 			}
