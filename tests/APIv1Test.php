@@ -148,7 +148,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( 5, $query_vars['p'] );
 	}
 
-	public function testPostFormat() {
+	public function testFormatPost() {
 
 		$slim = new \Slim\Slim();
 

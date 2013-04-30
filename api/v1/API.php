@@ -21,33 +21,30 @@ class APIv1 extends API_Base {
 
 	public function get_posts( $id = null ) {
 		$posts = array();
-		if ( $id ) {
-			$posts[] = $this->format_post( get_post( $id ) );
+
+		$request = $this->app->request();
+		$wp_query_posts = $this->get_post_query( $request, $id );
+
+		if ( $wp_query_posts->have_posts() ) {
+			foreach ( $wp_query_posts->posts as $query_post ) {
+				$posts[] = $this->format_post( $query_post );
+			}
 			return compact( 'posts' );
 		}
-		else {
-			$request = $this->app->request();
-			$wp_query_posts = $this->get_post_query( $request, $id );
-
-			if ( $wp_query_posts->have_posts() ) {
-				
-			}
-		}
-
-		return WP_API_BASE . '/posts/' . $id;
 	}
 
 	/**
-	 * @param \Slim\Request $request
+	 * @param \Slim\Http\Request $request
+	 * @param int $id
 	 * @return WP_Query
 	 */
-	public function get_post_query( $request, $id = null ) {
+	public function get_post_query( \Slim\Http\Request $request, $id = null ) {
 		$args = $request->get();
 
 		$defaults = array(
 			'found_posts' => false,
 		);
-		
+
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
 			return new \WP_Query( array_merge( $defaults, $args ) );
