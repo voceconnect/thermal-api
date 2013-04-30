@@ -40,10 +40,10 @@ class APIv1 extends API_Base {
 			);
 
 			foreach ( $args['taxonomy'] as $key => $value ) {
-				$args['tax_query'] = array(
+				$args['tax_query'][] = array(
 					'taxonomy' => $key,
 					'terms' => is_array( $value ) ? $value : array(),
-					'field' => 'id',
+					'field' => 'term_id',
 				);
 			}
 		}
@@ -65,11 +65,12 @@ class APIv1 extends API_Base {
 		}
 
 		if ( isset( $args['author'] ) ) {
-			if ( is_array( $args['author'] ) ) {
-				$args['author'] = implode( ',', $args['author'] );
-			} else {
-				$args['author'] = (int)$args['author'];
-			}
+			// WordPress only allows a single author to be excluded. We are not
+			// allowing any author exculsions to be accepted.
+			$r = array_filter( (array)$args['author'], function( $author ) {
+				return $author > 0;
+			} );
+			$args['author'] = implode( ',', $r );
 		}
 
 		if ( isset( $args['cat'] ) ) {
@@ -96,12 +97,10 @@ class APIv1 extends API_Base {
 		);
 
 		if ( isset( $args['orderby'] ) ) {
-			$args['orderby'] = array();
-			foreach ( (array)$args['orderby'] as $orderby ) {
-				if ( in_array( $args['orderby'], $valid_orders ) ) {
-					$args['orderby'][] = $orderby;
-				}
-			}
+			$r = array_filter( (array)$args['orderby'], function( $orderby ) use ($valid_orders) {
+				return in_array( $orderby, $valid_orders );
+			} );
+			$args['orderby'] = implode( ' ', $r );
 		}
 
 		if ( isset( $args['per_page'] ) ) {

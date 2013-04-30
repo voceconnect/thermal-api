@@ -135,8 +135,7 @@ Examples:
 		<tr>
 			<td>cat**</td>
 			<td>array|integer</td>
-			<td>The term_id of the category to include.  An array of IDs will also be accepted.  
-			Negative ID's can be used to denote exclusion.</td>
+			<td>The term_id of the category to include.  An array of IDs will also be accepted.</td>
 		</tr>
 		<tr>
 			<td>category_name</td>
