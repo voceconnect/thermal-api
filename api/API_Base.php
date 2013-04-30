@@ -26,10 +26,10 @@ abstract class API_Base {
 
 		$this->app = $app;
 
-		// TODO: Check that version is specified
+		if ( ! $this->version ) {
+			// TODO: throw error..?
+		}
 
-
-		// $this->app-run();
 	}
 
 	/**

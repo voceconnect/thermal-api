@@ -11,8 +11,9 @@
 
 namespace WP_JSON_API;
 
-if ( !defined( 'WP_API_BASE' ) )
+if ( !defined( 'WP_API_BASE' ) ) {
 	define( 'WP_API_BASE', '/wp_api' );
+}
 
 function api_base_url() {
 	return home_url( user_trailingslashit( WP_API_BASE ) );
