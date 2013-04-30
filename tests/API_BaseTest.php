@@ -1,17 +1,8 @@
 <?php
 
-global $wp, $wp_the_query, $wp_query;
-
-$_SERVER['SERVER_PROTOCOL'] = "HTTP/1.1";
-$_SERVER['REQUEST_METHOD'] = 'GET';
-$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
-$_SERVER['SERVER_NAME'] = 'test';
-$_SERVER['SERVER_PORT'] = '80';
-
 define( 'WP_API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
-require_once( __DIR__ . '/../../../../wp-blog-header.php' );
 require_once( __DIR__ . '/../api/API_Base.php' );
 require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
 
@@ -19,7 +10,7 @@ require_once( __DIR__ . '/stubs/API_Test_v1.php' );
 require_once( __DIR__ . '/stubs/API_Test_v2.php' );
 
 
-class API_BaseTest extends PHPUnit_Framework_TestCase {
+class API_BaseTest extends WP_UnitTestCase {
 
 	public function setUp() {
 

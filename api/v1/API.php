@@ -2,6 +2,8 @@
 
 namespace WP_JSON_API;
 
+require_once( __DIR__ . '/../API_Base.php' );
+
 class APIv1 extends API_Base {
 
 	protected $version = '1';
