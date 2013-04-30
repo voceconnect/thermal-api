@@ -90,11 +90,7 @@ class APIv1 extends API_Base {
 		}
 
 		if ( isset( $args['cat'] ) ) {
-			if ( is_array( $args['cat'] ) ) {
-				$args['cat'] = implode( ',', $args['cat'] );
-			} else {
-				$args['cat'] = (int)$args['cat'];
-			}
+			$args['cat'] = implode( ',', (array)$args['cat'] );
 		}
 
 		$valid_orders = array(
