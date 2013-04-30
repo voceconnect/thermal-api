@@ -93,8 +93,13 @@ class APIv1 extends API_Base {
 			'post__in',
 		);
 
-		if ( isset( $_GET['orderby'] ) and in_array( $_GET['orderby'], $valid_orders ) ) {
-			$args['orderby'] = $_GET['orderby'];
+		if ( isset( $_GET['orderby'] ) ) {
+			$args['orderby'] = array();
+			foreach ( (array)$_GET['orderby'] as $orderby ) {
+				if ( in_array( $_GET['orderby'], $valid_orders ) ) {
+					$args['orderby'][] = $_GET['orderby'];
+				}
+			}
 		}
 
 		if ( isset( $_GET['per_page'] ) ) {
