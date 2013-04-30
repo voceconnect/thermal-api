@@ -166,7 +166,7 @@ class APIv1 extends API_Base {
 			'permalink'        => get_permalink( $post ),
 			'parent'           => $post->post_parent,
 			'parent_str'       => (string)$post->post_parent,
-			'date'             => get_the_time( 'c', $post ),
+			'date'             => get_post_time( 'c', true, $post ),
 			'modified'         => get_post_modified_time( 'c', true, $post ),
 			'status'           => $post->post_status,
 			'comment_status'   => $post->comment_status,
