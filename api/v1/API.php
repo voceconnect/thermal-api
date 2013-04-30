@@ -41,7 +41,7 @@ class APIv1 extends API_Base {
 	 * @param \Slim\Request $request
 	 * @return WP_Query
 	 */
-	public function get_post_query( $request, $id ) {
+	public function get_post_query( $request, $id = null ) {
 		$args = $request->get();
 
 		$defaults = array(

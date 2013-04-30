@@ -42,7 +42,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$apiv1 = new \WP_JSON_API\APIv1( $slim );
 
-		$apiv1_get_posts = $apiv1->get_posts();
+		$apiv1_get_posts = $apiv1->get_post_query( $slim->request() );
 
 		$query_vars = $apiv1_get_posts->query_vars;
 
