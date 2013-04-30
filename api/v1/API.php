@@ -9,35 +9,37 @@ class APIv1 extends API_Base {
 
 	protected $version = '1';
 
-	public function __construct( \Slim\Slim $slim ) {
-		parent::__construct( $slim );
-		$this->registerRoute( 'GET', 'users(/:id)', array( __CLASS__, 'get_users' ) );
-		$this->registerRoute( 'GET', 'posts(/:id)', array( __CLASS__, 'get_posts' ) );
-		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( __CLASS__, 'get_taxonomies' ) );
-		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( __CLASS__, 'get_terms' ) );
+	public function __construct( \Slim\Slim $app ) {
+		parent::__construct( $app );
+		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
+		$this->registerRoute( 'GET', 'posts(/:id)', array( $this, 'get_posts' ) );
+		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( $this, 'get_taxonomies' ) );
+		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( $this, 'get_terms' ) );
 	}
 
-	public static function get_users( $id = null ) {
+	public function get_users( $id = null ) {
 		return WP_API_BASE . '/users/' . $id;
 	}
 
-	public static function get_posts( $id = null ) {
+	public function get_posts( $id = null ) {
+		$request = $this->app->request();
+
 		$defaults = array(
 			'found_posts' => false,
 		);
 
-		$args = $_GET;
+		$args = $request->get();
 
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
 		}
 
-		if ( isset( $_GET['taxonomy'] ) && is_array( $_GET['taxonomy'] ) ) {
+		if ( isset( $args['taxonomy'] ) && is_array( $args['taxonomy'] ) ) {
 			$args['tax_query'] = array(
 				'relation' => 'OR',
 			);
 
-			foreach ( $_GET['taxonomy'] as $key => $value ) {
+			foreach ( $args['taxonomy'] as $key => $value ) {
 				$args['tax_query'] = array(
 					'taxonomy' => $key,
 					'terms' => is_array( $value ) ? $value : array(),
@@ -46,35 +48,35 @@ class APIv1 extends API_Base {
 			}
 		}
 
-		if ( isset( $_GET['after'] ) ) {
-			$date = date('Y-m-d', strtotime( $_GET['after'] ) );
+		if ( isset( $args['after'] ) ) {
+			$date = date('Y-m-d', strtotime( $args['after'] ) );
 			add_filter( 'posts_where', function( $where ) use ( $date ) {
 				$where .= " AND post_date > '$date'";
 				return $where;
 			} );
 		}
 
-		if ( isset( $_GET['before'] ) ) {
-			$date = date('Y-m-d', strtotime( $_GET['before'] ) );
+		if ( isset( $args['before'] ) ) {
+			$date = date('Y-m-d', strtotime( $args['before'] ) );
 			add_filter( 'posts_where', function( $where ) use ( $date ) {
 				$where .= " AND post_date < '$date'";
 				return $where;
 			} );
 		}
 
-		if ( isset( $_GET['author'] ) ) {
-			if ( is_array( $_GET['author'] ) ) {
-				$args['author'] = implode( ',', $_GET['author'] );
+		if ( isset( $args['author'] ) ) {
+			if ( is_array( $args['author'] ) ) {
+				$args['author'] = implode( ',', $args['author'] );
 			} else {
-				$args['author'] = (int)$_GET['author'];
+				$args['author'] = (int)$args['author'];
 			}
 		}
 
-		if ( isset( $_GET['cat'] ) ) {
-			if ( is_array( $_GET['cat'] ) ) {
-				$args['cat'] = implode( ',', $_GET['cat'] );
+		if ( isset( $args['cat'] ) ) {
+			if ( is_array( $args['cat'] ) ) {
+				$args['cat'] = implode( ',', $args['cat'] );
 			} else {
-				$args['cat'] = (int)$_GET['cat'];
+				$args['cat'] = (int)$args['cat'];
 			}
 		}
 
@@ -93,33 +95,33 @@ class APIv1 extends API_Base {
 			'post__in',
 		);
 
-		if ( isset( $_GET['orderby'] ) ) {
+		if ( isset( $args['orderby'] ) ) {
 			$args['orderby'] = array();
-			foreach ( (array)$_GET['orderby'] as $orderby ) {
-				if ( in_array( $_GET['orderby'], $valid_orders ) ) {
-					$args['orderby'][] = $_GET['orderby'];
+			foreach ( (array)$args['orderby'] as $orderby ) {
+				if ( in_array( $args['orderby'], $valid_orders ) ) {
+					$args['orderby'][] = $orderby;
 				}
 			}
 		}
 
-		if ( isset( $_GET['per_page'] ) ) {
-			if ( $_GET['per_page'] >= 1 and $_GET['per_page'] <= MAX_POSTS_PER_PAGE ) {
-				$args['posts_per_page'] = (int)$_GET['per_page'];
+		if ( isset( $args['per_page'] ) ) {
+			if ( $args['per_page'] >= 1 and $args['per_page'] <= MAX_POSTS_PER_PAGE ) {
+				$args['posts_per_page'] = (int)$args['per_page'];
 			}
 		}
 
-		if ( isset ( $_GET['paged'] ) ) {
+		if ( isset ( $args['paged'] ) ) {
 			$args['found_posts'] = true;
 		}
 
 		return new \WP_Query( array_merge( $defaults, $args ) );
 	}
 
-	public static function get_taxonomies( $name = null ) {
+	public function get_taxonomies( $name = null ) {
 		return WP_API_BASE . '/taxonomies/' . $name;
 	}
 
-	public static function get_terms( $name, $term_id = null ) {
+	public function get_terms( $name, $term_id = null ) {
 		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
 	}
 }
