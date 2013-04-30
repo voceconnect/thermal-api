@@ -17,7 +17,7 @@ class APIv1 extends API_Base {
 	public static function get_users( $id = null ) {
 		$users = array();
 		if ( $id ) {
-			$users[] = self::format_user( get_user_by( $id ) );
+			$users[] = self::format_user( get_user_by( 'id', $id ) );
 			return compact( 'users' );
 		}
 
@@ -55,11 +55,11 @@ class APIv1 extends API_Base {
 		$data = array(
 			'id' => $post->ID,
 			'id_str' => (string)$post->ID,
-			'permalink' => \get_permalink( $post ),
+			'permalink' => get_permalink( $post ),
 			'parent' => $post->post_parent,
 			'parent_str' => (string)$post->post_parent,
-			'date' => \get_the_time( 'c', $post ),
-			'modified' => \get_post_modified_time( 'c', true, $post ),
+			'date' => get_the_time( 'c', $post ),
+			'modified' => get_post_modified_time( 'c', true, $post ),
 			'status' => $post->post_status,
 			'comment_status' => $post->comment_status,
 			'comment_count' => (int)$post->comment_count,
@@ -67,9 +67,9 @@ class APIv1 extends API_Base {
 			'title' => $post->post_title,
 			'name' => $post->post_name,
 			'excerpt_raw' => $post->post_excerpt,
-			'excerpt' => \apply_filters( 'the_excerpt', \get_the_excerpt() ),
+			'excerpt' => apply_filters( 'the_excerpt', get_the_excerpt() ),
 			'content_raw' => $post->post_content,
-			'content' => \apply_filters( 'the_content', \get_the_content() ),
+			'content' => apply_filters( 'the_content', get_the_content() ),
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type' => $post->post_mime_type,
 		);
