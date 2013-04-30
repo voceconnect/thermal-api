@@ -23,13 +23,20 @@ class APIv1 extends API_Base {
 
 	public function get_posts( $id = null ) {
 		$request = $this->app->request();
+		return $this->get_post_query( $request, $id );
+	}
+
+	/**
+	 * @param \Slim\Request $request
+	 * @return WP_Query
+	 */
+	public function get_post_query( $request, $id ) {
+		$args = $request->get();
 
 		$defaults = array(
 			'found_posts' => false,
 		);
-
-		$args = $request->get();
-
+		
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
 		}
