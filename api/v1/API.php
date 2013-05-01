@@ -272,4 +272,26 @@ class APIv1 extends API_Base {
 		);
 	}
 
+	/**
+	 * @param $term
+	 * @return Array
+	 */
+	public function format_term( $term ) {
+		return array(
+			'id'                => '',
+			'id_str'            => '',
+			'taxonomy_id'       => '',
+			'taxonomy_id_str'   => '',
+			'parent'            => '',
+			'parent_str'        => '',
+			'name'              => '',
+			'slug'              => '',
+			'taxonomy'          => '',
+			'description'       => '',
+			'post_count'        => '',
+			'post_count_padded' => '',
+			'meta' => array(),
+		);
+	}
+
 }
