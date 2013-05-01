@@ -294,6 +294,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$expected = array(
 			'id'               => $test_post_id,
 			'id_str'           => (string)$test_post_id,
+			'type'             => 'post',
 			'permalink'        => home_url( '?p=' . $test_post_id ),
 			'parent'           => 0,
 			'parent_str'       => '0',
@@ -311,7 +312,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'content'          => "<p>This is the content.</p>\n",
 			'content_filtered' => '',
 			'mime_type'        => '',
-			'meta'             => array(),
+			'meta'             => (object)array(),
 			'media'            => array(),
 		);
 
@@ -353,8 +354,8 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_post = $api->format_post( get_post( $test_post_id ) );
 
 		$this->assertArrayHasKey( 'meta', $formatted_post );
-		$this->assertArrayHasKey( 'featured_image', $formatted_post['meta'] );
-		$this->assertEquals( $attachment_id, $formatted_post['meta']['featured_image'] );
+		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
+		$this->assertEquals( $attachment_id, $formatted_post['meta']->featured_image );
 
 	}
 
@@ -391,13 +392,13 @@ class APIv1Test extends WP_UnitTestCase {
 				array(
 					'height' => 250,
 					'name' => 'full',
-					'url' => 'http://example.org/wp-content/uploads/2013/05/250x2501.png',
+					'url' => home_url('/wp-content/uploads/2013/05/250x2501.png'),
 					'width' => 250,
 				),
 				array(
 					'height' => 150,
 					'name' => 'thumbnail',
-					'url' => 'http://example.org/wp-content/uploads/250x2501-150x150.png',
+					'url' => home_url('/wp-content/uploads/250x2501-150x150.png'),
 					'width' => 150,
 				),
 			),

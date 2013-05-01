@@ -173,6 +173,7 @@ class APIv1 extends API_Base {
 		$data = array(
 			'id'               => $post->ID,
 			'id_str'           => (string)$post->ID,
+			'type'             => $post->post_type,
 			'permalink'        => get_permalink( $post ),
 			'parent'           => $post->post_parent,
 			'parent_str'       => (string)$post->post_parent,
@@ -190,12 +191,12 @@ class APIv1 extends API_Base {
 			'content'          => apply_filters( 'the_content', get_the_content() ),
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
-			'meta'             => array(),
+			'meta'             => (object)array(),
 			'media'            => $media,
 		);
 
 		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
-			$data['meta']['featured_image'] = (int)$thumbnail_id;
+			$data['meta']->featured_image = (int)$thumbnail_id;
 		}
 
 		wp_reset_postdata();
