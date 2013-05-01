@@ -237,17 +237,15 @@ class APIv1 extends API_Base {
 		$base_url = trailingslashit( home_url() );
 		$rewrite_rules = array();
 
-		$rules = get_option( 'rewrite_rules' );
-		if ( count( $rules ) ) {			
-			foreach ( $rules as $regex => $query ) {
-				$patterns = array( '|index\.php\?&?|', '|\$matches\[(\d+)\]|' );
-				$replacements = array( '', '\$$1');
+		$rules = get_option( 'rewrite_rules', array() );
+		foreach ( $rules as $regex => $query ) {
+			$patterns = array( '|index\.php\?&?|', '|\$matches\[(\d+)\]|' );
+			$replacements = array( '', '\$$1');
 
-				$rewrite_rules[] = array( 
-					'regex' => $regex, 
-					'query_expression' => preg_replace( $patterns, $replacements, $query ),
-				);
-			}
+			$rewrite_rules[] = array( 
+				'regex' => $regex, 
+				'query_expression' => preg_replace( $patterns, $replacements, $query ),
+			);
 		}
 
 		return compact( 'base_url', 'rewrite_rules' );

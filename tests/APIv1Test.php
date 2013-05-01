@@ -271,9 +271,7 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostFormat() {
-
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -325,9 +323,7 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostMetaFeaturedID() {
-
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -361,7 +357,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testFormatImageMediaItem() {
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -414,14 +409,44 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 	
 	public function testGetRewriteRules() {
-
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
+		delete_option( 'rewrite_rules' );
 		$api_rules = $api->get_rewrite_rules();
-		
-		print_r($api_rules);
+
+		$this->assertEquals( trailingslashit( home_url() ), $api_rules['base_url'] );
+		$this->assertEmpty( $api_rules['query_expression'] );
+
+
+		$test_rules = array(
+			'.*wp-register.php$' => 'index.php?register=true',
+			'comments/page/?([0-9]{1,})/?$' => 'index.php?&paged=$matches[1]',
+			'search/(.+)/feed/(feed|rdf|rss|rss2|atom)/?$' => 'index.php?s=$matches[1]&feed=$matches[2]',
+		);
+
+		update_option( 'rewrite_rules', $test_rules );
+		$api_rules = $api->get_rewrite_rules();
+
+		$expected = array(
+			'base_url' => trailingslashit( home_url() ),
+			'rewrite_rules' => array(
+				array(
+					'regex' => '.*wp-register.php$',
+					'query_expression' => 'register=true',
+				),
+				array(
+					'regex' => 'comments/page/?([0-9]{1,})/?$',
+					'query_expression' => 'paged=$1',
+				),
+				array(
+					'regex' => 'search/(.+)/feed/(feed|rdf|rss|rss2|atom)/?$',
+					'query_expression' => 's=$1&feed=$2',
+				),
+			),
+		);
+
+		$this->assertEquals( $expected, $api_rules );
 	}
 
 }
