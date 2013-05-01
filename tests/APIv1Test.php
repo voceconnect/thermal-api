@@ -412,5 +412,16 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected, $formatted_post );
 	}
+	
+	public function testGetRewriteRules() {
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$api_rules = $api->get_rewrite_rules();
+		
+		print_r($api_rules);
+	}
 
 }

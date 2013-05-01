@@ -243,7 +243,7 @@ class APIv1 extends API_Base {
 				$patterns = array( '|index\.php\?&?|', '|\$matches\[(\d+)\]|' );
 				$replacements = array( '', '\$$1');
 
-				$rewrite_rules[] = (object)array( 
+				$rewrite_rules[] = array( 
 					'regex' => $regex, 
 					'query_expression' => preg_replace( $patterns, $replacements, $query ),
 				);
