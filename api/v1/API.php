@@ -251,11 +251,13 @@ class APIv1 extends API_Base {
 				),
 			);
 
+			$attachment_upload_date = dirname($meta['file']);
+
 			foreach ( $meta['sizes'] as $size => $data ) {
 				$sizes[] = array(
 					'height' => $data['height'],
 					'name'   => $size,
-					'url'    => trailingslashit( $upload_dir['baseurl'] ) . $data['file'],
+					'url'    => trailingslashit( $upload_dir['baseurl'] ) . trailingslashit( $attachment_upload_date ) . $data['file'],
 					'width'  => $data['width'],
 				);
 			}

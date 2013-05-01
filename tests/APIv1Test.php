@@ -398,7 +398,7 @@ class APIv1Test extends WP_UnitTestCase {
 				array(
 					'height' => 150,
 					'name' => 'thumbnail',
-					'url' => home_url('/wp-content/uploads/250x2501-150x150.png'),
+					'url' => home_url('/wp-content/uploads/2013/05/250x2501-150x150.png'),
 					'width' => 150,
 				),
 			),
