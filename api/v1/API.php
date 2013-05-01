@@ -39,49 +39,55 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * 'parse_query' action, force public post_status values for API requests
+	 *
+	 * @param $wp_query
+	 */
+	public function _force_public_post_status( $wp_query ) {
+
+		$qv = &$wp_query->query_vars;
+
+		$invalid_status = false;
+
+		// post_status may not be set, give it an empty array to avoid warning when we access it later
+		if ( ! isset( $qv['post_status'] ) )
+			$qv['post_status'] = array();
+
+		// if a non-public post_status was requested, no posts should be returned
+		// remove the stati for now, and set a flag so we can filter the results
+		if ( ! empty( $qv['post_status'] ) ) {
+
+			$non_public_stati = array_values( get_post_stati( array( 'public' => false ) ) );
+
+			$qv['post_status'] = (array)$qv['post_status'];
+
+			$before_count = count( $qv['post_status'] );
+			$qv['post_status'] = array_diff( $qv['post_status'], $non_public_stati );
+
+			$invalid_status = ( $before_count !== count( $qv['post_status'] ) );
+		}
+
+		// ensure post_status contains valid registered stati
+		$post_stati = get_post_stati();
+		$qv['post_status'] = array_intersect( $post_stati, (array)$qv['post_status'] );
+
+		// if a user tried to specify a non-public post_status, and no valid post_status values
+		// remain after filtering, force an empty result set
+		if ( empty( $qv['post_status'] ) && $invalid_status ) {
+			add_filter( 'posts_request', function() {
+				return '';
+			});
+		}
+	}
+
+	/**
 	 * @param \Slim\Http\Request $request
 	 * @param int $id
 	 * @return WP_Query
 	 */
 	public function get_post_query( \Slim\Http\Request $request, $id = null ) {
 
-		$force_public_post_stati = function( $wp_query ){
-			$qv = &$wp_query->query_vars;
-
-			$invalid_status = false;
-
-			// verify post_status query var exists
-			if ( !isset( $qv['post_status'] ) )
-				$qv['post_status'] = '';
-
-			// gets rid of non public stati
-			if ( !empty( $qv['post_status'] ) ) {
-				$non_public_stati = array_values( get_post_stati( array( 'public' => false ) ) );
-
-				$qv['post_status'] = (array)$qv['post_status'];
-
-				// noting count before and after to check if a non valid status was specified
-				$before_count = count( $qv['post_status'] );
-				$qv['post_status'] = array_diff( (array)$qv['post_status'], $non_public_stati );
-				$after_count = count( $qv['post_status'] );
-
-				$invalid_status = ( $before_count !== $after_count );
-			}
-
-			// validates status is an actual status
-			$post_stati = get_post_stati();
-			$qv['post_status'] = array_intersect( $post_stati, (array)$qv['post_status'] );
-
-			// if no post status is set and and invalid status was specified
-			// we want to return no results
-			if ( empty( $qv['post_status'] ) && $invalid_status ) {
-				add_filter( 'posts_request', function() {
-					return '';
-				});
-			}
-		};
-
-		add_action('parse_query', $force_public_post_stati );
+		add_action( 'parse_query', array( $this, '_force_public_post_status' ) );
 
 		$args = $request->get();
 
@@ -92,7 +98,7 @@ class APIv1 extends API_Base {
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
 			$single_post_query = new \WP_Query( array_merge( $defaults, $args ) );
-			remove_action('parse_query', $force_public_post_stati );
+			remove_action( 'parse_query', array( $this, '_force_public_post_status' ) );
 			return $single_post_query;
 		}
 
@@ -172,7 +178,7 @@ class APIv1 extends API_Base {
 		}
 
 		$get_posts = new \WP_Query( array_merge( $defaults, $args ) );
-		remove_action('parse_query', $force_public_post_stati );
+		remove_action( 'parse_query', array( $this, '_force_public_post_status' ) );
 		return $get_posts;
 	}
 
