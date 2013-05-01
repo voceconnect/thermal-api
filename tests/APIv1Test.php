@@ -55,18 +55,18 @@ class APIv1Test extends WP_UnitTestCase {
 		});
 
 		add_filter( 'pre_option_gmt_offset', '__return_zero' );
-    }
+	}
 
 
- 	public function getPostsSetUp( $query_args = array(), $id = null ) {
+	public function getPostsSetUp( $query_args = array(), $id = null ) {
 
 		$query_string = build_query( $query_args );
 
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/test',
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/test',
 			'QUERY_STRING' => $query_string,
-        ));
+		));
 
 		$app = new \Slim\Slim();
 
@@ -77,10 +77,10 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testGetPosts() {
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
 			'QUERY_STRING' => '',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -93,10 +93,10 @@ class APIv1Test extends WP_UnitTestCase {
 	
 	public function testGetPostsCount() {
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
 			'QUERY_STRING' => 'include_found=true',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -114,10 +114,10 @@ class APIv1Test extends WP_UnitTestCase {
 		) );
 
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $test_post_id,
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $test_post_id,
 			'QUERY_STRING' => '',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -129,10 +129,10 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$id = 9999999;
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $id,
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $id,
 			'QUERY_STRING' => '',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
