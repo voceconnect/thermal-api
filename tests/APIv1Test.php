@@ -357,6 +357,32 @@ class APIv1Test extends WP_UnitTestCase {
 
 	}
 
+	public function testGetTaxonomyBadArrayParameters() {
+		$test_args = array(
+			'post_type' => array( 'foo' )
+		);
+
+		$query_string = build_query( $test_args );
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO'      => WP_API_BASE . '/v1/taxonomies',
+			'QUERY_STRING'   => $query_string,
+		) );
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$api_get_taxonomies = $api->get_taxonomies();
+
+		$this->assertArrayHasKey( 'taxonomies', $api_get_taxonomies );
+
+		$api_get_taxonomies = array_shift( $api_get_taxonomies );
+
+		$this->assertCount( 0, $api_get_taxonomies );
+	}
+
 	public function testGetTaxonomiesArrayParameters() {
 
 		$test_args = array(
