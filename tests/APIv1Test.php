@@ -411,4 +411,24 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	public function testFormatTerm() {
+		$expected = array(
+			'id' => 1,
+			'id_str' => '1',
+			'term_taxonomy_id' => 1,
+			'term_taxonomy_id_str' => '1',
+			'parent' => 0,
+			'parent_str' => '0',
+			'name' => 'Uncategorized',
+			'slug' => 'uncategorized',
+			'taxonomy' => 'category',
+			'description' => '',
+			'post_count' => '4',
+			'meta' => array(),
+		);
+		$actual = \WP_JSON_API\APIv1::format_term( get_term( 1, 'category' ) );
+
+		$this->assertEquals( $actual, $expected );
+	}
+
 }

@@ -382,7 +382,7 @@ class APIv1 extends API_Base {
 	 * @param $term
 	 * @return Array
 	 */
-	public function format_term( $term ) {
+	public static function format_term( $term ) {
 		return array(
 			'id'                   => (int)$term->term_id,
 			'id_str'               => $term->term_id,
@@ -392,7 +392,7 @@ class APIv1 extends API_Base {
 			'parent_str'           => $term->parent,
 			'name'                 => $term->name,
 			'slug'                 => $term->slug,
-			'taxonomy'             => $term->name,
+			'taxonomy'             => $term->taxonomy,
 			'description'          => $term->description,
 			'post_count'           => $term->count,
 			'meta'                 => array(),
