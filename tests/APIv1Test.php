@@ -383,6 +383,9 @@ class APIv1Test extends WP_UnitTestCase {
 		$upload = $this->_upload_file( $filename );
 		$attachment_id = $this->_make_attachment($upload, $test_post_id);
 
+		$full_image_attributes = wp_get_attachment_image_src( $attachment_id, 'full' );
+		$thumb_image_attributes = wp_get_attachment_image_src( $attachment_id, 'thumbnail' );
+
 		$expected = array(
 			'id' => $attachment_id,
 			'id_str' => (string)$attachment_id,
@@ -391,15 +394,15 @@ class APIv1Test extends WP_UnitTestCase {
 			'sizes' => array(
 				array(
 					'height' => 250,
-					'name' => 'full',
-					'url' => home_url('/wp-content/uploads/2013/05/250x2501.png'),
 					'width' => 250,
+					'name' => 'full',
+					'url' => $full_image_attributes[0],
 				),
 				array(
 					'height' => 150,
-					'name' => 'thumbnail',
-					'url' => home_url('/wp-content/uploads/2013/05/250x2501-150x150.png'),
 					'width' => 150,
+					'name' => 'thumbnail',
+					'url' => $thumb_image_attributes[0],
 				),
 			),
 		);
@@ -407,7 +410,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$post = get_post( $attachment_id );
 		$formatted_post = $api->format_image_media_item( $post );
 
-		$this->assertEquals( $formatted_post, $expected );
+		$this->assertEquals( $expected, $formatted_post );
 	}
 
 }
