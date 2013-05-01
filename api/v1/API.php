@@ -378,4 +378,25 @@ class APIv1 extends API_Base {
 		);
 	}
 
+	/**
+	 * @param $term
+	 * @return Array
+	 */
+	public function format_term( $term ) {
+		return array(
+			'id'                   => (int)$term->term_id,
+			'id_str'               => $term->term_id,
+			'term_taxonomy_id'     => (int)$term->term_taxonomy_id,
+			'term_taxonomy_id_str' => $term->term_taxonomy_id,
+			'parent'               => (int)$term->parent,
+			'parent_str'           => $term->parent,
+			'name'                 => $term->name,
+			'slug'                 => $term->slug,
+			'taxonomy'             => $term->name,
+			'description'          => $term->description,
+			'post_count'           => $term->count,
+			'meta'                 => array(),
+		);
+	}
+
 }
