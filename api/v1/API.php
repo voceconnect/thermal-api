@@ -2,8 +2,13 @@
 
 namespace WP_JSON_API;
 
-if ( ! defined( 'MAX_POSTS_PER_PAGE' ) )
+if ( ! defined( 'MAX_POSTS_PER_PAGE' ) ) {
 	define( 'MAX_POSTS_PER_PAGE', 10 );
+}
+
+if ( ! defined( 'MAX_TERMS_PER_PAGE' ) ) {
+	define( 'MAX_TERMS_PER_PAGE', 10 );
+}
 
 require_once( __DIR__ . '/../API_Base.php' );
 
@@ -20,7 +25,6 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_posts( $id = null ) {
-
 		$found = 0;
 		$posts = array();
 
@@ -28,8 +32,12 @@ class APIv1 extends API_Base {
 		$args = $request->get();
 		$wp_query_posts = $this->get_post_query( $request, $id );
 
+		if ( ! empty( $args['paged'] ) ) {
+			$args['include_found'] = true;
+		}
+
 		if ( $wp_query_posts->have_posts() ) {
-			$found = $wp_query_posts->found_posts;
+			$found = (int)$wp_query_posts->found_posts;
 			foreach ( $wp_query_posts->posts as $query_post ) {
 				$posts[] = $this->format_post( $query_post );
 			}
@@ -126,10 +134,6 @@ class APIv1 extends API_Base {
 			}
 		}
 
-		if ( isset ( $args['paged'] ) ) {
-			$args['found_posts'] = true;
-		}
-
 		return new \WP_Query( array_merge( $defaults, $args ) );
 	}
 
@@ -148,7 +152,109 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_terms( $name, $term_id = null ) {
-		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
+		$found = 0;
+		$wp_terms = array();
+		$terms = array();
+
+		$request_args = $this->app->request()->get();
+		$args = $this->get_terms_args( $request_args );
+
+		if ( ! empty( $term_id ) ) {
+			$args['include'] = array( $term_id );
+		}
+
+		$wp_terms = get_terms( $name, $args );
+		if ( count( $wp_terms ) ) {
+			$found = (int)get_terms( $name, array_merge( $args, array( 'fields' => 'count' ) ) );
+		}
+
+		if ( ! empty( $request_args['paged'] ) ) {
+			$request_args['include_found'] = true;
+		}
+
+		if ( $found ) {
+			foreach ( $wp_terms as $term ) {
+				$terms[] = $this->format_term( $term );
+			}
+		}
+
+		return ! empty( $request_args['include_found'] ) ? compact( 'found', 'terms' ) : compact( 'terms' );
+	}
+
+	/**
+	 * @param array $request_args
+	 * @return WP_Query
+	 */
+	public function get_terms_args( $request_args = array() ) {
+		$args = array();
+
+		$args['number'] = MAX_TERMS_PER_PAGE;
+		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
+			$args['number'] = min( (int)$request_args['number'], $args['number'] );
+		}
+		
+
+		if ( ! empty( $request_args['offset'] ) && $request_args['offset'] >= 1 ) {
+			$args['offset'] = (int)$request_args['offset'];
+		}
+
+		if ( ! empty( $request_args['paged'] ) && $request_args['paged'] >= 1 ) {
+			$args['offset'] = ( (int)$request_args['paged'] - 1 ) * $args['number'];
+		}
+
+
+		$valid_orderby = array(
+			'name',
+			'slug',
+			'count',
+		);
+		if ( ! empty( $request_args['orderby'] ) && in_array( $request_args['orderby'], $valid_orderby ) ) {
+			$args['orderby'] = $request_args['orderby'];
+		}
+
+		$valid_order = array(
+			'ASC',
+			'DESC',
+		);
+		if ( ! empty( $request_args['order'] ) && in_array( $request_args['order'], $valid_order ) ) {
+			$args['order'] = $request_args['order'];
+		}
+
+
+		if ( ! empty( $request_args['include'] ) ) {
+			if ( is_integer( $request_args['include'] ) ) {
+				$args['in'] = $request_args['include'];
+			}
+			elseif ( is_array( $request_args['include'] ) ) {
+				$include = array_filter( array_map( function( $id ) {
+						return (int)$id;
+					}, $request_args['include'] ) );
+				if ( count( $include ) ) {
+					$args['in'] = $include;
+				}
+			}
+		}
+
+		if ( ! empty( $request_args['slug'] ) ) {
+			$args['slug'] = $request_args['slug'];
+		}
+
+		if ( isset( $request_args['parent'] ) ) {
+			$args['parent'] = (int)$request_args['parent'];
+		}
+
+		if ( isset( $request_args['exclude_empty'] ) ) {
+			if ( ! $request_args['exclude_empty'] || 'false' === strtolower( $request_args['exclude_empty'] ) ) {
+				$args['hide_empty'] = false;
+			}
+		}
+
+		if ( ! empty( $request_args['pad_count'] ) && 'false' !== strtolower( $request_args['pad_count'] ) ) {
+			$args['pad_count'] = true;
+		}
+
+
+		return $args;
 	}
 
 	/**

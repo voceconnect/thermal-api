@@ -347,7 +347,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$filename = __DIR__ . '/data/250x250.png';
 		$upload = $this->_upload_file( $filename );
-		$attachment_id = $this->_make_attachment($upload, $test_post_id);
+		$attachment_id = $this->_make_attachment( $upload, $test_post_id );
 
 		set_post_thumbnail( $test_post_id, $attachment_id );
 

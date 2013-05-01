@@ -889,24 +889,29 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of term ID's to include.</td>
 		</tr>
 		<tr>
-			<td>slug_in</td>
-			<td>array|string</td>
-			<td>An array of term slugs to include.</td>
+			<td>slug</td>
+			<td>string</td>
+			<td>A term slug to include.</td>
 		</tr>
 		<tr>
-			<td>parent_in</td>
-			<td>array|id</td>
-			<td>Include the children of the provided term ID's.</td>
+			<td>parent</td>
+			<td>id</td>
+			<td>Include the children of the provided term ID.</td>
 		</tr>
 		<tr>
 			<td>exclude_empty</td>
 			<td>boolean</td>
 			<td>If false, only terms with attached posts will be returned.  Default is true.</td>
+		</tr>
+		<tr>
+			<td>pad_count</td>
+			<td>boolean</td>
+			<td>If true, count all of the children along with the term.  Default is false.</td>
 		</tr>
 		<tr>
 			<td colspan="3">
@@ -969,13 +974,8 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "number",
                 "required": false
             },
-            "post_count_padded": {
-                "description": "The distinct count of posts attached to this term and all child terms.  This only includes posts of type 'post'.",
-                "type": "number",
-                "required": false
-            },
             "post_count": {
-                "description": "The distinct count of posts attached to this term.  This only includes posts of type 'post'.",
+                "description": "The distinct count of posts attached to this term.  If 'pad_count' is set to true, this will also include all posts attached to child terms.  This only includes posts of type 'post'.",
                 "type": "number",
                 "required": false
             },
@@ -1028,7 +1028,6 @@ Orderby will also accept an array of multiple identifiers.
 		"taxonomy": "category",
 		"description": "News reports from around Polk County",
 		"post_count": 25,
-		"post_count_padded": 33, //padded post count includes posts from child terms.  This only differs from post_count if the taxonomy is hierarchical
 		"meta":{
 		}
 	}
@@ -1083,7 +1082,7 @@ Orderby will also accept an array of multiple identifiers.
 		"base_url": "http://example.com/",
 		"rewrite_rules": [
 			{
-				regex: "category/(.+?)/?$",
+				"regex": "category/(.+?)/?$",
 				"query_expression": "category_name=$1"
 			}
 			….
