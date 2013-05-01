@@ -271,9 +271,7 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostFormat() {
-
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -325,9 +323,7 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostMetaFeaturedID() {
-
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -361,7 +357,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testFormatImageMediaItem() {
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -411,6 +406,54 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_post = $api->format_image_media_item( $post );
 
 		$this->assertEquals( $expected, $formatted_post );
+	}
+	
+	public function testGetRewriteRules() {
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$empty_rewrites = function() {
+			return array();
+		};
+
+		add_filter( 'pre_option_rewrite_rules', $empty_rewrites );
+		$api_rules = $api->get_rewrite_rules();
+		remove_filter( 'pre_option_rewrite_rules', $empty_rewrites );
+
+		$this->assertEquals( trailingslashit( home_url() ), $api_rules['base_url'] );
+		$this->assertEmpty( $api_rules['query_expression'] );
+
+		$test_rewrites = function() {
+			return array(
+				'.*wp-register.php$' => 'index.php?register=true',
+				'comments/page/?([0-9]{1,})/?$' => 'index.php?&paged=$matches[1]',
+				'search/(.+)/feed/(feed|rdf|rss|rss2|atom)/?$' => 'index.php?s=$matches[1]&feed=$matches[2]',
+			);
+		};
+
+		add_filter( 'pre_option_rewrite_rules', $test_rewrites );
+		$api_rules = $api->get_rewrite_rules();
+		remove_filter( 'pre_option_rewrite_rules', $test_rewrites );
+
+		$expected = array(
+			'base_url' => trailingslashit( home_url() ),
+			'rewrite_rules' => array(
+				array(
+					'regex' => '.*wp-register.php$',
+					'query_expression' => 'register=true',
+				),
+				array(
+					'regex' => 'comments/page/?([0-9]{1,})/?$',
+					'query_expression' => 'paged=$1',
+				),
+				array(
+					'regex' => 'search/(.+)/feed/(feed|rdf|rss|rss2|atom)/?$',
+					'query_expression' => 's=$1&feed=$2',
+				),
+			),
+		);
+
+		$this->assertEquals( $expected, $api_rules );
 	}
 
 }
