@@ -206,8 +206,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 		//Paged
 		$this->assertEquals( $query_vars['paged'], $test_args['paged'] );
-		// also verify that found posts is set, since paged is set
-		$this->assertEquals( $query_vars['found_posts'], true );
 
 	}
 
