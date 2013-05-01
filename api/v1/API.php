@@ -148,7 +148,11 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_terms( $name, $term_id = null ) {
-		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
+		$terms = get_terms( array( $name ), array(
+			'hide_empty' => false,
+			'pad_counts' => false,
+		) );
+		return $this->format_term(array_shift($terms));
 	}
 
 	/**
@@ -277,20 +281,30 @@ class APIv1 extends API_Base {
 	 * @return Array
 	 */
 	public function format_term( $term ) {
+		$_term = array_shift(
+			array_filter( get_terms( array( $term->taxonomy ), array(
+				'hide_empty' => false,
+				'pad_counts' => true,
+			) ), 
+			function( $_term ) use ( $term ) {
+				return $_term->term_id === $term->term_id;
+			} )
+		);
+
 		return array(
-			'id'                => '',
-			'id_str'            => '',
-			'taxonomy_id'       => '',
-			'taxonomy_id_str'   => '',
-			'parent'            => '',
-			'parent_str'        => '',
-			'name'              => '',
-			'slug'              => '',
-			'taxonomy'          => '',
-			'description'       => '',
-			'post_count'        => '',
-			'post_count_padded' => '',
-			'meta' => array(),
+			'id'                   => (int)$term->term_id,
+			'id_str'               => $term->term_id,
+			'term_taxonomy_id'     => (int)$term->term_taxonomy_id,
+			'term_taxonomy_id_str' => $term->term_taxonomy_id,
+			'parent'               => (int)$term->parent,
+			'parent_str'           => $term->parent,
+			'name'                 => $term->name,
+			'slug'                 => $term->slug,
+			'taxonomy'             => $term->name,
+			'description'          => $term->description,
+			'post_count'           => $term->count,
+			'post_count_padded'    => (string)$_term->count,
+			'meta'                 => array(),
 		);
 	}
 
