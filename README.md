@@ -365,6 +365,11 @@ Orderby will also accept an array of multiple identifiers.
                 "minimum": 1,
                 "required": true
             },
+            "type": {
+                "description": "The post_type of the post",
+                "type": "string",
+                "required": true
+            },
             "media": {
                 "type": "array",
                 "required": false,
@@ -464,6 +469,7 @@ Orderby will also accept an array of multiple identifiers.
 	{
 		"id" : 1234567,
 		"id_str" : "1234567",
+		"type" : "post",
 		"permalink": "http://example.com/posts/foobar/",
 		"parent": 12345,
 		"parent_str": "12345",
