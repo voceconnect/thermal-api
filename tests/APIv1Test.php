@@ -411,4 +411,9 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	public function testGetTermsArgs() {
+		\WP_JSON_API\APIv1::get_terms_args();
+		
+	}
+
 }

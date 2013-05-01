@@ -157,7 +157,7 @@ class APIv1 extends API_Base {
 		$terms = array();
 
 		$request_args = $this->app->request()->get();
-		$args = $this->get_terms_args( $request_args );
+		$args = self::get_terms_args( $request_args );
 
 		if ( ! empty( $term_id ) ) {
 			$args['include'] = array( $term_id );
@@ -185,7 +185,7 @@ class APIv1 extends API_Base {
 	 * @param array $request_args
 	 * @return WP_Query
 	 */
-	public function get_terms_args( $request_args = array() ) {
+	public static function get_terms_args( $request_args = array() ) {
 		$args = array();
 
 		$args['number'] = MAX_TERMS_PER_PAGE;
