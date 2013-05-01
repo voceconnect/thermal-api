@@ -31,7 +31,7 @@ class APIv1 extends API_Base {
 		if ( $wp_query_posts->have_posts() ) {
 			$found = $wp_query_posts->found_posts;
 			foreach ( $wp_query_posts->posts as $query_post ) {
-				$posts[] = $this->format_post( $query_post );
+				$posts[] = self::format_post( $query_post );
 			}
 		}
 
@@ -156,7 +156,7 @@ class APIv1 extends API_Base {
 	 * @param \WP_Post $post
 	 * @return Array Formatted post data
 	 */
-	public function format_post( \WP_Post $post ) {
+	public static function format_post( \WP_Post $post ) {
 		$GLOBALS['post'] = $post;
 
 		$attachments = get_posts( array(
@@ -209,7 +209,7 @@ class APIv1 extends API_Base {
 	 * @param \WP_User $user
 	 * @return Array Formatted user data
 	 */
-	public function format_user( \WP_User $user ) {
+	public static function format_user( \WP_User $user ) {
 
 		$data = array(
 			'id' => $user->ID,

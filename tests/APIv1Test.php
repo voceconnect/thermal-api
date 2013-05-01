@@ -274,10 +274,6 @@ class APIv1Test extends WP_UnitTestCase {
 		add_filter( 'pre_option_permalink_structure', $blank_permalink );
 		add_filter( 'pre_option_gmt_offset', '__return_zero' );
 
-		$slim = new \Slim\Slim();
-
-		$api = new \WP_JSON_API\APIv1( $slim );
-
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
 			'post_type'             => 'post',
@@ -320,7 +316,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$test_post = get_post( $test_post_id );
 
-		$actual = $api->format_post( $test_post );
+		$actual = \WP_JSON_API\APIv1::format_post( $test_post );
 
 		$this->assertEquals( $expected, $actual );
 
@@ -330,11 +326,6 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostMetaFeaturedID() {
-
-		$slim = new \Slim\Slim();
-
-		$api = new \WP_JSON_API\APIv1( $slim );
-
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
 			'post_type'             => 'post',
@@ -356,7 +347,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		set_post_thumbnail( $test_post_id, $attachment_id );
 
-		$formatted_post = $api->format_post( get_post( $test_post_id ) );
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id ) );
 
 		$this->assertArrayHasKey( 'meta', $formatted_post );
 		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
@@ -365,10 +356,6 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testFormatImageMediaItem() {
-		$slim = new \Slim\Slim();
-
-		$api = new \WP_JSON_API\APIv1( $slim );
-
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
 			'post_type'             => 'post',
@@ -413,7 +400,7 @@ class APIv1Test extends WP_UnitTestCase {
 		);
 
 		$post = get_post( $attachment_id );
-		$formatted_post = $api->format_image_media_item( $post );
+		$formatted_post = \WP_JSON_API\APIv1::format_image_media_item( $post );
 
 		$this->assertEquals( $expected, $formatted_post );
 	}
