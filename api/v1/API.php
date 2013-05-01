@@ -151,10 +151,10 @@ class APIv1 extends API_Base {
 			$args['name'] = $name;
 		}
 
-		$taxonomies = get_taxonomies( $args, 'object' );
+		$t = get_taxonomies( $args, 'object' );
 		$args = $this->app->request()->get();
-		$temp = array();
-		foreach ( $taxonomies as $taxonomy ) {
+		$taxonomies = array();
+		foreach ( $t as $taxonomy ) {
 			if ( isset( $args['in'] ) ) {
 				if ( ! in_array( $taxonomy->name, (array)$args['in'] ) ) {
 					continue;
@@ -167,10 +167,10 @@ class APIv1 extends API_Base {
 				}
 			}
 
-			$temp[] = $this->format_taxonomy( $taxonomy );
+			$taxonomies[] = $this->format_taxonomy( $taxonomy );
 		}
 
-		return $temp;
+		return compact( 'taxonomies' );
 	}
 
 	public function get_terms( $name, $term_id = null ) {
