@@ -13,8 +13,8 @@ class APIv1 extends API_Base {
 
 	public function __construct( \Slim\Slim $app ) {
 		parent::__construct( $app );
-		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
 		$this->registerRoute( 'GET', 'posts(/:id)', array( $this, 'get_posts' ) );
+		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
 		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( $this, 'get_taxonomies' ) );
 		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( $this, 'get_terms' ) );
 	}
@@ -190,8 +190,14 @@ class APIv1 extends API_Base {
 			'content'          => apply_filters( 'the_content', get_the_content() ),
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
+			'meta'             => array(),
 			'media'            => $media,
 		);
+
+		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
+			$data['meta']['featured_image'] = (int)$thumbnail_id;
+		}
+
 		wp_reset_postdata();
 
 		return $data;
