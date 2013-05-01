@@ -253,10 +253,10 @@ class APIv1 extends API_Base {
 
 			foreach ( $meta['sizes'] as $size => $data ) {
 				$sizes[] = array(
-					'height' => $data['width'],
+					'height' => $data['height'],
 					'name'   => $size,
 					'url'    => trailingslashit( $upload_dir['baseurl'] ) . $data['file'],
-					'width'  => $data['height'],
+					'width'  => $data['width'],
 				);
 			}
 		}
