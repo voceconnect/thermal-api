@@ -274,6 +274,13 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostFormat() {
+		$blank_permalink = function() {
+			return '';
+		};
+
+		add_filter( 'pre_option_permalink_structure', $blank_permalink );
+		add_filter( 'pre_option_gmt_offset', '__return_zero' );
+
 		$slim = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $slim );
 
@@ -322,6 +329,9 @@ class APIv1Test extends WP_UnitTestCase {
 		$actual = $api->format_post( $test_post );
 
 		$this->assertEquals( $expected, $actual );
+
+		remove_filter( 'pre_option_permalink_structure', $blank_permalink );
+		remove_filter( 'pre_option_gmt_offset', '__return_zero' );
 
 	}
 
