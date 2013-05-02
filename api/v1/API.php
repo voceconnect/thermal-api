@@ -234,7 +234,7 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_rewrite_rules() {
-		$base_url = trailingslashit( home_url() );
+		$base_url = home_url( '/' );
 		$rewrite_rules = array();
 
 		$rules = get_option( 'rewrite_rules', array() );
