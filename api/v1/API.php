@@ -17,6 +17,7 @@ class APIv1 extends API_Base {
 		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
 		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( $this, 'get_taxonomies' ) );
 		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( $this, 'get_terms' ) );
+		$this->registerRoute( 'GET', 'rewrite_rules', array( $this, 'get_rewrite_rules' ) );
 	}
 
 	public function get_posts( $id = null ) {
@@ -251,11 +252,60 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_taxonomies( $name = null ) {
-		return WP_API_BASE . '/taxonomies/' . $name;
+		$args = array(
+			'public' => true,
+		);
+
+		if ( ! is_null( $name ) ) {
+			$args['name'] = $name;
+		}
+
+		$t = get_taxonomies( $args, 'object' );
+		$args = $this->app->request()->get();
+		$taxonomies = array();
+		foreach ( $t as $taxonomy ) {
+			if ( isset( $args['in'] ) ) {
+				if ( ! in_array( $taxonomy->name, (array)$args['in'] ) ) {
+					continue;
+				}
+			}
+
+			if ( isset( $args['post_type'] ) ) {
+				if ( 0 === count( array_intersect( $taxonomy->object_type, (array)$args['post_type'] ) ) ) {
+					continue;
+				}
+			}
+
+			$taxonomies[] = $this->format_taxonomy( $taxonomy );
+		}
+
+		return compact( 'taxonomies' );
 	}
 
 	public function get_terms( $name, $term_id = null ) {
 		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
+	}
+
+	/**
+	 * @param $taxonomy
+	 * @return Array
+	 */
+	public function format_taxonomy( $taxonomy ) {
+		return array(
+			'name'         => $taxonomy->name,
+			'post_types'   => $taxonomy->object_type,
+			'hierarchical' => $taxonomy->hierarchical,
+			'query_var'    => $taxonomy->query_var,
+			'labels'       => array(
+				'name'          => $taxonomy->labels->name,
+				'singular_name' => $taxonomy->labels->singular_name,
+			),
+			'meta'         => (object)array(),
+		);
+	}
+
+	public function format_term() {
+
 	}
 
 	/**
@@ -337,6 +387,24 @@ class APIv1 extends API_Base {
 		);
 
 		return $data;
+	}
+
+	public function get_rewrite_rules() {
+		$base_url = home_url( '/' );
+		$rewrite_rules = array();
+
+		$rules = get_option( 'rewrite_rules', array() );
+		foreach ( $rules as $regex => $query ) {
+			$patterns = array( '|index\.php\?&?|', '|\$matches\[(\d+)\]|' );
+			$replacements = array( '', '\$$1');
+
+			$rewrite_rules[] = array(
+				'regex' => $regex,
+				'query_expression' => preg_replace( $patterns, $replacements, $query ),
+			);
+		}
+
+		return compact( 'base_url', 'rewrite_rules' );
 	}
 
 	/**

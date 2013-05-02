@@ -1083,7 +1083,7 @@ Orderby will also accept an array of multiple identifiers.
 		"base_url": "http://example.com/",
 		"rewrite_rules": [
 			{
-				regex: "category/(.+?)/?$",
+				"regex": "category/(.+?)/?$",
 				"query_expression": "category_name=$1"
 			}
 			….
