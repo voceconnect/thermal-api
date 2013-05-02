@@ -17,6 +17,7 @@ class APIv1 extends API_Base {
 		$this->registerRoute( 'GET', 'users(/:id)', array( $this, 'get_users' ) );
 		$this->registerRoute( 'GET', 'taxonomies(/:name)', array( $this, 'get_taxonomies' ) );
 		$this->registerRoute( 'GET', 'taxonomies/:name/terms(/:term_id)', array( $this, 'get_terms' ) );
+		$this->registerRoute( 'GET', 'rewrite_rules', array( $this, 'get_rewrite_rules' ) );
 	}
 
 	public function get_posts( $id = null ) {
@@ -322,6 +323,24 @@ class APIv1 extends API_Base {
 		);
 
 		return $data;
+	}
+
+	public function get_rewrite_rules() {
+		$base_url = home_url( '/' );
+		$rewrite_rules = array();
+
+		$rules = get_option( 'rewrite_rules', array() );
+		foreach ( $rules as $regex => $query ) {
+			$patterns = array( '|index\.php\?&?|', '|\$matches\[(\d+)\]|' );
+			$replacements = array( '', '\$$1');
+
+			$rewrite_rules[] = array(
+				'regex' => $regex,
+				'query_expression' => preg_replace( $patterns, $replacements, $query ),
+			);
+		}
+
+		return compact( 'base_url', 'rewrite_rules' );
 	}
 
 	/**
