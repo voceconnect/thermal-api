@@ -268,9 +268,10 @@ class APIv1 extends API_Base {
 
 		// check post content for gallery shortcode
 		if ( $gallery_data = $this->get_gallery_data( $post ) ) {
+			$gallery_meta = array();
 			foreach ( $gallery_data as $gallery_key => $gallery ) {
 				$gallery_id = ! empty( $gallery['id'] ) ? intval( $gallery['id'] ) : $post->ID;
-				$order      = ! empty( $gallery['order'] ) ? $gallery['order'] : 'ASC';
+				$order      = ! empty( $gallery['order'] ) ? strtoupper( $gallery['order'] ) : 'ASC';
 				$orderby    = ! empty( $gallery['orderby'] ) ? implode( ' ', $gallery['orderby'] ) : 'menu_order ID';
 				$include    = ! empty( $gallery['include'] ) ? $gallery['include'] : array();
 
@@ -315,14 +316,16 @@ class APIv1 extends API_Base {
 					$attachments = get_children( $attachments_args );
 				}
 
-				$gallery_data[$gallery_key]['ids'] = array();
+				$gallery_meta[$gallery_key]['ids'] = array();
+				$gallery_meta[$gallery_key]['orderby'] = $orderby;
+				$gallery_meta[$gallery_key]['order'] = $order;
 				foreach ( $attachments as $attachment ) {
 					$media[$attachment->ID] = self::format_image_media_item( $attachment );
-					$gallery_data[$gallery_key]['ids'][] = $attachment->ID;
+					$gallery_meta[$gallery_key]['ids'][] = $attachment->ID;
 				}
 			}
 
-			$meta['gallery'] = $gallery_data;
+			$meta['gallery'] = $gallery_meta;
 		}
 
 		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
