@@ -39,11 +39,18 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * 'post_requests' action, force invalid post status to return empty request
+	 */
+	public static function _force_blank_request() {
+		return '';
+	}
+
+	/**
 	 * 'parse_query' action, force public post_status values for API requests
 	 *
 	 * @param $wp_query
 	 */
-	public function _force_public_post_status( $wp_query ) {
+	public static function _force_public_post_status( $wp_query ) {
 
 		$qv = &$wp_query->query_vars;
 
@@ -74,9 +81,7 @@ class APIv1 extends API_Base {
 		// if a user tried to specify a non-public post_status, and no valid post_status values
 		// remain after filtering, force an empty result set
 		if ( empty( $qv['post_status'] ) && $invalid_status ) {
-			add_filter( 'posts_request', function() {
-				return '';
-			});
+			add_filter( 'posts_request', array( __CLASS__, '_force_blank_request' ) );
 		}
 	}
 
@@ -87,7 +92,7 @@ class APIv1 extends API_Base {
 	 */
 	public function get_post_query( \Slim\Http\Request $request, $id = null ) {
 
-		add_action( 'parse_query', array( $this, '_force_public_post_status' ) );
+		add_action( 'parse_query', array( __CLASS__, '_force_public_post_status' ) );
 
 		$args = $request->get();
 
@@ -98,7 +103,7 @@ class APIv1 extends API_Base {
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
 			$single_post_query = new \WP_Query( array_merge( $defaults, $args ) );
-			remove_action( 'parse_query', array( $this, '_force_public_post_status' ) );
+			remove_action( 'parse_query', array( __CLASS__, '_force_public_post_status' ) );
 			return $single_post_query;
 		}
 
@@ -178,7 +183,7 @@ class APIv1 extends API_Base {
 		}
 
 		$get_posts = new \WP_Query( array_merge( $defaults, $args ) );
-		remove_action( 'parse_query', array( $this, '_force_public_post_status' ) );
+		remove_action( 'parse_query', array( __CLASS__, '_force_public_post_status' ) );
 		return $get_posts;
 	}
 
