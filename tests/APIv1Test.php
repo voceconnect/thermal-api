@@ -421,216 +421,112 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
-	public function testGetTermsArgs() {
-		$test_args = array( 'invalid_key' => true );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['invalid_key'] );
+	/**
+	 *
+	 */
+	public function _term_args() {
+		return array(
+			array( 'invalid_key',
+				array( null ),
+				array(
+					'invalid_key' => true,
+				),
+			),
+			array( 'number',
+				array( MAX_TERMS_PER_PAGE ),
+				array(),
+			),
+			array( 'number',
+				array( MAX_TERMS_PER_PAGE, MAX_TERMS_PER_PAGE, 5, MAX_TERMS_PER_PAGE, MAX_TERMS_PER_PAGE ),
+				array( 
+					'per_page' => array( -5, 0, 5, 15, 'five' ),
+				),
+			),
+			array( 'offset',
+				array( null, null, null, 5, null ),
+				array( 
+					'offset' => array( null, -5, 0, 5, 'five' ),
+				),
+			),
+			array( 'offset',
+				array( null, null, 0, 10, null, null ),
+				array( 
+					'paged' => array( -5, 0, 1, 2, 'five' ),
+				),
+			),
+			array( 'offset',
+				array( 0, 12 ),
+				array( 
+					'per_page' => array( 3, 3 ), 
+					'paged' => array( 1, 5 ),
+				),
+			),
+			array( 'orderby',
+				array( null, 'slug', 'slug', null ),
+				array( 
+					'orderby' => array( null, 'slug', 'SLUG', 'invalid' ),
+				),
+			),
+			array( 'order',
+				array( null, 'desc', 'desc', null ),
+				array(
+					'order' => array( null, 'desc', 'DESC', 'invalid' ),
+				)
+			),
+			array( 'include',
+				array( null, array( 5 ), null, array( 5 ), array( 5, 10, 15 ), array( 5, 15 ) ),
+				array(
+					'include' => array( null, 5, 'fail', array( 5 ), array( 5, 10, 15 ), array( 5, 'fail', 15 ) )
+				),
+			),
+			array( 'pad_count',
+				array( true, true, null, null, null, null, null ),
+				array(
+					'pad_count' => array( 'true', 'anything', 'false', 'FALSE', 0, '0', ),
+				),
+			),
+			array( 'hide_empty',
+				array( null, null, false, false, false, false ),
+				array(
+					'exclude_empty' => array( 'true', 'anything', 'false', 'FALSE', 0, '0' ),
+				)
 
+			),
+			array( 'slug',
+				array( 'anything' ),
+				array(
+					'slug' => array( 'anything' ),
+				)
 
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+			),
+			array( 'parent',
+				array( 5, null ),
+				array(
+					'parent' => array( 5, 'fail' ),
+				)
 
-		$test_args = array( 'per_page' => -5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+			),
+		);
+	}
 
-		$test_args = array( 'per_page' => 0 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+	/**
+	 * 
+	 * @group Terms
+	 * @dataProvider _term_args
+	 * @param $param
+	 * @param $expected
+	 * @param $args
+	 */
+	public function testGetTermsArgs( $param, $expected, $args ) {
+		for ( $i = 0; $i < count( $expected ); $i++ ) {
+			$_args = array();
+			foreach ( $args as $key => $value ) {
+				$_args[$key] = $value[$i];
+			}
 
-		$test_args = array( 'per_page' => 5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 5, $args['number'] );
-
-		$test_args = array( 'per_page' => 15 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
-
-		$test_args = array( 'per_page' => 'five' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['offset'] );
-
-		$test_args = array( 'offset' => -5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['offset'] );
-
-		$test_args = array( 'offset' => 0 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['offset'] );
-
-		$test_args = array( 'offset' => 5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 5, $args['offset'] );
-
-		$test_args = array( 'offset' => 'five' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['offset'] );
-
-
-		$test_args = array( 'paged' => -5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['offset'] );
-
-		$test_args = array( 'paged' => 0 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['offset'] );
-
-		$test_args = array( 'paged' => 1 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 0, $args['offset'] );
-
-		$test_args = array( 'paged' => 2 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 10, $args['offset'] );
-
-		$test_args = array( 'paged' => 'five' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['offset'] );
-
-
-		$test_args = array( 'per_page' => 3, 'paged' => 1 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 0, $args['offset'] );
-
-		$test_args = array( 'per_page' => 3, 'paged' => 5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 12, $args['offset'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['orderby'] );
-
-		$test_args = array( 'orderby' => 'slug' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 'slug', $args['orderby'] );
-
-		$test_args = array( 'orderby' => 'SLUG' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 'slug', $args['orderby'] );
-
-		$test_args = array( 'orderby' => 'invalid' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['orderby'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['order'] );
-
-		$test_args = array( 'order' => 'desc' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 'desc', $args['order'] );
-
-		$test_args = array( 'order' => 'DESC' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 'desc', $args['order'] );
-
-		$test_args = array( 'order' => 'invalid' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['order'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['include'] );
-
-		$test_args = array( 'include' => 5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( array( 5 ), $args['include'] );
-
-		$test_args = array( 'include' => 'fail' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['include'] );
-
-		$test_args = array( 'include' => array( 5 ) );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( array( 5 ), $args['include'] );
-
-		$test_args = array( 'include' => array( 5, 10, 15 ) );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( array( 5, 10, 15 ), $args['include'] );
-
-		$test_args = array( 'include' => array( 5, 'fail', 15 ) );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( array( 5, 15 ), $args['include'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['slug'] );
-
-		$test_args = array( 'slug' => 'anything' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 'anything', $args['slug'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['parent'] );
-
-		$test_args = array( 'parent' => 5 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertEquals( 5, $args['parent'] );
-
-		$test_args = array( 'parent' => 'fail' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['parent'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['hide_empty'] );
-
-		$test_args = array( 'exclude_empty' => 'true' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['hide_empty'] );
-
-		$test_args = array( 'exclude_empty' => 'anything' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['hide_empty'] );
-
-		$test_args = array( 'exclude_empty' => 'false' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertFalse( $args['hide_empty'] );
-
-		$test_args = array( 'exclude_empty' => 'FALSE' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertFalse( $args['hide_empty'] );
-
-		$test_args = array( 'exclude_empty' => 0 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertFalse( $args['hide_empty'] );
-
-		$test_args = array( 'exclude_empty' => '0' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertFalse( $args['hide_empty'] );
-
-
-		$args = \WP_JSON_API\APIv1::get_terms_args();
-		$this->assertNull( $args['pad_count'] );
-
-		$test_args = array( 'pad_count' => 'true' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertTrue( $args['pad_count'] );
-
-		$test_args = array( 'pad_count' => 'anything' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertTrue( $args['pad_count'] );
-
-		$test_args = array( 'pad_count' => 'false' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['pad_count'] );
-
-		$test_args = array( 'pad_count' => 'FALSE' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['pad_count'] );
-
-		$test_args = array( 'pad_count' => 0 );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['pad_count'] );
-
-		$test_args = array( 'pad_count' => '0' );
-		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
-		$this->assertNull( $args['pad_count'] );
+			$actual = \WP_JSON_API\APIv1::get_terms_args( $_args );
+			$this->assertEquals( $expected[$i], $actual[$param] );			
+		}
 	}
 
 	public function testGetTerms() {
