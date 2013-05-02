@@ -418,4 +418,95 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	/**
+	 * Test that the parameters that are passted to the get_users function
+	 * are correct.
+	 * @group Users
+	 */
+	public function testGetUserArgs() {
+		$args = array(
+			'paged' => array( 0, 0, -1, 0, 2, 2, 5 ),
+			'per_page' => array( -1, 0, 5, 5, 50, 5, 5 ),
+			'orderby' => array('display_name', 'POST_COUNT', 'foo' ),
+			'order' => array( 'desc', 'ASC', 'foo' ),
+			'in' => array( 1, array( 1, 2, 3 ) ),
+			'offset' => array( 0, 0, 0, 0, 10, 5, 20 ),
+			'include_found' => array( true, false, 'foo' ),
+		);
+
+		$expected = array(
+			'per_page' => array( 10, 10, 5, 5, 10, 5, 5 ),
+			'orderby' => array('display_name', 'post_count', 'display_name' ),
+			'order' => array( 'desc', 'asc', 'desc' ),
+			'in' => array( array( 1 ), array( 1, 2, 3 ) ),
+			'offset' => array( 0, 0, 0, 0, 10, 5, 20 ),
+			'include_found' => array( true, false, false ),
+		);
+
+		foreach ( $args as $param => $values ) {
+			for ( $i = 0; $i < count( $values ); $i++ ) {
+				if ( 'paged' === $param ) {
+					$actual = \WP_JSON_API\APIv1::get_user_args( array(
+						'paged' => $args['paged'][$i],
+						'per_page' => $args['per_page'][$i],
+					) );
+					$this->assertEquals( $actual['offset'], $args['offset'][$i] );
+					$this->assertTrue( $actual['include_found'] );
+				} else {
+					$actual = \WP_JSON_API\APIv1::get_user_args( array(
+						$param => $values[$i]
+					) );
+					$this->assertEquals( $expected[$param][$i], $actual[$param] );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Test that the format user method returns the correct result.
+	 * @group Users
+	 */
+	public function testFormatUser() {
+		$actual = \WP_JSON_API\APIv1::format_user( get_userdata( 1 ) );
+		$expected = array(
+			'id' => 1,
+			'id_str' => '1',
+			'nicename' => 'admin',
+			'display_name' => 'admin',
+			'user_url' => '',
+			'posts_url' => home_url( '?author=1' ),
+			'avatar' => array(
+				'url' => 'http://1.gravatar.com/avatar/96614ec98aa0c0d2ee75796dced6df54?s=96&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D96&amp;r=G',
+				'width' => '96',
+				'height' => '96',
+			),
+			'meta' => array(),
+		);
+
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 * Test the users/:id endpoint.
+	 * @group Users
+	 */
+	public function testGetUsers() {
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/users',
+			'QUERY_STRING' => http_build_query( array(
+				'include_found' => true,
+			) ),
+		));
+
+		$api = new \WP_JSON_API\APIv1( new \Slim\Slim() );
+
+		$users = $api->get_users();
+		$this->assertArrayHasKey( 'found', $users );
+		$this->assertArrayHasKey( 'users', $users );
+
+		$users = $api->get_users( 1 );
+		$this->assertArrayHasKey( 'users', $users );
+		$this->assertCount( 1, $users['users'] );
+	}
 }
