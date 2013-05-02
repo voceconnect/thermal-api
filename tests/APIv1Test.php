@@ -215,7 +215,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		//Paged
 		$this->assertEquals( $test_args['paged'], $query_vars['paged'] );
-		
+
 		//No forbidded vars
 		$this->assertArrayNotHasKey( 'fake', $query_vars );
 
