@@ -20,6 +20,7 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_posts( $id = null ) {
+
 		$found = 0;
 		$posts = array();
 
@@ -208,10 +209,22 @@ class APIv1 extends API_Base {
 	 */
 	public function format_post( \WP_Post $post ) {
 		$GLOBALS['post'] = $post;
+
+		$attachments = get_posts( array(
+			'post_parent' => $post->ID,
+			'post_mime_type' => 'image',
+			'post_type' => 'attachment',
+		) );
+		$media = array();
+		foreach ( $attachments as $attachment ) {
+			$media[] = self::format_image_media_item( $attachment );
+		}
+
 		setup_postdata( $post );
 		$data = array(
 			'id'               => $post->ID,
 			'id_str'           => (string)$post->ID,
+			'type'             => $post->post_type,
 			'permalink'        => get_permalink( $post ),
 			'parent'           => $post->post_parent,
 			'parent_str'       => (string)$post->post_parent,
@@ -229,11 +242,12 @@ class APIv1 extends API_Base {
 			'content'          => apply_filters( 'the_content', get_the_content() ),
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
-			'meta'             => array(),
+			'meta'             => (object)array(),
+			'media'            => $media,
 		);
 
 		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
-			$data['meta']['featured_image'] = (int)$thumbnail_id;
+			$data['meta']->featured_image = (int)$thumbnail_id;
 		}
 
 		wp_reset_postdata();
@@ -253,9 +267,9 @@ class APIv1 extends API_Base {
 			'id_str' => (string)$user->ID,
 			'nicename' => $user->data->user_nicename,
 			'display_name' => $user->data->display_name,
-			'userUrl' => $user->data->user_url,
+			'user_url' => $user->data->user_url,
 
-			'postsUrl' => 'http=>//example.com/author/john-doe/',
+			'posts_url' => 'http=>//example.com/author/john-doe/',
 			'avatar' => array(
 				array(
 					'url' => 'http=>//1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64',
@@ -267,6 +281,46 @@ class APIv1 extends API_Base {
 		);
 
 		return $data;
+	}
+
+	/**
+	 * @param \WP_Post $post
+	 * @return Array
+	 */
+	public static function format_image_media_item( \WP_Post $post ) {
+		$meta = wp_get_attachment_metadata( $post->ID );
+
+		if ( isset( $meta['sizes'] ) and is_array( $meta['sizes'] ) ) {
+			$upload_dir = wp_upload_dir();
+
+			$sizes = array(
+				array(
+					'height' => $meta['height'],
+					'name'   => 'full',
+					'url'    => trailingslashit( $upload_dir['baseurl'] ) . $meta['file'],
+					'width'  => $meta['width'],
+				),
+			);
+
+			$attachment_upload_date = dirname($meta['file']);
+
+			foreach ( $meta['sizes'] as $size => $data ) {
+				$sizes[] = array(
+					'height' => $data['height'],
+					'name'   => $size,
+					'url'    => trailingslashit( $upload_dir['baseurl'] ) . trailingslashit( $attachment_upload_date ) . $data['file'],
+					'width'  => $data['width'],
+				);
+			}
+		}
+
+		return array(
+			'id'        => $post->ID,
+			'id_str'    => (string)$post->ID,
+			'mime_type' => $post->post_mime_type, 
+			'alt_text'  => get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
+			'sizes'     => $sizes,
+		);
 	}
 
 }

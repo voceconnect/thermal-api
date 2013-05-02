@@ -26,10 +26,6 @@ abstract class API_Base {
 
 		$this->app = $app;
 
-		if ( ! $this->version ) {
-			// TODO: throw error..?
-		}
-
 	}
 
 	/**

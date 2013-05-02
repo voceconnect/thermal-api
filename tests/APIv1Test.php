@@ -50,23 +50,18 @@ class APIv1Test extends WP_UnitTestCase {
 
 		\Slim\Slim::registerAutoloader();
 
-		add_filter( 'pre_option_permalink_structure', function() {
-			return '';
-		});
-
-		add_filter( 'pre_option_gmt_offset', '__return_zero' );
-    }
+	}
 
 
- 	public function getPostsSetUp( $query_args = array(), $id = null ) {
+	public function getPostsSetUp( $query_args = array(), $id = null ) {
 
 		$query_string = build_query( $query_args );
 
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/test',
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/test',
 			'QUERY_STRING' => $query_string,
-        ));
+		));
 
 		$app = new \Slim\Slim();
 
@@ -77,10 +72,10 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testGetPosts() {
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
 			'QUERY_STRING' => '',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -93,10 +88,10 @@ class APIv1Test extends WP_UnitTestCase {
 	
 	public function testGetPostsCount() {
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
 			'QUERY_STRING' => 'include_found=true',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -114,10 +109,10 @@ class APIv1Test extends WP_UnitTestCase {
 		) );
 
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $test_post_id,
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $test_post_id,
 			'QUERY_STRING' => '',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -129,10 +124,10 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$id = 9999999;
 		\Slim\Environment::mock( array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $id,
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $id,
 			'QUERY_STRING' => '',
-        ));
+		));
 
 		$app = new \Slim\Slim();
 		$api = new \WP_JSON_API\APIv1( $app );
@@ -272,6 +267,13 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testPostFormat() {
 
+		$blank_permalink = function() {
+			return '';
+		};
+
+		add_filter( 'pre_option_permalink_structure', $blank_permalink );
+		add_filter( 'pre_option_gmt_offset', '__return_zero' );
+
 		$slim = new \Slim\Slim();
 
 		$api = new \WP_JSON_API\APIv1( $slim );
@@ -294,6 +296,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$expected = array(
 			'id'               => $test_post_id,
 			'id_str'           => (string)$test_post_id,
+			'type'             => 'post',
 			'permalink'        => home_url( '?p=' . $test_post_id ),
 			'parent'           => 0,
 			'parent_str'       => '0',
@@ -311,7 +314,8 @@ class APIv1Test extends WP_UnitTestCase {
 			'content'          => "<p>This is the content.</p>\n",
 			'content_filtered' => '',
 			'mime_type'        => '',
-			'meta'             => array(),
+			'meta'             => (object)array(),
+			'media'            => array(),
 		);
 
 		$test_post = get_post( $test_post_id );
@@ -319,6 +323,9 @@ class APIv1Test extends WP_UnitTestCase {
 		$actual = $api->format_post( $test_post );
 
 		$this->assertEquals( $expected, $actual );
+
+		remove_filter( 'pre_option_permalink_structure', $blank_permalink );
+		remove_filter( 'pre_option_gmt_offset', '__return_zero' );
 
 	}
 
@@ -352,9 +359,63 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_post = $api->format_post( get_post( $test_post_id ) );
 
 		$this->assertArrayHasKey( 'meta', $formatted_post );
-		$this->assertArrayHasKey( 'featured_image', $formatted_post['meta'] );
-		$this->assertEquals( $attachment_id, $formatted_post['meta']['featured_image'] );
+		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
+		$this->assertEquals( $attachment_id, $formatted_post['meta']->featured_image );
 
+	}
+
+	public function testFormatImageMediaItem() {
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$test_post_id = wp_insert_post( array(
+			'post_status'           => 'publish',
+			'post_type'             => 'post',
+			'post_author'           => 1,
+			'post_parent'           => 0,
+			'menu_order'            => 0,
+			'post_content_filtered' => '',
+			'post_excerpt'          => 'This is the excerpt.',
+			'post_content'          => 'This is the content.',
+			'post_title'            => 'Hello World!',
+			'post_date'             => '2013-04-30 20:33:36',
+			'post_date_gmt'         => '2013-04-30 20:33:36',
+			'comment_status'        => 'open',
+		) );
+
+		$filename = __DIR__ . '/data/250x250.png';
+		$upload = $this->_upload_file( $filename );
+		$attachment_id = $this->_make_attachment($upload, $test_post_id);
+
+		$full_image_attributes = wp_get_attachment_image_src( $attachment_id, 'full' );
+		$thumb_image_attributes = wp_get_attachment_image_src( $attachment_id, 'thumbnail' );
+
+		$expected = array(
+			'id' => $attachment_id,
+			'id_str' => (string)$attachment_id,
+			'mime_type' => 'image/png',
+			'alt_text' => '',
+			'sizes' => array(
+				array(
+					'height' => 250,
+					'width' => 250,
+					'name' => 'full',
+					'url' => $full_image_attributes[0],
+				),
+				array(
+					'height' => 150,
+					'width' => 150,
+					'name' => 'thumbnail',
+					'url' => $thumb_image_attributes[0],
+				),
+			),
+		);
+
+		$post = get_post( $attachment_id );
+		$formatted_post = $api->format_image_media_item( $post );
+
+		$this->assertEquals( $expected, $formatted_post );
 	}
 
 	public function testGetTaxonomyBadArrayParameters() {
