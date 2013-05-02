@@ -329,6 +329,12 @@ class APIv1Test extends WP_UnitTestCase {
 
 	}
 
+	public function testGetPostsForcePublicPostStatus() {
+
+
+
+	}
+
 	public function testPostMetaFeaturedID() {
 
 		$slim = new \Slim\Slim();
