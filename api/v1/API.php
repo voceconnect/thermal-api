@@ -157,13 +157,14 @@ class APIv1 extends API_Base {
 		$terms = array();
 
 		$request_args = $this->app->request()->get();
-		$args = $this->get_terms_args( $request_args );
+		$args = self::get_terms_args( $request_args );
 
 		if ( ! empty( $term_id ) ) {
 			$args['include'] = array( $term_id );
 		}
 
 		$wp_terms = get_terms( $name, $args );
+
 		if ( count( $wp_terms ) ) {
 			$found = (int)get_terms( $name, array_merge( $args, array( 'fields' => 'count' ) ) );
 		}
@@ -183,16 +184,15 @@ class APIv1 extends API_Base {
 
 	/**
 	 * @param array $request_args
-	 * @return WP_Query
+	 * @return array
 	 */
-	public function get_terms_args( $request_args = array() ) {
+	public static function get_terms_args( $request_args = array() ) {
 		$args = array();
 
 		$args['number'] = MAX_TERMS_PER_PAGE;
 		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
-			$args['number'] = min( (int)$request_args['number'], $args['number'] );
+			$args['number'] = min( (int)$request_args['per_page'], $args['number'] );
 		}
-		
 
 		if ( ! empty( $request_args['offset'] ) && $request_args['offset'] >= 1 ) {
 			$args['offset'] = (int)$request_args['offset'];
@@ -208,30 +208,29 @@ class APIv1 extends API_Base {
 			'slug',
 			'count',
 		);
-		if ( ! empty( $request_args['orderby'] ) && in_array( $request_args['orderby'], $valid_orderby ) ) {
-			$args['orderby'] = $request_args['orderby'];
+		if ( ! empty( $request_args['orderby'] ) && in_array( strtolower( $request_args['orderby'] ), $valid_orderby ) ) {
+			$args['orderby'] = strtolower( $request_args['orderby'] );
 		}
 
 		$valid_order = array(
-			'ASC',
-			'DESC',
+			'asc',
+			'desc',
 		);
-		if ( ! empty( $request_args['order'] ) && in_array( $request_args['order'], $valid_order ) ) {
-			$args['order'] = $request_args['order'];
+		if ( ! empty( $request_args['order'] ) && in_array( strtolower( $request_args['order'] ), $valid_order ) ) {
+			$args['order'] = strtolower( $request_args['order'] );
 		}
 
 
 		if ( ! empty( $request_args['include'] ) ) {
-			if ( is_integer( $request_args['include'] ) ) {
-				$args['in'] = $request_args['include'];
-			}
-			elseif ( is_array( $request_args['include'] ) ) {
-				$include = array_filter( array_map( function( $id ) {
+			$include = array_merge(
+				array_filter(
+					array_map( function( $id ) {
 						return (int)$id;
-					}, $request_args['include'] ) );
-				if ( count( $include ) ) {
-					$args['in'] = $include;
-				}
+					}, (array)$request_args['include'] )
+				)
+			);
+			if ( count( $include ) ) {
+				$args['include'] = $include;
 			}
 		}
 
@@ -239,7 +238,7 @@ class APIv1 extends API_Base {
 			$args['slug'] = $request_args['slug'];
 		}
 
-		if ( isset( $request_args['parent'] ) ) {
+		if ( isset( $request_args['parent'] ) && is_numeric( $request_args['parent'] ) ) {
 			$args['parent'] = (int)$request_args['parent'];
 		}
 
