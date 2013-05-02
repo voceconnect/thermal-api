@@ -44,6 +44,45 @@ class APIv1 extends API_Base {
 	 * @return WP_Query
 	 */
 	public function get_post_query( \Slim\Http\Request $request, $id = null ) {
+
+		$force_public_post_stati = function( $wp_query ){
+			$qv = &$wp_query->query_vars;
+
+			$invalid_status = false;
+
+			// verify post_status query var exists
+			if ( !isset( $qv['post_status'] ) )
+				$qv['post_status'] = '';
+
+			// gets rid of non public stati
+			if ( !empty( $qv['post_status'] ) ) {
+				$non_public_stati = array_values( get_post_stati( array( 'public' => false ) ) );
+
+				$qv['post_status'] = (array)$qv['post_status'];
+
+				// noting count before and after to check if a non valid status was specified
+				$before_count = count( $qv['post_status'] );
+				$qv['post_status'] = array_diff( (array)$qv['post_status'], $non_public_stati );
+				$after_count = count( $qv['post_status'] );
+
+				$invalid_status = ( $before_count !== $after_count );
+			}
+
+			// validates status is an actual status
+			$post_stati = get_post_stati();
+			$qv['post_status'] = array_intersect( $post_stati, (array)$qv['post_status'] );
+
+			// if no post status is set and and invalid status was specified
+			// we want to return no results
+			if ( empty( $qv['post_status'] ) && $invalid_status ) {
+				add_filter( 'posts_request', function() {
+					return '';
+				});
+			}
+		};
+
+		add_action('parse_query', $force_public_post_stati );
+
 		$args = $request->get();
 
 		$defaults = array(
@@ -52,7 +91,9 @@ class APIv1 extends API_Base {
 
 		if ( ! is_null( $id ) ) {
 			$args['p'] = (int)$id;
-			return new \WP_Query( array_merge( $defaults, $args ) );
+			$single_post_query = new \WP_Query( array_merge( $defaults, $args ) );
+			remove_action('parse_query', $force_public_post_stati );
+			return $single_post_query;
 		}
 
 		if ( isset( $args['taxonomy'] ) && is_array( $args['taxonomy'] ) ) {
@@ -130,7 +171,9 @@ class APIv1 extends API_Base {
 			$args['found_posts'] = true;
 		}
 
-		return new \WP_Query( array_merge( $defaults, $args ) );
+		$get_posts = new \WP_Query( array_merge( $defaults, $args ) );
+		remove_action('parse_query', $force_public_post_stati );
+		return $get_posts;
 	}
 
 	public function get_users( $id = null ) {
