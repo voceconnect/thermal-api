@@ -21,38 +21,15 @@ class APIv1 extends API_Base {
 
 	public function get_posts( $id = null ) {
 
-		$found = 0;
-		$posts = array();
-
-		$request = $this->app->request();
-		$args = $request->get();
-		$wp_query_posts = $this->get_post_query( $request, $id );
-
-		if ( $wp_query_posts->have_posts() ) {
-			$found = $wp_query_posts->found_posts;
-			foreach ( $wp_query_posts->posts as $query_post ) {
-				$posts[] = self::format_post( $query_post );
-			}
-		}
-
-		return ! empty( $args['include_found'] ) ? compact( 'found', 'posts' ) : compact( 'posts' );
-	}
-
-	/**
-	 * @param \Slim\Http\Request $request
-	 * @param int $id
-	 * @return WP_Query
-	 */
-	public function get_post_query( \Slim\Http\Request $request, $id = null ) {
-
-		$force_public_post_stati = function( $wp_query ){
+		$force_public_post_stati = function( $wp_query ) {
 			$qv = &$wp_query->query_vars;
 
 			$invalid_status = false;
 
 			// verify post_status query var exists
-			if ( !isset( $qv['post_status'] ) )
+			if ( !isset( $qv['post_status'] ) ) {
 				$qv['post_status'] = '';
+			}
 
 			// gets rid of non public stati
 			if ( !empty( $qv['post_status'] ) ) {
@@ -77,31 +54,125 @@ class APIv1 extends API_Base {
 			if ( empty( $qv['post_status'] ) && $invalid_status ) {
 				add_filter( 'posts_request', function() {
 					return '';
-				});
+				} );
 			}
 		};
 
-		add_action('parse_query', $force_public_post_stati );
+		$found = 0;
+		$include_found = false;
+		$wp_posts = array();
+		$posts = array();
 
-		$args = $request->get();
+		$request_args = $this->app->request()->get();
+		if ( ! empty( $id ) ) {
+			$request_args['p'] = (int)$id;
+		}
+		if ( ! empty( $request_args['include_found'] ) || ! empty( $request_args['paged'] ) ) {
+			$include_found = true;
+		}
+		if ( ! $include_found ) {
+			$request_args['no_found_rows'] = true;
+		}
+		$args = self::get_post_args( $request_args );
 
-		$defaults = array(
-			'found_posts' => false,
-		);
+		add_action( 'parse_query', $force_public_post_stati );
+		$wp_posts = new \WP_Query( $args );
+		remove_action( 'parse_query', $force_public_post_stati );
 
-		if ( ! is_null( $id ) ) {
-			$args['p'] = (int)$id;
-			$single_post_query = new \WP_Query( array_merge( $defaults, $args ) );
-			remove_action('parse_query', $force_public_post_stati );
-			return $single_post_query;
+		if ( $wp_posts->have_posts() ) {
+			$found = (int)$wp_posts->found_posts;
+			foreach ( $wp_posts->posts as $query_post ) {
+				$posts[] = self::format_post( $query_post );
+			}
 		}
 
-		if ( isset( $args['taxonomy'] ) && is_array( $args['taxonomy'] ) ) {
+		return $include_found ? compact( 'found', 'posts' ) : compact( 'posts' );
+	}
+
+	/**
+	 * @param array $request_args
+	 * @return array
+	 */
+	public static function get_post_args( $request_args = array() ) {
+		// Remove any args that are not allowed by the API
+		$request_args_whitelist = array(
+			'm',
+			'year',
+			'monthnum',
+			'w',
+			'day',
+			'hour',
+			'minute',
+			'second',
+			'before',
+			'after',
+			's',
+			'exact',
+			'sentence',
+			'cat',
+			'category_name',
+			'tag',
+			'taxonomy',
+			'paged',
+			'per_page',
+			'offset',
+			'orderby',
+			'order',
+			'author_name',
+			'author',
+			'post__in',
+			'p',
+			'name',
+			'pagename',
+			'attachment',
+			'attachment_id',
+			'subpost',
+			'subpost_id',
+			'post_type',
+			'post_parent__in',
+			'include_found',
+		);
+		foreach ( $request_args as $key => $val ) {
+			if ( ! in_array( $key, $request_args_whitelist ) ) {
+				unset( $request_args[$key] );
+			}
+		}
+
+		// Create export array by merging defaults with request args
+		$defaults = array(
+			'orderby' => 'date',
+			'order' => 'DESC',
+			'posts_per_page' => MAX_POSTS_PER_PAGE,
+		);
+		$args = wp_parse_args( $request_args, $defaults );
+
+		// Remove args merged in that we want to run some filters on
+		$args_cleanlist = array(
+			'after',
+			'before',
+			'taxonomy',
+			'author',
+			'cat',
+			'orderby',
+			'per_page',
+		);
+		foreach ( $args as $key => $val ) {
+			if ( in_array( $key, $args_cleanlist ) ) {
+				unset( $args[$key] );
+			}
+		}
+
+
+		if ( isset( $request_args['p'] ) ) {
+			$args['p'] = (int)$request_args['p'];
+		}
+
+		if ( isset( $request_args['taxonomy'] ) && is_array( $request_args['taxonomy'] ) ) {
 			$args['tax_query'] = array(
 				'relation' => 'OR',
 			);
 
-			foreach ( $args['taxonomy'] as $key => $value ) {
+			foreach ( $request_args['taxonomy'] as $key => $value ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => $key,
 					'terms' => is_array( $value ) ? $value : array(),
@@ -110,33 +181,33 @@ class APIv1 extends API_Base {
 			}
 		}
 
-		if ( isset( $args['after'] ) ) {
-			$date = date('Y-m-d', strtotime( $args['after'] ) );
+		if ( isset( $request_args['after'] ) ) {
+			$date = date('Y-m-d', strtotime( $request_args['after'] ) );
 			add_filter( 'posts_where', function( $where ) use ( $date ) {
 				$where .= " AND post_date > '$date'";
 				return $where;
 			} );
 		}
 
-		if ( isset( $args['before'] ) ) {
-			$date = date('Y-m-d', strtotime( $args['before'] ) );
+		if ( isset( $request_args['before'] ) ) {
+			$date = date('Y-m-d', strtotime( $request_args['before'] ) );
 			add_filter( 'posts_where', function( $where ) use ( $date ) {
 				$where .= " AND post_date < '$date'";
 				return $where;
 			} );
 		}
 
-		if ( isset( $args['author'] ) ) {
+		if ( isset( $request_args['author'] ) ) {
 			// WordPress only allows a single author to be excluded. We are not
 			// allowing any author exculsions to be accepted.
-			$r = array_filter( (array)$args['author'], function( $author ) {
+			$r = array_filter( (array)$request_args['author'], function( $author ) {
 				return $author > 0;
 			} );
 			$args['author'] = implode( ',', $r );
 		}
 
-		if ( isset( $args['cat'] ) ) {
-			$args['cat'] = implode( ',', (array)$args['cat'] );
+		if ( isset( $request_args['cat'] ) ) {
+			$args['cat'] = implode( ',', (array)$request_args['cat'] );
 		}
 
 		$valid_orders = array(
@@ -154,26 +225,18 @@ class APIv1 extends API_Base {
 			'post__in',
 		);
 
-		if ( isset( $args['orderby'] ) ) {
-			$r = array_filter( (array)$args['orderby'], function( $orderby ) use ($valid_orders) {
+		if ( isset( $request_args['orderby'] ) ) {
+			$r = array_filter( (array)$request_args['orderby'], function( $orderby ) use ( $valid_orders ) {
 				return in_array( $orderby, $valid_orders );
 			} );
 			$args['orderby'] = implode( ' ', $r );
 		}
 
-		if ( isset( $args['per_page'] ) ) {
-			if ( $args['per_page'] >= 1 and $args['per_page'] <= MAX_POSTS_PER_PAGE ) {
-				$args['posts_per_page'] = (int)$args['per_page'];
-			}
+		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
+			$args['posts_per_page'] = min( (int)$request_args['per_page'], $args['posts_per_page'] );
 		}
 
-		if ( isset ( $args['paged'] ) ) {
-			$args['found_posts'] = true;
-		}
-
-		$get_posts = new \WP_Query( array_merge( $defaults, $args ) );
-		remove_action('parse_query', $force_public_post_stati );
-		return $get_posts;
+		return $args;
 	}
 
 	public function get_users( $id = null ) {
