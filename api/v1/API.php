@@ -131,6 +131,7 @@ class APIv1 extends API_Base {
 			'post_type',
 			'post_parent__in',
 			'include_found',
+			'no_found_rows',
 		);
 		foreach ( $request_args as $key => $val ) {
 			if ( ! in_array( $key, $request_args_whitelist ) ) {
