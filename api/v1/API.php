@@ -309,7 +309,7 @@ class APIv1 extends API_Base {
 						'exclude' => $exclude,
 					) );
 					$attachments = get_children( $attachments_args );
-				} elseif ( $gallery_id !== $post->ID ) {
+				} else {
 					$attachments_args = array_merge( $attachments_args, array(
 						'post_parent' => $gallery_id,
 					) );
@@ -381,10 +381,7 @@ class APIv1 extends API_Base {
 
 		foreach ( $matches[3] as $gallery_args ) {
 			$attrs = shortcode_parse_atts( $gallery_args );
-
-			if ( $gallery = self::create_gallery_object( $attrs ) ) {
-				$gallery_data[] = $gallery;
-			}
+			$gallery_data[] = self::create_gallery_object( $attrs );
 		}
 
 		return $gallery_data;
