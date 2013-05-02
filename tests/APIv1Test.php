@@ -556,12 +556,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( 'category', $api_get_taxonomies[0]['name'] );
 	}
 
-	public function testTaxnomyFormat() {
-		\Slim\Environment::mock( array(
-			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO'      => WP_API_BASE . '/v1/taxonomies',
-			'QUERY_STRING'   => '',
-		) );
+	public function testTaxonomyFormat() {
 
 		$slim = new \Slim\Slim();
 
@@ -570,17 +565,17 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_taxonomy = $api->format_taxonomy( get_taxonomy( 'category' ) );
 
 		$expected = array(
-			'name' => 'category',
-			'post_types' => array(
+			'name'         => 'category',
+			'post_types'   => array(
 				'post',
 			),
 			'hierarchical' => true,
-			'query_var' => 'category_name',
-			'labels' => array(
-				'name' => 'Categories',
+			'query_var'    => 'category_name',
+			'labels'       => array(
+				'name'          => 'Categories',
 				'singular_name' => 'Category',
 			),
-			'meta' => array(),
+			'meta'         => new stdClass(),
 		);
 
 		$this->assertEquals( $expected, $formatted_taxonomy );

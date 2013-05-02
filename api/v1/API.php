@@ -184,17 +184,15 @@ class APIv1 extends API_Base {
 	 */
 	public function format_taxonomy( $taxonomy ) {
 		return array(
-			'name' => $taxonomy->name,
-			'post_types' => $taxonomy->object_type,
+			'name'         => $taxonomy->name,
+			'post_types'   => $taxonomy->object_type,
 			'hierarchical' => $taxonomy->hierarchical,
-			'query_var' => $taxonomy->query_var,
-			'labels' => array(
-				'name' => $taxonomy->labels->name,
+			'query_var'    => $taxonomy->query_var,
+			'labels'       => array(
+				'name'          => $taxonomy->labels->name,
 				'singular_name' => $taxonomy->labels->singular_name,
 			),
-			'meta' => array(
-
-			),
+			'meta'         => (object)array(),
 		);
 	}
 
