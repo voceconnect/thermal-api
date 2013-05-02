@@ -418,4 +418,166 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	public function testGetTaxonomyBadArrayParameters() {
+		$test_args = array(
+			'post_type' => array( 'foo' )
+		);
+
+		$query_string = build_query( $test_args );
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO'      => WP_API_BASE . '/v1/taxonomies',
+			'QUERY_STRING'   => $query_string,
+		) );
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$api_get_taxonomies = $api->get_taxonomies();
+
+		$this->assertArrayHasKey( 'taxonomies', $api_get_taxonomies );
+
+		$api_get_taxonomies = array_shift( $api_get_taxonomies );
+
+		$this->assertCount( 0, $api_get_taxonomies );
+	}
+
+	public function testGetTaxonomiesArrayParameters() {
+
+		$test_args = array(
+			'in'        => array( 'category', 'post_tag' ),
+			'post_type' => array( 'post', 'page' )
+		);
+
+		$query_string = build_query( $test_args );
+
+		\Slim\Environment::mock( array(
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO'      => WP_API_BASE . '/v1/taxonomies',
+			'QUERY_STRING'   => $query_string,
+        ));
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$api_get_taxonomies = $api->get_taxonomies();
+
+		$this->assertArrayHasKey( 'taxonomies', $api_get_taxonomies );
+
+		$api_get_taxonomies = array_shift( $api_get_taxonomies );
+
+		// Checking all results for invalid values
+		$name_not_in = false;
+		$post_type_not_in = false;
+		foreach ( $api_get_taxonomies as $taxonomy_result ) {
+			if ( !in_array( $taxonomy_result['name'], $test_args['in'] ) ){
+				$name_not_in = true;
+			}
+			if ( 0 === count( array_intersect( $test_args['post_type'], $taxonomy_result['post_types'] ) ) ) {
+				$post_type_not_in = true;
+			}
+		}
+
+		// Checking taxonomy names in results
+		$this->assertFalse( $name_not_in );
+
+		// Checking taxonomy post type in results
+		$this->assertFalse( $post_type_not_in );
+	}
+
+	public function testGetTaxonomiesStringParameters() {
+
+		$test_args = array(
+			'in'        => 'category',
+			'post_type' => 'post'
+		);
+
+		$query_string = build_query( $test_args );
+
+		\Slim\Environment::mock( array(
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO'      => WP_API_BASE . '/v1/taxonomies',
+			'QUERY_STRING'   => $query_string,
+        ));
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$api_get_taxonomies = $api->get_taxonomies();
+
+		$this->assertArrayHasKey( 'taxonomies', $api_get_taxonomies );
+
+		$api_get_taxonomies = array_shift( $api_get_taxonomies );
+
+		// Checking all results for invalid values
+		$name_not_in = false;
+		$post_type_not_in = false;
+		foreach ( $api_get_taxonomies as $taxonomy_result ) {
+			if ( $taxonomy_result['name'] !== $test_args['in'] ){
+				$name_not_in = true;
+			}
+			if ( !in_array( $test_args['post_type'], $taxonomy_result['post_types'] ) ) {
+				$post_type_not_in = true;
+			}
+		}
+
+		// Checking taxonomy names in results
+		$this->assertFalse( $name_not_in );
+
+		// Checking taxonomy post type in results
+		$this->assertFalse( $post_type_not_in );
+	}
+
+	public function testGetTaxonomy() {
+
+		\Slim\Environment::mock( array(
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO'      => WP_API_BASE . '/v1/taxonomies',
+			'QUERY_STRING'   => '',
+        ));
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$api_get_taxonomies = $api->get_taxonomies('category');
+
+		$this->assertArrayHasKey( 'taxonomies', $api_get_taxonomies );
+
+		$api_get_taxonomies = array_shift( $api_get_taxonomies );
+
+		// Checking only 1 result was returned
+		$this->assertCount( 1, $api_get_taxonomies );
+
+		$this->assertEquals( 'category', $api_get_taxonomies[0]['name'] );
+	}
+
+	public function testTaxonomyFormat() {
+
+		$slim = new \Slim\Slim();
+
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$formatted_taxonomy = $api->format_taxonomy( get_taxonomy( 'category' ) );
+
+		$expected = array(
+			'name'         => 'category',
+			'post_types'   => array(
+				'post',
+			),
+			'hierarchical' => true,
+			'query_var'    => 'category_name',
+			'labels'       => array(
+				'name'          => 'Categories',
+				'singular_name' => 'Category',
+			),
+			'meta'         => new stdClass(),
+		);
+
+		$this->assertEquals( $expected, $formatted_taxonomy );
+	}
 }
