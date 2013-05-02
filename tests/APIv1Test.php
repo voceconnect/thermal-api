@@ -419,46 +419,79 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 *
+	 */
+	public function _user_args() {
+		return array(
+			array( 'offset', 
+				array( 0, 0, 0, 5, 10, 60 ),
+				array(
+					'paged'    => array(  0, -1, 0, 2, 2, 11 ),
+					'per_page' => array( -1,  0, 5, 5, 50, 6 ),
+				),
+			),
+			array( 'per_page', 
+				array( 10, 10, 5, 5, 10, 5, 5, 10 ),
+				array(
+					'per_page' => array( -1, 0, 5, 5, 50, 5, 5, 'foo' ),
+				),
+			),
+			array( 'orderby',
+				array( 'display_name', 'post_count', 'display_name' ),
+				array(
+					'orderby' => array( 'display_name', 'POST_COUNT', 'foo' ),
+				),
+			),
+			array( 'order',
+				array( 'desc', 'asc', 'desc' ),
+				array(
+					'order' => array( 'desc', 'ASC', 'foo' ),
+				),
+			),
+			array( 'in',
+				array( array( 1 ), array( 1, 2, 3 ) ),
+				array(
+					'in' => array( 1, array( 1, 2, 3 ) ),
+				)
+			),
+			array( 'offset',
+				array( 0, 0, 0, 0, 10, 5, 20 ),
+				array(
+					'offset' => array( 0, 0, 0, 0, 10, 5, 20 ),
+				),
+			),
+			array( 'include_found',
+				array( true, true, true ),
+				array(
+					'paged' => array( -1, 0, 1, 5 ),
+				),
+			),
+			array( 'include_found',
+				array( true, false, false ),
+				array(
+					'include_found' => array( true, false, 'foo' ),
+				),
+			),
+		);
+	}
+
+	/**
 	 * Test that the parameters that are passted to the get_users function
 	 * are correct.
 	 * @group Users
+	 * @dataProvider _user_args
+	 * @param $param
+	 * @param $expected
+	 * @param $args
 	 */
-	public function testGetUserArgs() {
-		$args = array(
-			'paged' => array( 0, 0, -1, 0, 2, 2, 5 ),
-			'per_page' => array( -1, 0, 5, 5, 50, 5, 5 ),
-			'orderby' => array('display_name', 'POST_COUNT', 'foo' ),
-			'order' => array( 'desc', 'ASC', 'foo' ),
-			'in' => array( 1, array( 1, 2, 3 ) ),
-			'offset' => array( 0, 0, 0, 0, 10, 5, 20 ),
-			'include_found' => array( true, false, 'foo' ),
-		);
-
-		$expected = array(
-			'per_page' => array( 10, 10, 5, 5, 10, 5, 5 ),
-			'orderby' => array('display_name', 'post_count', 'display_name' ),
-			'order' => array( 'desc', 'asc', 'desc' ),
-			'in' => array( array( 1 ), array( 1, 2, 3 ) ),
-			'offset' => array( 0, 0, 0, 0, 10, 5, 20 ),
-			'include_found' => array( true, false, false ),
-		);
-
-		foreach ( $args as $param => $values ) {
-			for ( $i = 0; $i < count( $values ); $i++ ) {
-				if ( 'paged' === $param ) {
-					$actual = \WP_JSON_API\APIv1::get_user_args( array(
-						'paged' => $args['paged'][$i],
-						'per_page' => $args['per_page'][$i],
-					) );
-					$this->assertEquals( $actual['offset'], $args['offset'][$i] );
-					$this->assertTrue( $actual['include_found'] );
-				} else {
-					$actual = \WP_JSON_API\APIv1::get_user_args( array(
-						$param => $values[$i]
-					) );
-					$this->assertEquals( $expected[$param][$i], $actual[$param] );
-				}
+	public function testGetUserArgs( $param, $expected, $args ) {
+		for ( $i = 0; $i < count( $expected ); $i++ ) {
+			$_args = array();
+			foreach ( $args as $key => $value ) {
+				$_args[$key] = $value[$i];
 			}
+			$actual = \WP_JSON_API\APIv1::get_user_args( $_args );
+			$this->assertEquals( $expected[$i], $actual[$param] );			
 		}
 	}
 
