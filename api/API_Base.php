@@ -59,7 +59,11 @@ abstract class API_Base {
 			$data = call_user_func_array( $callback, func_get_args() );
 
 			$res = $app->response();
-			$app->contentType( 'application/json' );
+            $res->header('Access-Control-Allow-Origin', '*');
+            if ( isset( $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] ) ){
+                $res->header('Access-Control-Allow-Headers', $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+            }
+			$app->contentType( 'application/json; charset=utf-8;' );
 			$res->write(json_encode($data), true);
 		});
 	}
