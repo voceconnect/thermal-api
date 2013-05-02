@@ -2,8 +2,13 @@
 
 namespace WP_JSON_API;
 
-if ( ! defined( 'MAX_POSTS_PER_PAGE' ) )
+if ( ! defined( 'MAX_POSTS_PER_PAGE' ) ) {
 	define( 'MAX_POSTS_PER_PAGE', 10 );
+}
+
+if ( ! defined( 'MAX_TERMS_PER_PAGE' ) ) {
+	define( 'MAX_TERMS_PER_PAGE', 10 );
+}
 
 require_once( __DIR__ . '/../API_Base.php' );
 
@@ -20,7 +25,6 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_posts( $id = null ) {
-
 		$found = 0;
 		$posts = array();
 
@@ -28,8 +32,12 @@ class APIv1 extends API_Base {
 		$args = $request->get();
 		$wp_query_posts = $this->get_post_query( $request, $id );
 
+		if ( ! empty( $args['paged'] ) ) {
+			$args['include_found'] = true;
+		}
+
 		if ( $wp_query_posts->have_posts() ) {
-			$found = $wp_query_posts->found_posts;
+			$found = (int)$wp_query_posts->found_posts;
 			foreach ( $wp_query_posts->posts as $query_post ) {
 				$posts[] = $this->format_post( $query_post );
 			}
@@ -167,12 +175,9 @@ class APIv1 extends API_Base {
 			}
 		}
 
-		if ( isset ( $args['paged'] ) ) {
-			$args['found_posts'] = true;
-		}
-
 		$get_posts = new \WP_Query( array_merge( $defaults, $args ) );
 		remove_action('parse_query', $force_public_post_stati );
+
 		return $get_posts;
 	}
 
@@ -191,7 +196,108 @@ class APIv1 extends API_Base {
 	}
 
 	public function get_terms( $name, $term_id = null ) {
-		return WP_API_BASE . '/taxonomies/' . $name . '/terms/' . $term_id;
+		$found = 0;
+		$wp_terms = array();
+		$terms = array();
+
+		$request_args = $this->app->request()->get();
+		$args = self::get_terms_args( $request_args );
+
+		if ( ! empty( $term_id ) ) {
+			$args['include'] = array( $term_id );
+		}
+
+		$wp_terms = get_terms( $name, $args );
+
+		if ( count( $wp_terms ) ) {
+			$found = (int)get_terms( $name, array_merge( $args, array( 'fields' => 'count' ) ) );
+		}
+
+		if ( ! empty( $request_args['paged'] ) ) {
+			$request_args['include_found'] = true;
+		}
+
+		if ( $found ) {
+			foreach ( $wp_terms as $term ) {
+				$terms[] = $this->format_term( $term );
+			}
+		}
+
+		return ! empty( $request_args['include_found'] ) ? compact( 'found', 'terms' ) : compact( 'terms' );
+	}
+
+	/**
+	 * @param array $request_args
+	 * @return array
+	 */
+	public static function get_terms_args( $request_args = array() ) {
+		$args = array();
+
+		$args['number'] = MAX_TERMS_PER_PAGE;
+		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
+			$args['number'] = min( (int)$request_args['per_page'], $args['number'] );
+		}
+
+		if ( ! empty( $request_args['offset'] ) && $request_args['offset'] >= 1 ) {
+			$args['offset'] = (int)$request_args['offset'];
+		}
+
+		if ( ! empty( $request_args['paged'] ) && $request_args['paged'] >= 1 ) {
+			$args['offset'] = ( (int)$request_args['paged'] - 1 ) * $args['number'];
+		}
+
+
+		$valid_orderby = array(
+			'name',
+			'slug',
+			'count',
+		);
+		if ( ! empty( $request_args['orderby'] ) && in_array( strtolower( $request_args['orderby'] ), $valid_orderby ) ) {
+			$args['orderby'] = strtolower( $request_args['orderby'] );
+		}
+
+		$valid_order = array(
+			'asc',
+			'desc',
+		);
+		if ( ! empty( $request_args['order'] ) && in_array( strtolower( $request_args['order'] ), $valid_order ) ) {
+			$args['order'] = strtolower( $request_args['order'] );
+		}
+
+
+		if ( ! empty( $request_args['include'] ) ) {
+			$include = array_merge(
+				array_filter(
+					array_map( function( $id ) {
+						return (int)$id;
+					}, (array)$request_args['include'] )
+				)
+			);
+			if ( count( $include ) ) {
+				$args['include'] = $include;
+			}
+		}
+
+		if ( ! empty( $request_args['slug'] ) ) {
+			$args['slug'] = $request_args['slug'];
+		}
+
+		if ( isset( $request_args['parent'] ) && is_numeric( $request_args['parent'] ) ) {
+			$args['parent'] = (int)$request_args['parent'];
+		}
+
+		if ( isset( $request_args['exclude_empty'] ) ) {
+			if ( ! $request_args['exclude_empty'] || 'false' === strtolower( $request_args['exclude_empty'] ) ) {
+				$args['hide_empty'] = false;
+			}
+		}
+
+		if ( ! empty( $request_args['pad_count'] ) && 'false' !== strtolower( $request_args['pad_count'] ) ) {
+			$args['pad_count'] = true;
+		}
+
+
+		return $args;
 	}
 
 	/**
@@ -312,6 +418,27 @@ class APIv1 extends API_Base {
 			'mime_type' => $post->post_mime_type, 
 			'alt_text'  => get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
 			'sizes'     => $sizes,
+		);
+	}
+
+	/**
+	 * @param $term
+	 * @return Array
+	 */
+	public static function format_term( $term ) {
+		return array(
+			'id'                   => (int)$term->term_id,
+			'id_str'               => $term->term_id,
+			'term_taxonomy_id'     => (int)$term->term_taxonomy_id,
+			'term_taxonomy_id_str' => $term->term_taxonomy_id,
+			'parent'               => (int)$term->parent,
+			'parent_str'           => $term->parent,
+			'name'                 => $term->name,
+			'slug'                 => $term->slug,
+			'taxonomy'             => $term->taxonomy,
+			'description'          => $term->description,
+			'post_count'           => $term->count,
+			'meta'                 => array(),
 		);
 	}
 

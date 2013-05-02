@@ -10,23 +10,21 @@ require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
 class APIv1Test extends WP_UnitTestCase {
 
 	protected function _upload_file( $filename ) {
-
-		$contents = file_get_contents($filename);
-
-		$upload = wp_upload_bits(basename($filename), null, $contents);
+		$contents = file_get_contents( $filename );
+		$upload = wp_upload_bits( basename( $filename ), null, $contents );
 
 		return $upload;
 	}
 
 	protected function _make_attachment($upload, $parent_post_id = -1 ) {
-
 		$type = '';
-		if ( !empty($upload['type']) ) {
+		if ( ! empty( $upload['type'] ) ) {
 			$type = $upload['type'];
 		} else {
 			$mime = wp_check_filetype( $upload['file'] );
-			if ($mime)
+			if ( $mime ) {
 				$type = $mime['type'];
+			}
 		}
 
 		$attachment = array(
@@ -43,18 +41,9 @@ class APIv1Test extends WP_UnitTestCase {
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
 
 		return $id;
-
 	}
 
-	public function setUp() {
-
-		\Slim\Slim::registerAutoloader();
-
-	}
-
-
-	public function getPostsSetUp( $query_args = array(), $id = null ) {
-
+	public function _get_posts_config( $query_args = array(), $id = null ) {
 		$query_string = build_query( $query_args );
 
 		\Slim\Environment::mock( array(
@@ -64,10 +53,19 @@ class APIv1Test extends WP_UnitTestCase {
 		));
 
 		$app = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $app );
 
 		return $api->get_post_query( $app->request(), $id );
+	}
+
+	public function setUp() {
+		\Slim\Slim::registerAutoloader();
+
+		add_filter( 'pre_option_permalink_structure', function() {
+			return '';
+		});
+
+		add_filter( 'pre_option_gmt_offset', '__return_zero' );
 	}
 
 	public function testGetPosts() {
@@ -99,10 +97,23 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'posts', $data );
 		$this->assertArrayHasKey( 'found', $data );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'QUERY_STRING' => 'paged=1',
+		));
+
+		$app = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $app );
+		$data = $api->get_posts();
+
+		$this->assertArrayHasKey( 'posts', $data );
+		$this->assertArrayHasKey( 'found', $data );
 	}
 
 	public function testGetPost() {
-
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
 			'post_title'            => 'testGetPost',
@@ -139,7 +150,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 	// All parameters are correct, using arrays for parameters when possible
 	public function testGetPostQuery() {
-
 		$test_args = array(
 			'taxonomy' => array(
 				'post_tag'  => array( 1, 2, 3 )
@@ -153,7 +163,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'paged'    => 1 // also should set 'found_posts'
 		);
 
-		$api_get_posts = $this->getPostsSetUp( $test_args );
+		$api_get_posts = $this->_get_posts_config( $test_args );
 
 		$query_vars = $api_get_posts->query_vars;
 
@@ -201,8 +211,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 		//Paged
 		$this->assertEquals( $query_vars['paged'], $test_args['paged'] );
-		// also verify that found posts is set, since paged is set
-		$this->assertEquals( $query_vars['found_posts'], true );
 
 	}
 
@@ -214,7 +222,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'orderby' => 'author',
 		);
 
-		$api_get_posts = $this->getPostsSetUp( $test_args );
+		$api_get_posts = $this->_get_posts_config( $test_args );
 
 		$query_vars = $api_get_posts->query_vars;
 
@@ -248,7 +256,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'per_page' => 20,                      // MAX_POSTS_PER_PAGE set to 10 in API
 		);
 
-		$api_get_posts = $this->getPostsSetUp( $test_args );
+		$api_get_posts = $this->_get_posts_config( $test_args );
 
 		$query_vars = $api_get_posts->query_vars;
 
@@ -266,7 +274,6 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostFormat() {
-
 		$blank_permalink = function() {
 			return '';
 		};
@@ -275,7 +282,6 @@ class APIv1Test extends WP_UnitTestCase {
 		add_filter( 'pre_option_gmt_offset', '__return_zero' );
 
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -330,9 +336,7 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostMetaFeaturedID() {
-
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -352,7 +356,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$filename = __DIR__ . '/data/250x250.png';
 		$upload = $this->_upload_file( $filename );
-		$attachment_id = $this->_make_attachment($upload, $test_post_id);
+		$attachment_id = $this->_make_attachment( $upload, $test_post_id );
 
 		set_post_thumbnail( $test_post_id, $attachment_id );
 
@@ -366,7 +370,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testFormatImageMediaItem() {
 		$slim = new \Slim\Slim();
-
 		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
@@ -416,6 +419,344 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_post = $api->format_image_media_item( $post );
 
 		$this->assertEquals( $expected, $formatted_post );
+	}
+
+	public function testGetTermsArgs() {
+		$test_args = array( 'invalid_key' => true );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['invalid_key'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+
+		$test_args = array( 'per_page' => -5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+
+		$test_args = array( 'per_page' => 0 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+
+		$test_args = array( 'per_page' => 5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 5, $args['number'] );
+
+		$test_args = array( 'per_page' => 15 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+
+		$test_args = array( 'per_page' => 'five' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( MAX_TERMS_PER_PAGE, $args['number'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['offset'] );
+
+		$test_args = array( 'offset' => -5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['offset'] );
+
+		$test_args = array( 'offset' => 0 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['offset'] );
+
+		$test_args = array( 'offset' => 5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 5, $args['offset'] );
+
+		$test_args = array( 'offset' => 'five' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['offset'] );
+
+
+		$test_args = array( 'paged' => -5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['offset'] );
+
+		$test_args = array( 'paged' => 0 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['offset'] );
+
+		$test_args = array( 'paged' => 1 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 0, $args['offset'] );
+
+		$test_args = array( 'paged' => 2 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 10, $args['offset'] );
+
+		$test_args = array( 'paged' => 'five' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['offset'] );
+
+
+		$test_args = array( 'per_page' => 3, 'paged' => 1 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 0, $args['offset'] );
+
+		$test_args = array( 'per_page' => 3, 'paged' => 5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 12, $args['offset'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['orderby'] );
+
+		$test_args = array( 'orderby' => 'slug' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 'slug', $args['orderby'] );
+
+		$test_args = array( 'orderby' => 'SLUG' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 'slug', $args['orderby'] );
+
+		$test_args = array( 'orderby' => 'invalid' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['orderby'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['order'] );
+
+		$test_args = array( 'order' => 'desc' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 'desc', $args['order'] );
+
+		$test_args = array( 'order' => 'DESC' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 'desc', $args['order'] );
+
+		$test_args = array( 'order' => 'invalid' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['order'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['include'] );
+
+		$test_args = array( 'include' => 5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( array( 5 ), $args['include'] );
+
+		$test_args = array( 'include' => 'fail' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['include'] );
+
+		$test_args = array( 'include' => array( 5 ) );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( array( 5 ), $args['include'] );
+
+		$test_args = array( 'include' => array( 5, 10, 15 ) );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( array( 5, 10, 15 ), $args['include'] );
+
+		$test_args = array( 'include' => array( 5, 'fail', 15 ) );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( array( 5, 15 ), $args['include'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['slug'] );
+
+		$test_args = array( 'slug' => 'anything' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 'anything', $args['slug'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['parent'] );
+
+		$test_args = array( 'parent' => 5 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertEquals( 5, $args['parent'] );
+
+		$test_args = array( 'parent' => 'fail' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['parent'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['hide_empty'] );
+
+		$test_args = array( 'exclude_empty' => 'true' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['hide_empty'] );
+
+		$test_args = array( 'exclude_empty' => 'anything' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['hide_empty'] );
+
+		$test_args = array( 'exclude_empty' => 'false' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertFalse( $args['hide_empty'] );
+
+		$test_args = array( 'exclude_empty' => 'FALSE' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertFalse( $args['hide_empty'] );
+
+		$test_args = array( 'exclude_empty' => 0 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertFalse( $args['hide_empty'] );
+
+		$test_args = array( 'exclude_empty' => '0' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertFalse( $args['hide_empty'] );
+
+
+		$args = \WP_JSON_API\APIv1::get_terms_args();
+		$this->assertNull( $args['pad_count'] );
+
+		$test_args = array( 'pad_count' => 'true' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertTrue( $args['pad_count'] );
+
+		$test_args = array( 'pad_count' => 'anything' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertTrue( $args['pad_count'] );
+
+		$test_args = array( 'pad_count' => 'false' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['pad_count'] );
+
+		$test_args = array( 'pad_count' => 'FALSE' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['pad_count'] );
+
+		$test_args = array( 'pad_count' => 0 );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['pad_count'] );
+
+		$test_args = array( 'pad_count' => '0' );
+		$args = \WP_JSON_API\APIv1::get_terms_args( $test_args );
+		$this->assertNull( $args['pad_count'] );
+	}
+
+	public function testGetTerms() {
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms/1',
+			'QUERY_STRING' => '',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category', 1 );
+
+		$this->assertArrayNotHasKey( 'found', $terms );
+		$this->assertGreaterThan( 0, count( $terms['terms'] ) );
+
+
+		add_filter( 'get_terms_fields', function( $selects, $args ) {
+			if ( 'count' == $args['fields'] ) {
+				return array( '3 AS count' );
+			}
+
+			return $selects;
+		}, 999, 2 );
+
+		add_filter( 'get_terms', function( $terms, $taxonomies, $args ) {
+			return array(
+				(object)array(
+					'term_id' => '2',
+					'name' => 'Test Cat 1',
+					'slug' => 'test-cat-1',
+					'term_group' => '0',
+					'term_taxonomy_id' => '2',
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => '0',
+					'count' => '0',
+				),
+				(object)array(
+					'term_id' => '6',
+					'name' => 'Test Cat 2',
+					'slug' => 'test-cat-2',
+					'term_group' => '0',
+					'term_taxonomy_id' => '6',
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => '0',
+					'count' => '0',
+				),
+				(object)array(
+					'term_id' => '7',
+					'name' => 'Test Cat 3',
+					'slug' => 'test-cat-3',
+					'term_group' => '0',
+					'term_taxonomy_id' => '7',
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => '2',
+					'count' => '0',
+				)
+			);
+		}, 999, 3 );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms',
+			'QUERY_STRING' => 'include_found=true',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category' );
+
+		$this->assertEquals( 3, $terms['found'] );
+		$this->assertEquals( 3, count( $terms['terms'] ) );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms',
+			'QUERY_STRING' => 'paged=1',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category' );
+
+		$this->assertEquals( 3, $terms['found'] );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms',
+			'QUERY_STRING' => '',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category' );
+
+		$this->assertArrayNotHasKey( 'found', $terms );
+	}
+
+	public function testFormatTerm() {
+		$expected = array(
+			'id' => 1,
+			'id_str' => '1',
+			'term_taxonomy_id' => 1,
+			'term_taxonomy_id_str' => '1',
+			'parent' => 0,
+			'parent_str' => '0',
+			'name' => 'Uncategorized',
+			'slug' => 'uncategorized',
+			'taxonomy' => 'category',
+			'description' => '',
+			'post_count' => '4',
+			'meta' => array(),
+		);
+		$actual = \WP_JSON_API\APIv1::format_term( get_term( 1, 'category' ) );
+
+		$this->assertEquals( $actual, $expected );
 	}
 
 }
