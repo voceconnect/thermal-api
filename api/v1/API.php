@@ -515,24 +515,131 @@ class APIv1 extends API_Base {
 	}
 
 	/**
-	 * Format the output of a post.
-	 * @param \WP_Post $post
-	 * @return array Formatted post data
+	 * @param $post
+	 * @param $media
+	 * @return array
 	 */
-	public static function format_post( \WP_Post $post ) {
-		$GLOBALS['post'] = $post;
+	public static function get_gallery_meta( $post, $media ) {
+		$gallery_meta = array();
 
-		$attachments = get_posts( array(
-			'post_parent' => $post->ID,
-			'post_mime_type' => 'image',
-			'post_type' => 'attachment',
-		) );
-		$media = array();
-		foreach ( $attachments as $attachment ) {
-			$media[] = self::format_image_media_item( $attachment );
+		// check post content for gallery shortcode
+		if ( $gallery_data = self::get_post_galleries( $post ) ) {
+
+			foreach ( $gallery_data as $gallery ) {
+
+				$gallery_id = empty( $gallery['id'] ) ? $post->ID : intval( $gallery['id'] );
+				$order      = strtoupper( $gallery['order'] );
+				$orderby    = implode( ' ', $gallery['orderby'] );
+				$include    = empty( $gallery['include'] ) ? array() : $gallery['include'];
+				$exclude    = empty( $gallery['exclude'] ) ? array() : $gallery['exclude'];
+
+				if ( ! empty( $order ) && ( 'RAND' == $order ) ) {
+					$orderby = 'none';
+				}
+
+				$attachments = self::get_gallery_attachments( $gallery_id, $order, $orderby, $include, $exclude );
+
+				$ids = array();
+				foreach ( $attachments as $attachment ) {
+					$media[$attachment->ID] = self::format_image_media_item( $attachment );
+					$ids[] = $attachment->ID;
+				}
+
+				$gallery_meta[] = array(
+					'ids'     => $ids,
+					'orderby' => $gallery['orderby'],
+					'order'   => $order,
+				);
+			}
 		}
 
+		return array( 'gallery_meta' => $gallery_meta, 'media' => $media );
+	}
+
+	/**
+	 * @param $gallery_id
+	 * @param $order
+	 * @param $orderby
+	 * @param $include
+	 * @param $exclude
+	 * @return array|bool
+	 */
+	public static function get_gallery_attachments( $gallery_id, $order, $orderby, $include, $exclude ) {
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'order'          => $order,
+			'orderby'        => $orderby,
+		);
+
+		$attachments = array();
+
+		if ( ! empty( $include ) ) {
+
+			$args['include'] = $include;
+			$_attachments    = get_posts( $args );
+
+			foreach ( $_attachments as $key => $val ) {
+				$attachments[$val->ID] = $_attachments[$key];
+			}
+
+		} else if ( ! empty( $exclude ) ) {
+
+			$args = array_merge( $args, array(
+				'post_parent' => $gallery_id,
+				'exclude'     => $exclude,
+			) );
+			$attachments = get_children( $args );
+
+		} else {
+
+			$args['post_parent'] = $gallery_id;
+			$attachments         = get_children( $args );
+
+		}
+
+		return $attachments;
+
+	}
+
+	/**
+	 * Format post data
+	 * @param \WP_Post $post
+	 * @return Array Formatted post data
+	 */
+	public function format_post( \WP_Post $post ) {
+		$GLOBALS['post'] = $post;
 		setup_postdata( $post );
+
+		$media = array();
+		$meta = array();
+
+		// get direct post attachments
+		$attachments = get_posts( array(
+			'post_parent'    => $post->ID,
+			'post_mime_type' => 'image',
+			'post_type'      => 'attachment',
+		) );
+		foreach ( $attachments as $attachment ) {
+			$media[$attachment->ID] = self::format_image_media_item( $attachment );
+		}
+
+		// get gallery meta
+		$gallery_meta = self::get_gallery_meta( $post, $media );
+		if ( !empty( $gallery_meta['gallery_meta'] ) ) {
+			$meta['gallery'] = $gallery_meta['gallery_meta'];
+			$media = $gallery_meta['media'];
+		}
+
+		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
+			$meta['featured_image'] = (int)$thumbnail_id;
+		}
+
+		remove_filter( 'the_content', 'do_shortcode', 11 );
+		remove_filter( 'the_content', 'convert_smilies' );
+		remove_filter( 'the_content', 'shortcode_unautop' );
+
 		$data = array(
 			'id'               => $post->ID,
 			'id_str'           => (string)$post->ID,
@@ -554,17 +661,90 @@ class APIv1 extends API_Base {
 			'content'          => apply_filters( 'the_content', get_the_content() ),
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
-			'meta'             => (object)array(),
-			'media'            => $media,
+			'meta'             => (object)$meta,
+			'media'            => array_values( $media ),
 		);
-
-		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
-			$data['meta']->featured_image = (int)$thumbnail_id;
-		}
 
 		wp_reset_postdata();
 
 		return $data;
+	}
+
+	public static function get_post_galleries( \WP_Post $post ) {
+		global $shortcode_tags;
+
+		if ( !isset( $shortcode_tags['gallery'] ) )
+			return array();
+
+		// setting shortcode tags to 'gallery' only
+		$backup_shortcode_tags = $shortcode_tags;
+		$shortcode_tags        = array( 'gallery' => $shortcode_tags['gallery'] );
+		$pattern               = get_shortcode_regex();
+		$shortcode_tags        = $backup_shortcode_tags;
+
+		$matches = array();
+		preg_match_all( "/$pattern/s", $post->post_content, $matches );
+
+		$gallery_data = array();
+		foreach ( $matches[3] as $gallery_args ) {
+			$attrs          = shortcode_parse_atts( $gallery_args );
+			$gallery_data[] = self::parse_gallery_attrs( $attrs );
+		}
+
+		return $gallery_data;
+	}
+
+	public static function parse_gallery_attrs( $gallery_attrs ) {
+
+		$clean_val = function( $val ) {
+			$trimmed = trim( $val );
+			return ( is_numeric( $trimmed ) ? (int)$trimmed : $trimmed );
+		};
+
+		$params = array(
+			'id',
+			'ids',
+			'orderby',
+			'order',
+			'include',
+			'exclude',
+		);
+		$array_params = array(
+			'ids',
+			'orderby',
+			'include',
+			'exclude',
+		);
+
+		if ( empty( $gallery_attrs['order'] ) ) {
+			$gallery_attrs['order'] = 'ASC';
+		}
+		if ( ! empty( $gallery_attrs['ids'] ) ) {
+			// 'ids' is explicitly ordered, unless you specify otherwise.
+			if ( empty( $gallery_attrs['orderby'] ) ) {
+				$gallery_attrs['orderby'] = 'post__in';
+			}
+			$gallery_attrs['include'] = $gallery_attrs['ids'];
+		}
+		if ( empty( $gallery_attrs['orderby'] ) ) {
+			$gallery_attrs['orderby'] = 'menu_order, ID';
+		}
+
+		$gallery = array();
+		foreach ( $params as $param ) {
+			if ( !empty( $gallery_attrs[$param] ) ) {
+				if ( in_array( $param, $array_params ) ) {
+					$gallery_param_array = explode( ',', $gallery_attrs[$param] );
+					$gallery_param_array = array_map( $clean_val, $gallery_param_array );
+					$gallery[$param] = $gallery_param_array;
+				}
+				else {
+					$gallery[$param] = $clean_val( $gallery_attrs[$param] );
+				}
+			}
+		}
+
+		return $gallery;
 	}
 
 	/**

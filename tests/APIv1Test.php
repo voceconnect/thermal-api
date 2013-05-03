@@ -489,6 +489,375 @@ class APIv1Test extends WP_UnitTestCase {
 		self::_delete_attachment( $attachment_id );
 	}
 
+	public function testPostMetaGallery() {
+		$all_attachments = array();
+
+		// Single post gallery with/without sort parameters
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery order="DESC" orderby="ID"]
+POSTCONTENT;
+
+		$test_post_data_1 = self::_insert_post(
+			array(
+				'post_content' => $post_content,
+			),
+			array( 
+				'100x200.png',
+				'100x300.png',
+				'100x400.png',
+			)
+		);
+		$test_post_id_1 = $test_post_data_1['post_id'];
+		$attachment_ids_1 = $test_post_data_1['attachment_ids'];
+
+		$all_attachments = array_unique( array_merge( $all_attachments, $attachment_ids_1 ) );
+
+		$expected = array(
+			array(
+				'ids' => $attachment_ids_1,
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+			array(
+				'ids' => array_reverse( $attachment_ids_1 ),
+				'orderby' => array(
+					'ID',
+				),
+				'order' => 'DESC',
+			),
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_1 ) );
+
+		// Gallery should be created if there are galleries
+		$this->assertAttributeNotEmpty( 'gallery', $formatted_post['meta'] );
+		// Single post's gallery
+		//  - without order parameters
+		//  - with order parameters
+		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+
+
+		// Single post gallery with exclude
+		self::_insert_post(
+			array(
+				'ID'           => $test_post_id_1,
+				'post_content' => "[gallery exclude={$attachment_ids_1[1]}]",
+			)
+		);
+
+		$expected = array(
+			array(
+				'ids' => array_merge( array_diff( $attachment_ids_1, array( $attachment_ids_1[1] ) ) ),
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_1 ) );
+		// Single post's gallery with exclude
+		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+
+
+		// Other post's gallery with/without sort parameters
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery id={$test_post_id_1}]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery id={$test_post_id_1} order="DESC" orderby="ID"]
+POSTCONTENT;
+
+		$test_post_data_2 = self::_insert_post(
+			array(
+				'post_content' => $post_content,
+			),
+			array(
+				'100x500.png',
+			)
+		);
+
+		$test_post_id_2 = $test_post_data_2['post_id'];
+		$attachment_ids_2 = $test_post_data_2['attachment_ids'];
+
+		$all_attachments = array_unique( array_merge( $all_attachments, $attachment_ids_2 ) );
+
+		$expected_meta = array(
+			array(
+				'ids' => $attachment_ids_1,
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+			array(
+				'ids' => array_reverse( $attachment_ids_1 ),
+				'orderby' => array(
+					'ID',
+				),
+				'order' => 'DESC',
+			),
+		);
+
+		$expected_media = array_merge( $attachment_ids_1, $attachment_ids_2 );
+		sort( $expected_media );
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
+
+		$media = array_map( function( $img ) {
+			return $img['id'];
+		}, $formatted_post['media'] );
+		sort( $media );
+
+		// Other post's gallery
+		//  - without order parameters
+		//  - with order parameters
+		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+
+		// Media with other post's images
+		$this->assertSameSize( $expected_media, $formatted_post['media'] );
+		$this->assertEquals( $expected_media, $media );
+
+
+		// Other post's gallery with exclude
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery id={$test_post_id_1} exclude={$attachment_ids_1[1]}]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+POSTCONTENT;
+
+		self::_insert_post(
+			array(
+				'ID'           => $test_post_id_2,
+				'post_content' => $post_content,
+			)
+		);
+
+		$expected_ids = array_merge( array_diff( $attachment_ids_1, array( $attachment_ids_1[1] ) ) );
+		$expected_meta = array(
+			array(
+				'ids' => $expected_ids,
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+		);
+
+		$expected_media = array_merge( $expected_ids, $attachment_ids_2 );
+		sort( $expected_media );
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
+
+		$media = array_map( function( $img ) {
+			return $img['id'];
+		}, $formatted_post['media'] );
+		sort( $media );
+
+		// Other post's gallery with exclude
+		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+
+		// Media with other post's images
+		$this->assertSameSize( $expected_media, $formatted_post['media'] );
+		$this->assertEquals( $expected_media, $media );
+		
+
+		// List of IDs
+		$image_ids = array_slice( $attachment_ids_1, 1 );
+		$image_ids_string = implode( ',', $image_ids );
+
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery ids={$image_ids_string}]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+POSTCONTENT;
+
+		self::_insert_post(
+			array(
+				'ID'           => $test_post_id_2,
+				'post_content' => $post_content,
+			)
+		);
+
+		$expected_meta = array(
+			array(
+				'ids' => $image_ids,
+				'orderby' => array(
+					'post__in',
+				),
+				'order' => 'ASC',
+			),
+		);
+
+		$expected_media = array_merge( $image_ids, $attachment_ids_2 );
+		sort( $expected_media );
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
+
+		$media = array_map( function( $img ) {
+			return $img['id'];
+		}, $formatted_post['media'] );
+		sort( $media );
+
+		// Other post's gallery with exclude
+		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+
+		// Media with other post's images
+		$this->assertSameSize( $expected_media, $formatted_post['media'] );
+		$this->assertEquals( $expected_media, $media );
+
+
+		// Other post's gallery with/without sort parameters
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery id="{$test_post_id_1}" order="rand"]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+POSTCONTENT;
+
+		$test_post_id_3 = self::_insert_post(
+			array(
+				'post_content' => $post_content,
+			)
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_3 ) );
+		// Test RAND ordering
+		$this->assertEquals( 'RAND', $formatted_post['meta']->gallery[0]['order'] );
+
+		self::_delete_attachment( $all_attachments );
+	}
+
+	public function testGetPostGalleries() {
+
+		$post_obj->post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery order="DESC" orderby="ID"]
+POSTCONTENT;
+
+		$post = new WP_Post( $post_obj );
+
+		$expected = array(
+			array(
+				'orderby' => array(
+					'menu_order',
+					'ID'
+				),
+				'order'   => 'ASC'
+			),
+			array(
+				'orderby' => array(
+					'ID'
+				),
+				'order'   => 'DESC'
+			)
+		);
+
+		$actual = WP_JSON_API\APIv1::get_post_galleries( $post );
+
+		$this->assertEquals( $expected, $actual );
+	}
+
+	public function testGetPostGalleriesBadParameters() {
+
+		$post_obj->post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery foobar tag="wrong"]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery order="DESC" orderby="post_date"]
+POSTCONTENT;
+
+		$post = new WP_Post( $post_obj );
+
+		$expected = array(
+			array(
+				'orderby' => array(
+					'menu_order',
+					'ID'
+				),
+				'order'   => 'ASC'
+			),
+			array(
+				'orderby' => array(
+					'post_date'
+				),
+				'order'   => 'DESC'
+			)
+		);
+
+		$actual = WP_JSON_API\APIv1::get_post_galleries( $post );
+
+		$this->assertEquals( $expected, $actual );
+	}
+
+	public function testParseGalleryAttrs() {
+
+		$test_data = array(
+			'id'      => '5',
+			'ids'     => '5, 10, 15',
+			'orderby' => 'title',
+			'order'   => 'desc',
+			'include' => '2, 4, 6',
+			'exclude' => '1, 3, 5',
+		);
+
+		$expected_data = array(
+			'id' => 5,
+			'ids' => array( 5, 10, 15 ),
+			'orderby' => array( 'title' ),
+			'order'   => 'desc',
+			'include' => array( 5, 10, 15 ),
+			'exclude' => array( 1, 3, 5 ),
+		);
+
+		$data = WP_JSON_API\APIv1::parse_gallery_attrs( $test_data );
+		$this->assertEquals( $expected_data, $data );
+
+
+		$test_data = array(
+			'id'      => '5',
+			'ids'     => '5, 10, 15',
+			'order'   => 'desc',
+			'include' => '2, 4, 6',
+			'exclude' => '1, 3, 5',
+		);
+
+		$expected_data = array(
+			'id' => 5,
+			'ids' => array( 5, 10, 15 ),
+			'orderby' => array( 'post__in' ),
+			'order'   => 'desc',
+			'include' => array( 5, 10, 15 ),
+			'exclude' => array( 1, 3, 5 ),
+		);
+
+		$data = WP_JSON_API\APIv1::parse_gallery_attrs( $test_data );
+		$this->assertEquals( $expected_data, $data );
+
+
+		$expected_data = array(
+			'orderby' => array(
+				'menu_order',
+				'ID',
+			),
+			'order'   => 'ASC',
+		);
+
+		$data = WP_JSON_API\APIv1::parse_gallery_attrs( '' );
+		$this->assertInternalType( 'array', $data );
+		$this->assertEquals( $expected_data, $data );
+	}
+
 	public function testGetRewriteRules() {
 		$slim = new \Slim\Slim();
 		$api  = new \WP_JSON_API\APIv1( $slim );
