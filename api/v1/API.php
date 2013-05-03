@@ -336,6 +336,10 @@ class APIv1 extends API_Base {
 			$meta['featured_image'] = (int)$thumbnail_id;
 		}
 
+		remove_filter( 'the_content', 'do_shortcode', 11 );
+		remove_filter( 'the_content', 'convert_smilies' );
+		remove_filter( 'the_content', 'shortcode_unautop' );
+
 		$data = array(
 			'id'               => $post->ID,
 			'id_str'           => (string)$post->ID,
