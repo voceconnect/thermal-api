@@ -11,22 +11,22 @@ class APIv1Test extends WP_UnitTestCase {
 
 	protected function _upload_file( $filename ) {
 
-		$contents = file_get_contents($filename);
+		$contents = file_get_contents( $filename );
 
-		$upload = wp_upload_bits(basename($filename), null, $contents);
+		$upload = wp_upload_bits( basename( $filename ), null, $contents );
 
 		return $upload;
 	}
 
 	protected function _make_attachment($upload, $parent_post_id = -1 ) {
-
 		$type = '';
-		if ( !empty($upload['type']) ) {
+		if ( ! empty( $upload['type'] ) ) {
 			$type = $upload['type'];
 		} else {
 			$mime = wp_check_filetype( $upload['file'] );
-			if ($mime)
+			if ( $mime ) {
 				$type = $mime['type'];
+			}
 		}
 
 		$attachment = array(
@@ -43,7 +43,6 @@ class APIv1Test extends WP_UnitTestCase {
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
 
 		return $id;
-
 	}
 
 	public function setUp() {
@@ -95,10 +94,23 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'posts', $data );
 		$this->assertArrayHasKey( 'found', $data );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'QUERY_STRING' => 'paged=1',
+		));
+
+		$app = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $app );
+		$data = $api->get_posts();
+
+		$this->assertArrayHasKey( 'posts', $data );
+		$this->assertArrayHasKey( 'found', $data );
 	}
 
 	public function testGetPost() {
-
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'publish',
 			'post_title'  => 'testGetPost',
@@ -289,7 +301,6 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostFormat() {
-
 		$blank_permalink = function() {
 			return '';
 		};
@@ -681,4 +692,239 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected, $formatted_taxonomy );
 	}
+
+	/**
+	 *
+	 */
+	public function _term_args() {
+		return array(
+			array( 'invalid_key',
+				array( null ),
+				array(
+					'invalid_key' => true,
+				),
+			),
+			array( 'number',
+				array( MAX_TERMS_PER_PAGE ),
+				array(),
+			),
+			array( 'number',
+				array( MAX_TERMS_PER_PAGE, MAX_TERMS_PER_PAGE, 5, MAX_TERMS_PER_PAGE, MAX_TERMS_PER_PAGE ),
+				array(
+					'per_page' => array( -5, 0, 5, 15, 'five' ),
+				),
+			),
+			array( 'offset',
+				array( null, null, null, 5, null ),
+				array(
+					'offset' => array( null, -5, 0, 5, 'five' ),
+				),
+			),
+			array( 'offset',
+				array( null, null, 0, 10, null, null ),
+				array(
+					'paged' => array( -5, 0, 1, 2, 'five' ),
+				),
+			),
+			array( 'offset',
+				array( 0, 12 ),
+				array(
+					'per_page' => array( 3, 3 ),
+					'paged' => array( 1, 5 ),
+				),
+			),
+			array( 'orderby',
+				array( null, 'slug', 'slug', null ),
+				array(
+					'orderby' => array( null, 'slug', 'SLUG', 'invalid' ),
+				),
+			),
+			array( 'order',
+				array( null, 'desc', 'desc', null ),
+				array(
+					'order' => array( null, 'desc', 'DESC', 'invalid' ),
+				)
+			),
+			array( 'include',
+				array( null, array( 5 ), array(), array( 5 ), array( 5, 10, 15 ), array( 5, 15 ) ),
+				array(
+					'include' => array( null, 5, 'fail', array( 5 ), array( 5, 10, 15 ), array( 5, 'fail', 15 ) )
+				),
+			),
+			array( 'pad_counts',
+				array( true, false, false, false, false, false, true, true ),
+				array(
+					'pad_counts' => array( 'true', 'anything', 'false', 'FALSE', 0, '0', 1, '1' ),
+				),
+			),
+			array( 'hide_empty',
+				array( true, false, false, false, false, false, true, true ),
+				array(
+					'hide_empty' => array( 'true', 'anything', 'false', 'FALSE', 0, '0', 1, '1' ),
+				)
+
+			),
+			array( 'slug',
+				array( 'anything' ),
+				array(
+					'slug' => array( 'anything' ),
+				)
+
+			),
+			array( 'parent',
+				array( 5, null ),
+				array(
+					'parent' => array( 5, 'fail' ),
+				)
+
+			),
+		);
+	}
+
+	/**
+	 *
+	 * @group Terms
+	 * @dataProvider _term_args
+	 * @param $param
+	 * @param $expected
+	 * @param $args
+	 */
+	public function testGetTermsArgs( $param, $expected, $args ) {
+		for ( $i = 0; $i < count( $expected ); $i++ ) {
+			$_args = array();
+			foreach ( $args as $key => $value ) {
+				$_args[$key] = $value[$i];
+			}
+
+			$actual = \WP_JSON_API\APIv1::get_terms_args( $_args );
+			$this->assertEquals( $expected[$i], $actual[$param] );
+		}
+	}
+
+	public function testGetTerms() {
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms/1',
+			'QUERY_STRING' => '',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category', 1 );
+
+		$this->assertArrayNotHasKey( 'found', $terms );
+		$this->assertGreaterThan( 0, count( $terms['terms'] ) );
+
+
+		add_filter( 'get_terms_fields', function( $selects, $args ) {
+			if ( 'count' == $args['fields'] ) {
+				return array( '3 AS count' );
+			}
+
+			return $selects;
+		}, 999, 2 );
+
+		add_filter( 'get_terms', function( $terms, $taxonomies, $args ) {
+			return array(
+				(object)array(
+					'term_id' => '2',
+					'name' => 'Test Cat 1',
+					'slug' => 'test-cat-1',
+					'term_group' => '0',
+					'term_taxonomy_id' => '2',
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => '0',
+					'count' => '0',
+				),
+				(object)array(
+					'term_id' => '6',
+					'name' => 'Test Cat 2',
+					'slug' => 'test-cat-2',
+					'term_group' => '0',
+					'term_taxonomy_id' => '6',
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => '0',
+					'count' => '0',
+				),
+				(object)array(
+					'term_id' => '7',
+					'name' => 'Test Cat 3',
+					'slug' => 'test-cat-3',
+					'term_group' => '0',
+					'term_taxonomy_id' => '7',
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => '2',
+					'count' => '0',
+				)
+			);
+		}, 999, 3 );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms',
+			'QUERY_STRING' => 'include_found=true',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category' );
+
+		$this->assertEquals( 3, $terms['found'] );
+		$this->assertEquals( 3, count( $terms['terms'] ) );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms',
+			'QUERY_STRING' => 'paged=1',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category' );
+
+		$this->assertEquals( 3, $terms['found'] );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/taxonomies/category/terms',
+			'QUERY_STRING' => '',
+		));
+
+		$slim = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $slim );
+
+		$terms = $api->get_terms( 'category' );
+
+		$this->assertArrayNotHasKey( 'found', $terms );
+	}
+
+	public function testFormatTerm() {
+		$expected = array(
+			'id' => 1,
+			'id_str' => '1',
+			'term_taxonomy_id' => 1,
+			'term_taxonomy_id_str' => '1',
+			'parent' => 0,
+			'parent_str' => '0',
+			'name' => 'Uncategorized',
+			'slug' => 'uncategorized',
+			'taxonomy' => 'category',
+			'description' => '',
+			'post_count' => 4,
+			'meta' => (object)array(),
+		);
+		$actual = \WP_JSON_API\APIv1::format_term( get_term( 1, 'category' ) );
+
+		$this->assertEquals( $actual, $expected );
+	}
+
 }
