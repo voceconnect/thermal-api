@@ -156,7 +156,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$test_args = array(
 			'taxonomy' => array(
-				'post_tag'  => array( 1, 2, 3 )
+				'post_tag' => array( 1, 2, 3 )
 			),
 			'after'    => '2013-01-05',
 			'before'   => '2013-01-01',
@@ -169,9 +169,9 @@ class APIv1Test extends WP_UnitTestCase {
 		);
 
 		$query_vars = \WP_JSON_API\APIv1::get_post_args( $test_args );
-		$query = new \WP_Query( $query_vars );
+		$query      = new \WP_Query( $query_vars );
 
-		//Taxonomies and Categories
+		// Taxonomies and Categories
 		$tax_array = array(
 			'relation' => 'OR',
 			array(
@@ -197,28 +197,39 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $tax_object, $query->tax_query );
 
-
-		//After
+		// After
 		$this->assertContains( "post_date > '2013-01-05'", $query->request );
 
-		//Before
+		// Before
 		$this->assertContains( "post_date < '2013-01-01'", $query->request );
 
-		//Author
+		// Author
 		$this->assertEquals( '1,5', $query_vars['author'] );
 
-		//Orderby
+		// Orderby
 		$this->assertEquals( 'ID author', $query_vars['orderby'] );
 
-		//Posts_per_page
+		// Posts_per_page
 		$this->assertEquals( $test_args['per_page'], $query_vars['posts_per_page'] );
 
-		//Paged
+		// Paged
 		$this->assertEquals( $test_args['paged'], $query_vars['paged'] );
 
-		//No forbidded vars
+		// No forbidded vars
 		$this->assertArrayNotHasKey( 'fake', $query_vars );
 
+	}
+
+	public function testGetPostsByIdParameterNotRoute() {
+
+		$test_args = array(
+			'p' => 1
+		);
+
+		$query_vars = \WP_JSON_API\APIv1::get_post_args( $test_args );
+
+		// P(ost ID)
+		$this->assertEquals( $test_args['p'], $query_vars['p'] );
 	}
 
 	// Parameters correct and use strings when possible

@@ -65,16 +65,8 @@ class APIv1 extends API_Base {
 		$posts = array();
 
 		$request_args = $this->app->request()->get();
-		if ( ! empty( $id ) ) {
-			$request_args['p'] = (int)$id;
-		}
-		if ( ! empty( $request_args['include_found'] ) || ! empty( $request_args['paged'] ) ) {
-			$include_found = true;
-		}
-		if ( ! $include_found ) {
-			$request_args['no_found_rows'] = true;
-		}
-		$args = self::get_post_args( $request_args );
+
+		$args = self::get_post_args( $request_args, $id );
 
 		add_action( 'parse_query', $force_public_post_stati );
 		$wp_posts = new \WP_Query( $args );
@@ -87,86 +79,84 @@ class APIv1 extends API_Base {
 			}
 		}
 
-		return $include_found ? compact( 'found', 'posts' ) : compact( 'posts' );
+		return $args['no_found_rows'] ? compact( 'posts' ) :  compact( 'found', 'posts' );
 	}
 
 	/**
 	 * @param array $request_args
 	 * @return array
 	 */
-	public static function get_post_args( $request_args = array() ) {
+	public static function get_post_args( $request_args, $id = null ) {
 		// Remove any args that are not allowed by the API
 		$request_args_whitelist = array(
-			'm',
-			'year',
-			'monthnum',
-			'w',
-			'day',
-			'hour',
-			'minute',
-			'second',
-			'before',
-			'after',
-			's',
-			'exact',
-			'sentence',
-			'cat',
-			'category_name',
-			'tag',
-			'taxonomy',
-			'paged',
-			'per_page',
-			'offset',
-			'orderby',
-			'order',
-			'author_name',
-			'author',
-			'post__in',
-			'p',
-			'name',
-			'pagename',
-			'attachment',
-			'attachment_id',
-			'subpost',
-			'subpost_id',
-			'post_type',
-			'post_parent__in',
-			'include_found',
-			'no_found_rows',
+			'm'               => '',
+			'year'            => '',
+			'monthnum'        => '',
+			'w'               => '',
+			'day'             => '',
+			'hour'            => '',
+			'minute'          => '',
+			'second'          => '',
+			'before'          => '',
+			'after'           => '',
+			's'               => '',
+			'exact'           => '',
+			'sentence'        => '',
+			'cat'             => '',
+			'category_name'   => '',
+			'tag'             => '',
+			'taxonomy'        => '',
+			'paged'           => '',
+			'per_page'        => '',
+			'offset'          => '',
+			'orderby'         => '',
+			'order'           => '',
+			'author_name'     => '',
+			'author'          => '',
+			'post__in'        => '',
+			'p'               => '',
+			'name'            => '',
+			'pagename'        => '',
+			'attachment'      => '',
+			'attachment_id'   => '',
+			'subpost'         => '',
+			'subpost_id'      => '',
+			'post_type'       => '',
+			'post_parent__in' => '',
+			'include_found'   => '',
+			'no_found_rows'   => '',
 		);
-		foreach ( $request_args as $key => $val ) {
-			if ( ! in_array( $key, $request_args_whitelist ) ) {
-				unset( $request_args[$key] );
-			}
-		}
+		$request_args = array_intersect_key( $request_args, $request_args_whitelist );
 
 		// Create export array by merging defaults with request args
 		$defaults = array(
-			'orderby' => 'date',
-			'order' => 'DESC',
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 			'posts_per_page' => MAX_POSTS_PER_PAGE,
+			'no_found_rows'  => true,
 		);
 		$args = wp_parse_args( $request_args, $defaults );
 
-		// Remove args merged in that we want to run some filters on
-		$args_cleanlist = array(
-			'after',
-			'before',
-			'taxonomy',
-			'author',
-			'cat',
-			'orderby',
-			'per_page',
+		// Strip non-WP_Query args that got populated by defaults parsing
+		$api_non_wp_args = array(
+			'after'    => '',
+			'before'   => '',
+			'taxonomy' => '',
+			'author'   => '',
+			'cat'      => '',
+			'orderby'  => '',
+			'per_page' => '',
 		);
-		foreach ( $args as $key => $val ) {
-			if ( in_array( $key, $args_cleanlist ) ) {
-				unset( $args[$key] );
-			}
-		}
+		$args = array_diff_key( $args, $api_non_wp_args );
 
+		if ( ! is_null( $id ) ) {
 
-		if ( isset( $request_args['p'] ) ) {
+			$args['p'] = (int)$id;
+
+		} else if ( isset( $request_args['p'] ) ) {
+
 			$args['p'] = (int)$request_args['p'];
+
 		}
 
 		if ( isset( $request_args['taxonomy'] ) && is_array( $request_args['taxonomy'] ) ) {
@@ -177,8 +167,8 @@ class APIv1 extends API_Base {
 			foreach ( $request_args['taxonomy'] as $key => $value ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => $key,
-					'terms' => is_array( $value ) ? $value : array(),
-					'field' => 'term_id',
+					'terms'    => is_array( $value ) ? $value : array(),
+					'field'    => 'term_id',
 				);
 			}
 		}
@@ -201,11 +191,11 @@ class APIv1 extends API_Base {
 
 		if ( isset( $request_args['author'] ) ) {
 			// WordPress only allows a single author to be excluded. We are not
-			// allowing any author exculsions to be accepted.
-			$r = array_filter( (array)$request_args['author'], function( $author ) {
+			// allowing any author exclusions to be accepted.
+			$args['author'] = array_filter( (array)$request_args['author'], function( $author ) {
 				return $author > 0;
 			} );
-			$args['author'] = implode( ',', $r );
+			$args['author'] = implode( ',', $args['author'] );
 		}
 
 		if ( isset( $request_args['cat'] ) ) {
@@ -228,14 +218,26 @@ class APIv1 extends API_Base {
 		);
 
 		if ( isset( $request_args['orderby'] ) ) {
-			$r = array_filter( (array)$request_args['orderby'], function( $orderby ) use ( $valid_orders ) {
-				return in_array( $orderby, $valid_orders );
-			} );
-			$args['orderby'] = implode( ' ', $r );
+			$args['orderby'] = array_intersect( $valid_orders, (array)$request_args['orderby'] );
+			$args['orderby'] = implode( ' ', $args['orderby'] );
 		}
 
 		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
 			$args['posts_per_page'] = min( (int)$request_args['per_page'], $args['posts_per_page'] );
+		}
+
+		if ( ! empty( $request_args['paged'] ) ) {
+
+			$args['no_found_rows'] = false;
+
+		} else if ( isset( $request_args['include_found'] ) ) {
+
+			if ( ( 'true' === $request_args['include_found'] ) || ( 1 == $request_args['include_found'] ) ) {
+
+				$args['no_found_rows'] = false;
+
+			}
+
 		}
 
 		return $args;
