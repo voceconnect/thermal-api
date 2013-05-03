@@ -357,18 +357,21 @@ class APIv1Test extends WP_UnitTestCase {
 		$expected_term = get_term( 1, 'category');
 		$expected_taxonomy = array( 
 			'category' => array(
-				(object)array(
-					'term_id' => 1,
+				array(
+					'id' => 1,
+					'id_str' => '1',
+					'term_taxonomy_id' => 1,
+					'term_taxonomy_id_str' => '1',
+					'parent' => 0,
+					'parent_str' => '0',
 					'name' => 'Uncategorized',
 					'slug' => 'uncategorized',
-					'term_group' => 0,
-					'term_taxonomy_id' => 1,
 					'taxonomy' => 'category',
 					'description' => '',
-					'parent' => 0,
-					'count' => $expected_term->count,
-					)
-				)
+					'post_count' => $expected_term->count,
+					'meta' => (object)array(),
+				),
+			),
 		);
 
 		$expected = array(
