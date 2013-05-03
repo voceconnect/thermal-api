@@ -850,7 +850,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
-			<td>paged</td>
+			<td>paged*</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
@@ -904,12 +904,12 @@ Orderby will also accept an array of multiple identifiers.
 			<td>Include the children of the provided term ID.</td>
 		</tr>
 		<tr>
-			<td>exclude_empty</td>
+			<td>hide_empty</td>
 			<td>boolean</td>
-			<td>If false, only terms with attached posts will be returned.  Default is true.</td>
+			<td>If true, only terms with attached posts will be returned.  Default is true.</td>
 		</tr>
 		<tr>
-			<td>pad_count</td>
+			<td>pad_counts</td>
 			<td>boolean</td>
 			<td>If true, count all of the children along with the term.  Default is false.</td>
 		</tr>

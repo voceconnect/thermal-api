@@ -474,21 +474,21 @@ class APIv1Test extends WP_UnitTestCase {
 				)
 			),
 			array( 'include',
-				array( null, array( 5 ), null, array( 5 ), array( 5, 10, 15 ), array( 5, 15 ) ),
+				array( null, array( 5 ), array(), array( 5 ), array( 5, 10, 15 ), array( 5, 15 ) ),
 				array(
 					'include' => array( null, 5, 'fail', array( 5 ), array( 5, 10, 15 ), array( 5, 'fail', 15 ) )
 				),
 			),
-			array( 'pad_count',
-				array( true, true, null, null, null, null, null ),
+			array( 'pad_counts',
+				array( true, false, false, false, false, false, true, true ),
 				array(
-					'pad_count' => array( 'true', 'anything', 'false', 'FALSE', 0, '0', ),
+					'pad_counts' => array( 'true', 'anything', 'false', 'FALSE', 0, '0', 1, '1' ),
 				),
 			),
 			array( 'hide_empty',
-				array( null, null, false, false, false, false ),
+				array( true, false, false, false, false, false, true, true ),
 				array(
-					'exclude_empty' => array( 'true', 'anything', 'false', 'FALSE', 0, '0' ),
+					'hide_empty' => array( 'true', 'anything', 'false', 'FALSE', 0, '0', 1, '1' ),
 				)
 
 			),
@@ -647,8 +647,8 @@ class APIv1Test extends WP_UnitTestCase {
 			'slug' => 'uncategorized',
 			'taxonomy' => 'category',
 			'description' => '',
-			'post_count' => '4',
-			'meta' => array(),
+			'post_count' => 4,
+			'meta' => (object)array(),
 		);
 		$actual = \WP_JSON_API\APIv1::format_term( get_term( 1, 'category' ) );
 

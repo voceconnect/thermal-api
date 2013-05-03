@@ -197,105 +197,76 @@ class APIv1 extends API_Base {
 
 	public function get_terms( $name, $term_id = null ) {
 		$found = 0;
-		$wp_terms = array();
-		$terms = array();
 
-		$request_args = $this->app->request()->get();
-		$args = self::get_terms_args( $request_args );
+		$request       = $this->app->request();
+		$request_args  = $request->get();
+		$args          = self::get_terms_args( $request_args, $term_id );
 
-		if ( ! empty( $term_id ) ) {
-			$args['include'] = array( $term_id );
-		}
+		$include_found = filter_var( $request->get('include_found'), FILTER_VALIDATE_BOOLEAN );
+		$include_found = ( $include_found || $request->get('paged') );
 
-		$wp_terms = get_terms( $name, $args );
+		$terms = array_map( array( __CLASS__, 'format_term' ), get_terms( $name, $args ) );
 
-		if ( count( $wp_terms ) ) {
+		if ( $include_found && count( $terms ) ) {
 			$found = (int)get_terms( $name, array_merge( $args, array( 'fields' => 'count' ) ) );
 		}
 
-		if ( ! empty( $request_args['paged'] ) ) {
-			$request_args['include_found'] = true;
-		}
-
-		if ( $found ) {
-			foreach ( $wp_terms as $term ) {
-				$terms[] = $this->format_term( $term );
-			}
-		}
-
-		return ! empty( $request_args['include_found'] ) ? compact( 'found', 'terms' ) : compact( 'terms' );
+		return $include_found ? compact( 'found', 'terms' ) : compact( 'terms' );
 	}
 
 	/**
 	 * @param array $request_args
 	 * @return array
 	 */
-	public static function get_terms_args( $request_args = array() ) {
+	public static function get_terms_args( $request_args, $term_id = null ) {
 		$args = array();
 
 		$args['number'] = MAX_TERMS_PER_PAGE;
-		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
-			$args['number'] = min( (int)$request_args['per_page'], $args['number'] );
+
+		foreach ( array( 'parent', 'offset' ) as $int_var ) {
+			if ( isset( $request_args[$int_var] ) &&
+				is_int( $value = filter_var( $request_args[$int_var], FILTER_VALIDATE_INT ) ) ) {
+				$args[$int_var] = max( 0, $value );
+			}
 		}
 
-		if ( ! empty( $request_args['offset'] ) && $request_args['offset'] >= 1 ) {
-			$args['offset'] = (int)$request_args['offset'];
+		foreach ( array( 'hide_empty', 'pad_counts' ) as $bool_var ) {
+			if ( isset( $request_args[$bool_var] ) ) {
+				$args[$bool_var] = filter_var( $request_args[$bool_var], FILTER_VALIDATE_BOOLEAN );
+			}
+		}
+
+		if ( ! empty( $request_args['per_page'] ) && $request_args['per_page'] >= 1 ) {
+			$args['number'] = min( (int)$request_args['per_page'], $args['number'] );
 		}
 
 		if ( ! empty( $request_args['paged'] ) && $request_args['paged'] >= 1 ) {
 			$args['offset'] = ( (int)$request_args['paged'] - 1 ) * $args['number'];
 		}
 
-
-		$valid_orderby = array(
-			'name',
-			'slug',
-			'count',
-		);
+		$valid_orderby = array( 'name', 'slug', 'count' );
 		if ( ! empty( $request_args['orderby'] ) && in_array( strtolower( $request_args['orderby'] ), $valid_orderby ) ) {
 			$args['orderby'] = strtolower( $request_args['orderby'] );
 		}
 
-		$valid_order = array(
-			'asc',
-			'desc',
-		);
+		$valid_order = array( 'asc', 'desc' );
 		if ( ! empty( $request_args['order'] ) && in_array( strtolower( $request_args['order'] ), $valid_order ) ) {
 			$args['order'] = strtolower( $request_args['order'] );
 		}
 
+		if ( ! is_null( $term_id ) ) {
 
-		if ( ! empty( $request_args['include'] ) ) {
-			$include = array_merge(
-				array_filter(
-					array_map( function( $id ) {
-						return (int)$id;
-					}, (array)$request_args['include'] )
-				)
-			);
-			if ( count( $include ) ) {
-				$args['include'] = $include;
-			}
+			$args['include'] = array( (int)$term_id );
+
+		} else if ( ! empty( $request_args['include'] ) ) {
+
+			$args['include'] = array_values( array_filter( array_map( 'intval', (array)$request_args['include'] ) ) );
+
 		}
 
 		if ( ! empty( $request_args['slug'] ) ) {
 			$args['slug'] = $request_args['slug'];
 		}
-
-		if ( isset( $request_args['parent'] ) && is_numeric( $request_args['parent'] ) ) {
-			$args['parent'] = (int)$request_args['parent'];
-		}
-
-		if ( isset( $request_args['exclude_empty'] ) ) {
-			if ( ! $request_args['exclude_empty'] || 'false' === strtolower( $request_args['exclude_empty'] ) ) {
-				$args['hide_empty'] = false;
-			}
-		}
-
-		if ( ! empty( $request_args['pad_count'] ) && 'false' !== strtolower( $request_args['pad_count'] ) ) {
-			$args['pad_count'] = true;
-		}
-
 
 		return $args;
 	}
@@ -437,8 +408,8 @@ class APIv1 extends API_Base {
 			'slug'                 => $term->slug,
 			'taxonomy'             => $term->taxonomy,
 			'description'          => $term->description,
-			'post_count'           => $term->count,
-			'meta'                 => array(),
+			'post_count'           => (int)$term->count,
+			'meta'                 => (object)array(),
 		);
 	}
 
