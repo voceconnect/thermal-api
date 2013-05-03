@@ -5,6 +5,9 @@ namespace WP_JSON_API;
 if ( ! defined( 'MAX_POSTS_PER_PAGE' ) )
 	define( 'MAX_POSTS_PER_PAGE', 10 );
 
+if ( ! defined( 'MAX_USERS_PER_PAGE' ) ) {
+	define( 'MAX_USERS_PER_PAGE', 10 );
+}
 
 require_once( __DIR__ . '/../API_Base.php' );
 
@@ -203,17 +206,17 @@ class APIv1 extends API_Base {
 		return isset( $found ) ? compact( 'found', 'users' ) : compact( 'users' );
 	}
 	/**
-	 * Filter and validate the paramaters that will be bassed to get_users
+	 * Filter and validate the parameters that will be passed to get_users
 	 * @param $args [optional]
 	 * @return array
 	 */
 	public static function get_user_args( $args = array() ) {
 		$_args = array(
-			'number' => defined( 'MAX_USERS_PER_PAGE' ) ? MAX_USERS_PER_PAGE : 10,
-			'offset' => 0,
-			'orderby' => 'display_name',
-			'order' => 'desc',
-			'include' => array(),
+			'number'        => MAX_USERS_PER_PAGE,
+			'offset'        => 0,
+			'orderby'       => 'display_name',
+			'order'         => 'desc',
+			'include'       => array(),
 			'include_found' => false,
 		);
 
@@ -228,7 +231,7 @@ class APIv1 extends API_Base {
 			$_args['offset'] = (int)$args['offset'];
 		}
 
-		// A positive integer specifiying the page (or subset of results) to
+		// A positive integer specifying the page (or subset of results) to
 		// return. This filter will automatically determine the offset to use
 		// based on the per_page and paged. Using this filter will cause
 		// include_found to be true.
@@ -240,16 +243,17 @@ class APIv1 extends API_Base {
 		// Sort the results by the given identifier. Defaults to 'display_name'.
 		// Supported values are:
 		//   'display_name' - Ordered by the display name of the user.
-		//   'nicename' - The slug/nicename of the user.
-		//   'post_count' - The number of posts the user has.
+		//   'nicename'     - The slug/nicename of the user.
+		//   'post_count'   - The number of posts the user has.
 		$valid = array(
 			'display_name',
 			'nicename',
 			'post_count',
 		);
 
-		if ( isset( $args['orderby'] ) && in_array( strtolower( $args['orderby'] ), $valid ) ) {
-			$_args['orderby'] = strtolower( $args['orderby'] );
+		if ( isset( $args['orderby'] ) ) {
+			$orderby          = array_map( 'strtolower', (array)$args['orderby'] );
+			$_args['orderby'] = array_values( array_intersect( $valid, $orderby ) );
 		}
 
 		//The order direction. Options are 'ASC' and 'DESC'. Default is 'DESC'
@@ -267,13 +271,12 @@ class APIv1 extends API_Base {
 			$_args['include'] = (array)$args['include'];
 		}
 
-		// Defaut to false. When true, the response will include a found rows
+		// Default to false. When true, the response will include a found rows
 		// count. There is some overhead in generating the total count so this
 		// should only be turned on when needed. This is automatically turned on
 		//  if the 'paged' filter is used.
-		if ( isset( $args['include_found'] ) && 
-				filter_var( $args['include_found'], FILTER_VALIDATE_BOOLEAN ) ) {
-			$_args['include_found'] = true;
+		if ( isset( $args['include_found'] ) ) {
+			$_args['include_found'] = filter_var( $args['include_found'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		return $_args;
@@ -350,18 +353,20 @@ class APIv1 extends API_Base {
 		preg_match( "/src='([^']*)'/i", $avatar, $matches );
 
 		return array(
-			'id' => $user->ID,
-			'id_str' => (string)$user->ID,
-			'nicename' => $user->data->user_nicename,
+			'id'           => $user->ID,
+			'id_str'       => (string)$user->ID,
+			'nicename'     => $user->data->user_nicename,
 			'display_name' => $user->data->display_name,
-			'user_url' => $user->data->user_url,
-			'posts_url' => get_author_posts_url( $user->ID ),
-			'avatar' => array(
-				'url' => array_pop( $matches ),
-				'width' => '96',
-				'height' => '96',
+			'user_url'     => $user->data->user_url,
+			'posts_url'    => get_author_posts_url( $user->ID ),
+			'avatar'       => array(
+				array(
+					'url'    => array_pop( $matches ),
+					'width'  => 96,
+					'height' => 96,
+				)
 			),
-			'meta' => array()
+			'meta'         => (object)array()
 		);
 	}
 

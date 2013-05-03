@@ -437,9 +437,9 @@ class APIv1Test extends WP_UnitTestCase {
 				),
 			),
 			array( 'orderby',
-				array( 'display_name', 'post_count', 'display_name' ),
+				array( array( 'display_name' ), array( 'post_count' ), array(), array( 'display_name', 'post_count' ) ),
 				array(
-					'orderby' => array( 'display_name', 'POST_COUNT', 'foo' ),
+					'orderby' => array( 'display_name', 'POST_COUNT', 'foo', array( 'display_name', 'post_count' ) ),
 				),
 			),
 			array( 'order',
@@ -500,20 +500,22 @@ class APIv1Test extends WP_UnitTestCase {
 	 * @group Users
 	 */
 	public function testFormatUser() {
-		$actual = \WP_JSON_API\APIv1::format_user( get_userdata( 1 ) );
+		$actual   = \WP_JSON_API\APIv1::format_user( get_userdata( 1 ) );
 		$expected = array(
-			'id' => 1,
-			'id_str' => '1',
-			'nicename' => 'admin',
+			'id'           => 1,
+			'id_str'       => '1',
+			'nicename'     => 'admin',
 			'display_name' => 'admin',
-			'user_url' => '',
-			'posts_url' => home_url( '?author=1' ),
-			'avatar' => array(
-				'url' => 'http://1.gravatar.com/avatar/96614ec98aa0c0d2ee75796dced6df54?s=96&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D96&amp;r=G',
-				'width' => '96',
-				'height' => '96',
+			'user_url'     => '',
+			'posts_url'    => home_url( '?author=1' ),
+			'avatar'       => array(
+				array(
+					'url'    => 'http://1.gravatar.com/avatar/96614ec98aa0c0d2ee75796dced6df54?s=96&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D96&amp;r=G',
+					'width'  => 96,
+					'height' => 96,
+				),
 			),
-			'meta' => array(),
+			'meta'         => (object)array(),
 		);
 
 		$this->assertEquals( $expected, $actual );
