@@ -674,7 +674,7 @@ class APIv1 extends API_Base {
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
 			'meta'             => (object)$meta,
-			'taxonomies'       => $post_taxonomies,
+			'taxonomies'       => (object)$post_taxonomies,
 			'media'            => array_values( $media ),
 		);
 

@@ -396,7 +396,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'content_filtered' => '',
 			'mime_type'        => '',
 			'meta'             => (object)array(),
-			'taxonomies'       => $expected_taxonomy,
+			'taxonomies'       => (object)$expected_taxonomy,
 			'media'            => array(),
 		);
 
