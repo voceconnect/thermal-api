@@ -156,6 +156,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'publish',
 			'post_title'  => 'testGetPost',
+			'post_author' => 1,
 		) );
 
 		\Slim\Environment::mock( array(
@@ -353,7 +354,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$test_post_id = self::_insert_post( array(
 			'post_title' => 'testPostFormat!'
 		) );
-
+        var_dump($user);
 		$expected = array(
 			'id'               => $test_post_id,
 			'id_str'           => (string)$test_post_id,
@@ -377,6 +378,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'mime_type'        => '',
 			'meta'             => (object)array(),
 			'media'            => array(),
+			'author'           => \WP_JSON_API\APIv1::format_user(get_user_by( 'id', 1)),
 		);
 
 		$test_post = get_post( $test_post_id );
