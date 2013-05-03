@@ -1263,6 +1263,8 @@ POSTCONTENT;
 	}
 
 	public function testFormatTerm() {
+		$term = get_term( 1, 'category' );
+
 		$expected = array(
 			'id' => 1,
 			'id_str' => '1',
@@ -1274,10 +1276,10 @@ POSTCONTENT;
 			'slug' => 'uncategorized',
 			'taxonomy' => 'category',
 			'description' => '',
-			'post_count' => 4,
+			'post_count' => $term->count,
 			'meta' => (object)array(),
 		);
-		$actual = \WP_JSON_API\APIv1::format_term( get_term( 1, 'category' ) );
+		$actual = \WP_JSON_API\APIv1::format_term( $term );
 
 		$this->assertEquals( $actual, $expected );
 	}
