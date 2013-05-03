@@ -430,7 +430,7 @@ class APIv1Test extends WP_UnitTestCase {
 					'per_page' => array( -1,  0, 5, 5, 50, 6 ),
 				),
 			),
-			array( 'per_page', 
+			array( 'number', 
 				array( 10, 10, 5, 5, 10, 5, 5, 10 ),
 				array(
 					'per_page' => array( -1, 0, 5, 5, 50, 5, 5, 'foo' ),
@@ -448,7 +448,7 @@ class APIv1Test extends WP_UnitTestCase {
 					'order' => array( 'desc', 'ASC', 'foo' ),
 				),
 			),
-			array( 'in',
+			array( 'include',
 				array( array( 1 ), array( 1, 2, 3 ) ),
 				array(
 					'in' => array( 1, array( 1, 2, 3 ) ),

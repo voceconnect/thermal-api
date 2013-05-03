@@ -647,13 +647,13 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "string",
                 "required": false
             },
-            "postsUrl": {
+            "posts_url": {
                 "description": "The URL to the user's posts.",
                 "type": "string",
                 "format": "uri",
                 "required": false
             },
-            "userUrl": {
+            "user_url": {
                 "description": "The User's personal URL.",
                 "type": "string",
                 "required": false
@@ -699,8 +699,8 @@ Orderby will also accept an array of multiple identifiers.
 		"id_str" : "1234567",
 		"nicename": "john-doe",
 		"display_name":"John Doe",
-		"postsUrl": "http://example.com/author/john-doe/",
-		"userUrl": "http://vocecomm.com",
+		"posts_url": "http://example.com/author/john-doe/",
+		"user_url": "http://vocecomm.com",
 		"avatar": [
 			{
 				"url":"http://1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64",
