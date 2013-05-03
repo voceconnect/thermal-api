@@ -414,6 +414,159 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	public function testPostMetaGallery() {
+		$all_attachments = array();
+
+		// Single post gallery with/without sort parameters
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery order="DESC" orderby="ID"]
+POSTCONTENT;
+
+		$test_post_data_1 = self::_insert_post(
+			array(
+				'post_content' => $post_content,
+			),
+			array( 
+				'100x200.png',
+				'100x300.png',
+				'100x400.png',
+			)
+		);
+		$test_post_id_1 = $test_post_data_1['post_id'];
+		$attachment_ids_1 = $test_post_data_1['attachment_ids'];
+
+		$all_attachments = array_unique( array_merge( $all_attachments, $attachment_ids_1 ) );
+
+		$expected = array(
+			array(
+				'ids' => $attachment_ids_1,
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+			array(
+				'ids' => array_reverse( $attachment_ids_1 ),
+				'orderby' => array(
+					'ID',
+				),
+				'order' => 'DESC',
+			),
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_1 ) );
+
+		// Gallery should be created if there are galleries
+		$this->assertAttributeNotEmpty( 'gallery', $formatted_post['meta'] );
+		// Single post's gallery
+		//  - without order parameters
+		//  - with order parameters
+		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+
+
+		// Single post gallery with exclude
+		self::_insert_post(
+			array(
+				'ID'           => $test_post_id_1,
+				'post_content' => "[gallery exclude={$attachment_ids_1[1]}]",
+			)
+		);
+
+		$expected = array(
+			array(
+				'ids' => array_merge( array_diff( $attachment_ids_1, array( $attachment_ids_1[1] ) ) ),
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_1 ) );
+		// Single post's gallery with exclude
+		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+
+
+		// Other post's gallery with/without sort parameters, and with exclude, and just ids
+		$image_ids = array_slice( $attachment_ids_1, 1 );
+		$image_ids_string = implode( ',', $image_ids );
+
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery id={$test_post_id_1}]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,
+			[gallery id={$test_post_id_1} order="DESC" orderby="ID"]
+			and more recently with desktop publishing software like Aldus PageMaker
+			[gallery id={$test_post_id_1} exclude={$attachment_ids_1[1]}]
+			including versions of Lorem Ipsum.
+			[gallery ids={$image_ids_string}]
+POSTCONTENT;
+
+		$test_post_data_2 = self::_insert_post(
+			array(
+				'post_content' => $post_content,
+			),
+			array(
+				'100x500.png',
+			)
+		);
+
+		$test_post_id_2 = $test_post_data_2['post_id'];
+		$attachment_ids_2 = $test_post_data_2['attachment_ids'];
+
+		$all_attachments = array_unique( array_merge( $all_attachments, $attachment_ids_2 ) );
+
+		$expected = array(
+			array(
+				'ids' => $attachment_ids_1,
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+			array(
+				'ids' => array_reverse( $attachment_ids_1 ),
+				'orderby' => array(
+					'ID',
+				),
+				'order' => 'DESC',
+			),
+			array(
+				'ids' => array_merge( array_diff( $attachment_ids_1, array( $attachment_ids_1[1] ) ) ),
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+			array(
+				'ids' => $image_ids,
+				'orderby' => array(
+					'menu_order',
+					'ID',
+				),
+				'order' => 'ASC',
+			),
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
+
+		// Other post's gallery
+		//  - without order parameters
+		//  - with order parameters
+		//  - with exclude parameter
+		// Individual IDs
+		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+
+//		self::_delete_attachment( $all_attachments );
+	}
+
 	public function testGetGalleryData() {
 
 		$post_obj->post_content = <<<POSTCONTENT
