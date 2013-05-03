@@ -354,6 +354,23 @@ class APIv1Test extends WP_UnitTestCase {
 			'post_title' => 'testPostFormat!'
 		) );
 
+		$expected_term = get_term( 1, 'category');
+		$expected_taxonomy = array( 
+			'category' => array(
+				(object)array(
+					'term_id' => 1,
+					'name' => 'Uncategorized',
+					'slug' => 'uncategorized',
+					'term_group' => 0,
+					'term_taxonomy_id' => 1,
+					'taxonomy' => 'category',
+					'description' => '',
+					'parent' => 0,
+					'count' => $expected_term->count,
+					)
+				)
+		);
+
 		$expected = array(
 			'id'               => $test_post_id,
 			'id_str'           => (string)$test_post_id,
@@ -376,6 +393,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'content_filtered' => '',
 			'mime_type'        => '',
 			'meta'             => (object)array(),
+			'taxonomies'       => $expected_taxonomy,
 			'media'            => array(),
 		);
 
