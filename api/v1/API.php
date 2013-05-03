@@ -661,8 +661,9 @@ class APIv1 extends API_Base {
 			'content'          => apply_filters( 'the_content', get_the_content() ),
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
-			'meta'             => (object)$meta,
-			'media'            => array_values( $media ),
+			'meta'             => $meta ? $meta : (object)array(),
+			'media'            => $media,
+			'author'           => self::format_user( get_user_by( 'id', $post->post_author ) ),
 		);
 
 		wp_reset_postdata();
