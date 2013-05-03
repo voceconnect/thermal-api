@@ -258,9 +258,9 @@ class APIv1 extends API_Base {
 
 		// get direct post attachments
 		$attachments = get_posts( array(
-			'post_parent' => $post->ID,
+			'post_parent'    => $post->ID,
 			'post_mime_type' => 'image',
-			'post_type' => 'attachment',
+			'post_type'      => 'attachment',
 		) );
 		foreach ( $attachments as $attachment ) {
 			$media[$attachment->ID] = self::format_image_media_item( $attachment );
@@ -288,10 +288,10 @@ class APIv1 extends API_Base {
 				}
 
 				$attachments_args = array(
-					'post_type' => 'attachment',
+					'post_type'      => 'attachment',
 					'post_mime_type' => 'image',
-					'order' => $order,
-					'orderby' => $orderby,
+					'order'          => $order,
+					'orderby'        => $orderby,
 				);
 				$attachments = array();
 				if ( ! empty( $include ) ) {
@@ -303,10 +303,10 @@ class APIv1 extends API_Base {
 					foreach ( $_attachments as $key => $val ) {
 						$attachments[$val->ID] = $_attachments[$key];
 					}
-				} elseif ( !empty($exclude) ) {
+				} elseif ( !empty( $gallery['exclude'] ) ) {
 					$attachments_args = array_merge( $attachments_args, array(
 						'post_parent' => $gallery_id,
-						'exclude' => $exclude,
+						'exclude'     => $gallery['exclude'],
 					) );
 					$attachments = get_children( $attachments_args );
 				} else {
@@ -323,9 +323,9 @@ class APIv1 extends API_Base {
 				}
 
 				$gallery_meta[] = array(
-					'ids' => $ids,
+					'ids'     => $ids,
 					'orderby' => $gallery['orderby'],
-					'order' => $order,
+					'order'   => $order,
 				);
 			}
 

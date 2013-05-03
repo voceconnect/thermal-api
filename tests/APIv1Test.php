@@ -503,7 +503,10 @@ POSTCONTENT;
 
 
 		$expected_data = array(
-			'orderby' => array( 'menu_order', 'ID' ),
+			'orderby' => array(
+				'menu_order',
+				'ID',
+			),
 			'order'   => 'ASC',
 		);
 
