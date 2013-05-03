@@ -12,10 +12,16 @@ if ( ! defined( 'MAX_TERMS_PER_PAGE' ) ) {
 
 require_once( __DIR__ . '/../API_Base.php' );
 
+/**
+ *
+ */
 class APIv1 extends API_Base {
 
 	protected $version = '1';
 
+	/**
+	 * @param \Slim\Slim $app
+	 */
 	public function __construct( \Slim\Slim $app ) {
 		parent::__construct( $app );
 		$this->registerRoute( 'GET', 'posts/?(:id)/?', array( $this, 'get_posts' ) );
@@ -25,6 +31,10 @@ class APIv1 extends API_Base {
 		$this->registerRoute( 'GET', 'rewrite_rules/?', array( $this, 'get_rewrite_rules' ) );
 	}
 
+	/**
+	 * @param int $id [optional]
+	 * @return array
+	 */
 	public function get_posts( $id = null ) {
 
 		$found         = 0;
@@ -50,6 +60,7 @@ class APIv1 extends API_Base {
 
 	/**
 	 * 'post_requests' action, force invalid post status to return empty request
+	 * @return string
 	 */
 	public static function _force_blank_request() {
 		return '';
@@ -97,6 +108,7 @@ class APIv1 extends API_Base {
 
 	/**
 	 * @param array $request_args
+	 * @param int $id [optional]
 	 * @return array
 	 */
 	public static function get_post_args( $request_args, $id = null ) {
@@ -256,6 +268,10 @@ class APIv1 extends API_Base {
 		return $args;
 	}
 
+	/** 
+	 * @param $id [optional]
+	 * @return array
+	 */
 	public function get_users( $id = null ) {
 		$users = array();
 		if ( $id ) {
@@ -266,6 +282,10 @@ class APIv1 extends API_Base {
 		return WP_API_BASE . '/users/' . $id;
 	}
 
+	/**
+	 * @param $name [optional]
+	 * @return array
+	 */
 	public function get_taxonomies( $name = null ) {
 		$args = array(
 			'public' => true,
@@ -297,6 +317,11 @@ class APIv1 extends API_Base {
 		return compact( 'taxonomies' );
 	}
 
+	/**
+	 * @param $name
+	 * @param $term_id [optional]
+	 * @return array
+	 */
 	public function get_terms( $name, $term_id = null ) {
 		$found = 0;
 
@@ -318,6 +343,7 @@ class APIv1 extends API_Base {
 
 	/**
 	 * @param array $request_args
+	 * @param int $term_id [optional]
 	 * @return array
 	 */
 	public static function get_terms_args( $request_args, $term_id = null ) {
@@ -375,7 +401,7 @@ class APIv1 extends API_Base {
 
 	/**
 	 * @param $taxonomy
-	 * @return Array
+	 * @return array
 	 */
 	public function format_taxonomy( $taxonomy ) {
 		return array(
@@ -394,7 +420,7 @@ class APIv1 extends API_Base {
 	/**
 	 * Format post data
 	 * @param \WP_Post $post
-	 * @return Array Formatted post data
+	 * @return array Formatted post data
 	 */
 	public static function format_post( \WP_Post $post ) {
 		$GLOBALS['post'] = $post;
@@ -447,7 +473,7 @@ class APIv1 extends API_Base {
 	/**
 	 * Format user data
 	 * @param \WP_User $user
-	 * @return Array Formatted user data
+	 * @return array Formatted user data
 	 */
 	public static function format_user( \WP_User $user ) {
 
@@ -472,6 +498,9 @@ class APIv1 extends API_Base {
 		return $data;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function get_rewrite_rules() {
 		$base_url = home_url( '/' );
 		$rewrite_rules = array();
@@ -492,7 +521,7 @@ class APIv1 extends API_Base {
 
 	/**
 	 * @param \WP_Post $post
-	 * @return Array
+	 * @return array
 	 */
 	public static function format_image_media_item( \WP_Post $post ) {
 		$meta = wp_get_attachment_metadata( $post->ID );
@@ -532,7 +561,7 @@ class APIv1 extends API_Base {
 
 	/**
 	 * @param $term
-	 * @return Array
+	 * @return array
 	 */
 	public static function format_term( $term ) {
 		return array(
