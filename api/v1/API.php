@@ -514,18 +514,25 @@ class APIv1 extends API_Base {
 		);
 	}
 
+	/**
+	 * @param $post
+	 * @param $media
+	 * @return array
+	 */
 	public static function get_gallery_meta( $post, $media ) {
 		$gallery_meta = array();
 
 		// check post content for gallery shortcode
 		if ( $gallery_data = self::get_post_galleries( $post ) ) {
+
 			foreach ( $gallery_data as $gallery ) {
-				$gallery_id = ! empty( $gallery['id'] ) ? intval( $gallery['id'] ) : $post->ID;
+
+				$gallery_id = empty( $gallery['id'] ) ? $post->ID : intval( $gallery['id'] );
 				$order      = strtoupper( $gallery['order'] );
 				$orderby    = implode( ' ', $gallery['orderby'] );
-				$include    = ! empty( $gallery['include'] ) ? $gallery['include'] : array();
+				$include    = empty( $gallery['include'] ) ? array() : $gallery['include'];
 
-				if ( ! empty( $order ) && 'RAND' == $order ) {
+				if ( ! empty( $order ) && ( 'RAND' == $order ) ) {
 					$orderby = 'none';
 				}
 
@@ -536,26 +543,29 @@ class APIv1 extends API_Base {
 					'orderby'        => $orderby,
 				);
 				$attachments = array();
+
 				if ( ! empty( $include ) ) {
-					$attachments_args = array_merge( $attachments_args, array(
-						'include' => $include,
-					) );
+
+					$attachments_args['include'] = $include;
 					$_attachments = get_posts( $attachments_args );
 
 					foreach ( $_attachments as $key => $val ) {
 						$attachments[$val->ID] = $_attachments[$key];
 					}
+
 				} elseif ( !empty( $gallery['exclude'] ) ) {
+
 					$attachments_args = array_merge( $attachments_args, array(
 						'post_parent' => $gallery_id,
 						'exclude'     => $gallery['exclude'],
 					) );
 					$attachments = get_children( $attachments_args );
+
 				} else {
-					$attachments_args = array_merge( $attachments_args, array(
-						'post_parent' => $gallery_id,
-					) );
+
+					$attachments_args['post_parent'] = $gallery_id;
 					$attachments = get_children( $attachments_args );
+
 				}
 
 				$ids = array();
@@ -650,16 +660,16 @@ class APIv1 extends API_Base {
 
 		// setting shortcode tags to 'gallery' only
 		$backup_shortcode_tags = $shortcode_tags;
-		$shortcode_tags = array( 'gallery' => $shortcode_tags['gallery'] );
-		$pattern = get_shortcode_regex();
-		$shortcode_tags = $backup_shortcode_tags;
+		$shortcode_tags        = array( 'gallery' => $shortcode_tags['gallery'] );
+		$pattern               = get_shortcode_regex();
+		$shortcode_tags        = $backup_shortcode_tags;
 
 		$matches = array();
 		preg_match_all( "/$pattern/s", $post->post_content, $matches );
 
 		$gallery_data = array();
 		foreach ( $matches[3] as $gallery_args ) {
-			$attrs = shortcode_parse_atts( $gallery_args );
+			$attrs          = shortcode_parse_atts( $gallery_args );
 			$gallery_data[] = self::parse_gallery_attrs( $attrs );
 		}
 
