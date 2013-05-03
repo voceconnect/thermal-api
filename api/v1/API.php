@@ -10,6 +10,10 @@ if ( ! defined( 'MAX_TERMS_PER_PAGE' ) ) {
 	define( 'MAX_TERMS_PER_PAGE', 10 );
 }
 
+if ( ! defined( 'MAX_USERS_PER_PAGE' ) ) {
+	define( 'MAX_USERS_PER_PAGE', 10 );
+}
+
 require_once( __DIR__ . '/../API_Base.php' );
 
 class APIv1 extends API_Base {
@@ -256,6 +260,11 @@ class APIv1 extends API_Base {
 		return $args;
 	}
 
+	/**
+	 * users/:id route
+	 * @param $id
+	 * @return Array
+	 */
 	public function get_users( $id = null ) {
 		$users = array();
 		if ( $id ) {
@@ -263,7 +272,92 @@ class APIv1 extends API_Base {
 			return compact( 'users' );
 		}
 
-		return WP_API_BASE . '/users/' . $id;
+		$args = $this->get_user_args( $this->app->request()->get() );
+
+		if ( $args['include_found'] ) {
+			$count = count_users();
+			$found = $count['total_users'];
+		}
+
+		$users = array_map( array( __CLASS__, 'format_user' ), get_users( $args ) );
+
+		return isset( $found ) ? compact( 'found', 'users' ) : compact( 'users' );
+	}
+	/**
+	 * Filter and validate the parameters that will be passed to get_users
+	 * @param $args [optional]
+	 * @return array
+	 */
+	public static function get_user_args( $args = array() ) {
+		$_args = array(
+			'number'        => MAX_USERS_PER_PAGE,
+			'offset'        => 0,
+			'orderby'       => 'display_name',
+			'order'         => 'desc',
+			'include'       => array(),
+			'include_found' => false,
+		);
+
+		// The maximum number of posts to return. The value must range from
+		// 1 to MAX_USERS_PER_PAGE.
+		if ( isset( $args['per_page'] ) && (int)$args['per_page'] > 0 ) {
+			$_args['number'] = min( (int)$args['per_page'], $_args['number'] );
+		}
+
+		// The number of posts to skip over before returning the result set.
+		if ( isset( $args['offset'] ) && (int)$args['offset'] > 0 ) {
+			$_args['offset'] = (int)$args['offset'];
+		}
+
+		// A positive integer specifying the page (or subset of results) to
+		// return. This filter will automatically determine the offset to use
+		// based on the per_page and paged. Using this filter will cause
+		// include_found to be true.
+		if ( isset( $args['paged'] ) && (int)$args['paged'] > 0 ) {
+			$_args['include_found'] = true;
+			$_args['offset'] = ( (int)$args['paged'] - 1 ) * (int)$_args['number'];
+		}
+
+		// Sort the results by the given identifier. Defaults to 'display_name'.
+		// Supported values are:
+		//   'display_name' - Ordered by the display name of the user.
+		//   'nicename'     - The slug/nicename of the user.
+		//   'post_count'   - The number of posts the user has.
+		$valid = array(
+			'display_name',
+			'nicename',
+			'post_count',
+		);
+
+		if ( isset( $args['orderby'] ) ) {
+			$orderby          = array_map( 'strtolower', (array)$args['orderby'] );
+			$_args['orderby'] = array_values( array_intersect( $valid, $orderby ) );
+		}
+
+		//The order direction. Options are 'ASC' and 'DESC'. Default is 'DESC'
+		$valid = array(
+			'asc',
+			'desc',
+		);
+
+		if ( isset( $args['order'] ) && in_array( strtolower( $args['order'] ), $valid ) ) {
+			$_args['order'] = strtolower( $args['order'] );
+		}
+
+		// An array of user ID's to include.
+		if ( isset( $args['include'] ) ) {
+			$_args['include'] = (array)$args['include'];
+		}
+
+		// Default to false. When true, the response will include a found rows
+		// count. There is some overhead in generating the total count so this
+		// should only be turned on when needed. This is automatically turned on
+		//  if the 'paged' filter is used.
+		if ( isset( $args['include_found'] ) ) {
+			$_args['include_found'] = filter_var( $args['include_found'], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		return $_args;
 	}
 
 	public function get_taxonomies( $name = null ) {
@@ -589,25 +683,25 @@ class APIv1 extends API_Base {
 	 */
 	public static function format_user( \WP_User $user ) {
 
-		$data = array(
-			'id' => $user->ID,
-			'id_str' => (string)$user->ID,
-			'nicename' => $user->data->user_nicename,
+		$avatar = get_avatar( $user->ID );
+		preg_match( "/src='([^']*)'/i", $avatar, $matches );
+
+		return array(
+			'id'           => $user->ID,
+			'id_str'       => (string)$user->ID,
+			'nicename'     => $user->data->user_nicename,
 			'display_name' => $user->data->display_name,
-			'user_url' => $user->data->user_url,
-
-			'posts_url' => 'http=>//example.com/author/john-doe/',
-			'avatar' => array(
+			'user_url'     => $user->data->user_url,
+			'posts_url'    => get_author_posts_url( $user->ID ),
+			'avatar'       => array(
 				array(
-					'url' => 'http=>//1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64',
-					'width' => 64,
-					'height' => 64,
-				),
+					'url'    => array_pop( $matches ),
+					'width'  => 96,
+					'height' => 96,
+				)
 			),
-			'meta' => array()
+			'meta'         => (object)array()
 		);
-
-		return $data;
 	}
 
 	public function get_rewrite_rules() {
