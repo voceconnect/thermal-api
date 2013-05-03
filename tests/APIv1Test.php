@@ -414,6 +414,70 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	public function testGetGalleryData() {
+
+		$post_obj->post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery order="DESC" orderby="ID"]
+POSTCONTENT;
+
+		$post = new WP_Post( $post_obj );
+
+		$expected = array(
+			array(
+				'orderby' => array(
+					'menu_order',
+					'ID'
+				),
+				'order'   => 'ASC'
+			),
+			array(
+				'orderby' => array(
+					'ID'
+				),
+				'order'   => 'DESC'
+			)
+		);
+
+		$actual = WP_JSON_API\APIv1::get_gallery_data( $post );
+
+		$this->assertEquals( $expected, $actual );
+	}
+
+	public function testGetGalleryDataBadParameters() {
+
+		$post_obj->post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery foobar tag="wrong"]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+			[gallery order="DESC" orderby="post_date"]
+POSTCONTENT;
+
+		$post = new WP_Post( $post_obj );
+
+		$expected = array(
+			array(
+				'orderby' => array(
+					'menu_order',
+					'ID'
+				),
+				'order'   => 'ASC'
+			),
+			array(
+				'orderby' => array(
+					'post_date'
+				),
+				'order'   => 'DESC'
+			)
+		);
+
+		$actual = WP_JSON_API\APIv1::get_gallery_data( $post );
+
+		$this->assertEquals( $expected, $actual );
+	}
+
 	public function testParseGalleryAttrs() {
 
 		$test_data = array(
