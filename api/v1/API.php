@@ -199,9 +199,7 @@ class APIv1 extends API_Base {
 			$found = $count['total_users'];
 		}
 
-		$users = array_map( function( &$user ) {
-			return APIv1::format_user( $user );
-		}, get_users( $args ) );
+		$users = array_map( array( __CLASS__, 'format_user' ), get_users( $args ) );
 
 		return isset( $found ) ? compact( 'found', 'users' ) : compact( 'users' );
 	}
