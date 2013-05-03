@@ -269,7 +269,7 @@ class APIv1 extends API_Base {
 		// check post content for gallery shortcode
 		if ( $gallery_data = self::get_gallery_data( $post ) ) {
 			$gallery_meta = array();
-			foreach ( $gallery_data as $gallery_key => $gallery ) {
+			foreach ( $gallery_data as $gallery ) {
 				$gallery_id = ! empty( $gallery['id'] ) ? intval( $gallery['id'] ) : $post->ID;
 				$order      = strtoupper( $gallery['order'] );
 				$orderby    = implode( ' ', $gallery['orderby'] );
