@@ -348,6 +348,51 @@ class APIv1Test extends WP_UnitTestCase {
 
 	}
 
+	public function testGetPostsForcePublicPostStatus() {
+		$query_vars = array(
+			'post_status' => array()
+		);
+
+		$example_query->query_vars = $query_vars;
+
+		\WP_JSON_API\APIv1::_force_public_post_status(&$example_query);
+
+		$this->assertEquals( array(), $example_query->query_vars['post_status'] );
+	}
+
+	public function testGetPostsForcePublicPostStatusBadStatus() {
+		$query_vars = array(
+			'post_status' => array( 'publish', 'skbdvckjbsd' )
+		);
+
+		$example_query->query_vars = $query_vars;
+
+		\WP_JSON_API\APIv1::_force_public_post_status(&$example_query);
+
+		$this->assertEquals( array( 'publish' => 'publish' ), $example_query->query_vars['post_status'] );
+	}
+
+	public function testGetPostsForcePublicPostStatusPrivateInvalidStatus() {
+		$query_vars = array(
+			'post_status' => array( 'private' )
+		);
+
+		$example_query->query_vars = $query_vars;
+
+		\WP_JSON_API\APIv1::_force_public_post_status(&$example_query);
+
+		$filter = has_filter( 'posts_request', array( 'WP_JSON_API\\APIv1', '_force_blank_request' ) );
+
+		$this->assertNotEquals( $filter, false );
+	}
+
+	public function testForceBlankRequest() {
+
+		$value = \WP_JSON_API\APIv1::_force_blank_request();
+
+		$this->assertEquals( $value, '' );
+	}
+
 	public function testPostMetaFeaturedID() {
 
 		$test_post_id = wp_insert_post( array(
