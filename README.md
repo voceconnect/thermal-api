@@ -586,7 +586,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of user ID's to include.</td>
 		</tr>

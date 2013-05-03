@@ -5,8 +5,6 @@ namespace WP_JSON_API;
 if ( ! defined( 'MAX_POSTS_PER_PAGE' ) )
 	define( 'MAX_POSTS_PER_PAGE', 10 );
 
-if ( ! defined( 'MAX_USERS_PER_PAGE' ) )
-	define( 'MAX_USERS_PER_PAGE', 10 );
 
 require_once( __DIR__ . '/../API_Base.php' );
 
@@ -211,18 +209,18 @@ class APIv1 extends API_Base {
 	 */
 	public static function get_user_args( $args = array() ) {
 		$_args = array(
-			'number' => MAX_USERS_PER_PAGE,
+			'number' => defined( 'MAX_USERS_PER_PAGE' ) ? MAX_USERS_PER_PAGE : 10,
 			'offset' => 0,
 			'orderby' => 'display_name',
 			'order' => 'desc',
-			'in' => array(),
+			'include' => array(),
 			'include_found' => false,
 		);
 
 		// The maximum number of posts to return. The value must range from
 		// 1 to MAX_USERS_PER_PAGE.
 		if ( isset( $args['per_page'] ) && (int)$args['per_page'] > 0 ) {
-			$_args['number'] = min( (int)$args['per_page'], MAX_USERS_PER_PAGE );
+			$_args['number'] = min( (int)$args['per_page'], $_args['number'] );
 		}
 
 		// The number of posts to skip over before returning the result set.
@@ -267,8 +265,8 @@ class APIv1 extends API_Base {
 		}
 
 		// An array of user ID's to include.
-		if ( isset( $args['in'] ) ) {
-			$_args['include'] = (array)$args['in'];
+		if ( isset( $args['include'] ) ) {
+			$_args['include'] = (array)$args['include'];
 		}
 
 		// Defaut to false. When true, the response will include a found rows
@@ -276,9 +274,7 @@ class APIv1 extends API_Base {
 		// should only be turned on when needed. This is automatically turned on
 		//  if the 'paged' filter is used.
 		if ( isset( $args['include_found'] ) && 
-				( $args['include_found'] == 'true' ||
-				  $args['include_found'] == '1' ) 
-		) {
+				filter_var( $args['include_found'], FILTER_VALIDATE_BOOLEAN ) ) {
 			$_args['include_found'] = true;
 		}
 

@@ -451,7 +451,7 @@ class APIv1Test extends WP_UnitTestCase {
 			array( 'include',
 				array( array( 1 ), array( 1, 2, 3 ) ),
 				array(
-					'in' => array( 1, array( 1, 2, 3 ) ),
+					'include' => array( 1, array( 1, 2, 3 ) ),
 				)
 			),
 			array( 'offset',
