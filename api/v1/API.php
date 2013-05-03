@@ -422,7 +422,7 @@ class APIv1 extends API_Base {
 				$orderby    = implode( ' ', $gallery['orderby'] );
 				$include    = ! empty( $gallery['include'] ) ? $gallery['include'] : array();
 
-				if ( ! empty( $gallery['order'] ) && 'RAND' == $gallery['order'] ) {
+				if ( ! empty( $order ) && 'RAND' == $order ) {
 					$orderby = 'none';
 				}
 

@@ -716,6 +716,23 @@ POSTCONTENT;
 		$this->assertEquals( $expected_media, $media );
 
 
+		// Other post's gallery with/without sort parameters
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery id="{$test_post_id_1}" order="rand"]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+POSTCONTENT;
+
+		$test_post_id_3 = self::_insert_post(
+			array(
+				'post_content' => $post_content,
+			)
+		);
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_3 ) );
+		// Test RAND ordering
+		$this->assertEquals( 'RAND', $formatted_post['meta']->gallery[0]['order'] );
+
 		self::_delete_attachment( $all_attachments );
 	}
 
