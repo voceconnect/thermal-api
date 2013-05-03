@@ -267,7 +267,7 @@ class APIv1 extends API_Base {
 		}
 
 		// check post content for gallery shortcode
-		if ( $gallery_data = $this->get_gallery_data( $post ) ) {
+		if ( $gallery_data = self::get_gallery_data( $post ) ) {
 			$gallery_meta = array();
 			foreach ( $gallery_data as $gallery_key => $gallery ) {
 				$gallery_id = ! empty( $gallery['id'] ) ? intval( $gallery['id'] ) : $post->ID;
@@ -366,7 +366,7 @@ class APIv1 extends API_Base {
 		return $data;
 	}
 
-	public function get_gallery_data( \WP_Post $post ) {
+	public static function get_gallery_data( \WP_Post $post ) {
 		global $shortcode_tags;
 
 		if ( !isset( $shortcode_tags['gallery'] ) )
