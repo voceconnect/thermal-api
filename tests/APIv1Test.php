@@ -355,6 +355,26 @@ class APIv1Test extends WP_UnitTestCase {
 			'post_title' => 'testPostFormat!'
 		) );
 
+		$expected_term     = get_term( 1, 'category' );
+		$expected_taxonomy = array(
+			'category' => array(
+				array(
+					'id'                   => 1,
+					'id_str'               => '1',
+					'term_taxonomy_id'     => 1,
+					'term_taxonomy_id_str' => '1',
+					'parent'               => 0,
+					'parent_str'           => '0',
+					'name'                 => 'Uncategorized',
+					'slug'                 => 'uncategorized',
+					'taxonomy'             => 'category',
+					'description'          => '',
+					'post_count'           => $expected_term->count,
+					'meta'                 => (object)array(),
+				),
+			),
+		);
+
 		$expected = array(
 			'id'               => $test_post_id,
 			'id_str'           => (string)$test_post_id,
@@ -377,6 +397,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'content_filtered' => '',
 			'mime_type'        => '',
 			'meta'             => (object)array(),
+			'taxonomies'       => (object)$expected_taxonomy,
 			'media'            => array(),
 			'author'           => \WP_JSON_API\APIv1::format_user( get_user_by( 'id', 1 ) ),
 		);
