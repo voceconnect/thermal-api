@@ -9,6 +9,39 @@ require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
 
 class APIv1Test extends WP_UnitTestCase {
 
+	protected function _insert_post( $args = array(), $imgs = array() ) {
+
+		$test_post_id = wp_insert_post( wp_parse_args( $args, array(
+			'post_status'           => 'publish',
+			'post_type'             => 'post',
+			'post_author'           => 1,
+			'post_parent'           => 0,
+			'menu_order'            => 0,
+			'post_content_filtered' => '',
+			'post_excerpt'          => 'This is the excerpt.',
+			'post_content'          => 'This is the content.',
+			'post_title'            => 'Hello World!',
+			'post_date'             => '2013-04-30 20:33:36',
+			'post_date_gmt'         => '2013-04-30 20:33:36',
+			'comment_status'        => 'open',
+		) ) );
+
+		if ( empty( $imgs ) ) {
+			return $test_post_id;
+		}
+
+		$attachment_ids = array();
+		foreach ( $imgs as $filename ) {
+			$upload           = $this->_upload_file( __DIR__ . '/data/' . $filename );
+			$attachment_ids[] = $this->_make_attachment( $upload, $test_post_id );
+		}
+
+		return array( 
+			'post_id' => $test_post_id,
+			'attachment_ids' => $attachment_ids,
+		);
+	}
+
 	protected function _upload_file( $filename ) {
 
 		$contents = file_get_contents($filename);
@@ -18,6 +51,20 @@ class APIv1Test extends WP_UnitTestCase {
 		return $upload;
 	}
 
+	protected function _delete_attachment( $attachment ) {
+		if ( is_array( $attachment ) ) {
+			foreach ( $attachment as $id ) {
+				wp_delete_attachment( $id, true );
+			}
+		}
+		else {
+			wp_delete_attachment( $attachment, true );
+		}
+	}
+
+	/*
+	 * Method pulled from WordPress testing suite
+	 */
 	protected function _make_attachment($upload, $parent_post_id = -1 ) {
 
 		$type = '';
@@ -134,8 +181,8 @@ class APIv1Test extends WP_UnitTestCase {
 
 
 		$test_post_id = wp_insert_post( array(
-			'post_status'           => 'draft',
-			'post_title'            => 'testGetPostDraft',
+			'post_status' => 'draft',
+			'post_title'  => 'testGetPostDraft',
 		) );
 
 		\Slim\Environment::mock( array(
@@ -297,19 +344,8 @@ class APIv1Test extends WP_UnitTestCase {
 		add_filter( 'pre_option_permalink_structure', $blank_permalink );
 		add_filter( 'pre_option_gmt_offset', '__return_zero' );
 
-		$test_post_id = wp_insert_post( array(
-			'post_status'           => 'publish',
-			'post_type'             => 'post',
-			'post_author'           => 1,
-			'post_parent'           => 0,
-			'menu_order'            => 0,
-			'post_content_filtered' => '',
-			'post_excerpt'          => 'This is the excerpt.',
-			'post_content'          => 'This is the content.',
-			'post_title'            => 'testPostFormat!',
-			'post_date'             => '2013-04-30 20:33:36',
-			'post_date_gmt'         => '2013-04-30 20:33:36',
-			'comment_status'        => 'open',
+		$test_post_id = self::_insert_post( array(
+			'post_title' => 'testPostFormat!'
 		) );
 
 		$expected = array(
@@ -395,24 +431,9 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testPostMetaFeaturedID() {
 
-		$test_post_id = wp_insert_post( array(
-			'post_status'           => 'publish',
-			'post_type'             => 'post',
-			'post_author'           => 1,
-			'post_parent'           => 0,
-			'menu_order'            => 0,
-			'post_content_filtered' => '',
-			'post_excerpt'          => 'This is the excerpt.',
-			'post_content'          => 'This is the content.',
-			'post_title'            => 'Hello World!',
-			'post_date'             => '2013-04-30 20:33:36',
-			'post_date_gmt'         => '2013-04-30 20:33:36',
-			'comment_status'        => 'open',
-		) );
-
-		$filename      = __DIR__ . '/data/250x250.png';
-		$upload        = $this->_upload_file( $filename );
-		$attachment_id = $this->_make_attachment($upload, $test_post_id);
+		$test_post_data = self::_insert_post( array(), array( '250x250.png' ) );
+		$test_post_id = $test_post_data['post_id'];
+		$attachment_id = $test_post_data['attachment_ids'][0];
 
 		set_post_thumbnail( $test_post_id, $attachment_id );
 
@@ -422,28 +443,13 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
 		$this->assertEquals( $attachment_id, $formatted_post['meta']->featured_image );
 
+		self::_delete_attachment( $attachment_id );
 	}
 
 	public function testFormatImageMediaItem() {
 
-		$test_post_id = wp_insert_post( array(
-			'post_status'           => 'publish',
-			'post_type'             => 'post',
-			'post_author'           => 1,
-			'post_parent'           => 0,
-			'menu_order'            => 0,
-			'post_content_filtered' => '',
-			'post_excerpt'          => 'This is the excerpt.',
-			'post_content'          => 'This is the content.',
-			'post_title'            => 'Hello World!',
-			'post_date'             => '2013-04-30 20:33:36',
-			'post_date_gmt'         => '2013-04-30 20:33:36',
-			'comment_status'        => 'open',
-		) );
-
-		$filename      = __DIR__ . '/data/250x250.png';
-		$upload        = $this->_upload_file( $filename );
-		$attachment_id = $this->_make_attachment( $upload, $test_post_id );
+		$test_post_data = self::_insert_post( array(), array( '250x250.png' ) );
+		$attachment_id = $test_post_data['attachment_ids'][0];
 
 		$full_image_attributes  = wp_get_attachment_image_src( $attachment_id, 'full' );
 		$thumb_image_attributes = wp_get_attachment_image_src( $attachment_id, 'thumbnail' );
@@ -473,6 +479,8 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_post = \WP_JSON_API\APIv1::format_image_media_item( $post );
 
 		$this->assertEquals( $expected, $formatted_post );
+
+		self::_delete_attachment( $attachment_id );
 	}
 
 	public function testGetRewriteRules() {
