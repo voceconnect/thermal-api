@@ -204,8 +204,8 @@ class APIv1 extends API_Base {
 	}
 	/**
 	 * Filter and validate the paramaters that will be bassed to get_users
-	 * @param $args
-	 * @return Array
+	 * @param $args [optional]
+	 * @return array
 	 */
 	public static function get_user_args( $args = array() ) {
 		$_args = array(
@@ -232,11 +232,9 @@ class APIv1 extends API_Base {
 		// return. This filter will automatically determine the offset to use
 		// based on the per_page and paged. Using this filter will cause
 		// include_found to be true.
-		if ( isset( $args['paged'] ) ) {
+		if ( isset( $args['paged'] ) && (int)$args['paged'] > 0 ) {
 			$_args['include_found'] = true;
-			if ( (int)$args['paged'] > 1 ) {
-				$_args['offset'] = ( (int)$args['paged'] - 1 ) * (int)$_args['number'];
-			}
+			$_args['offset'] = ( (int)$args['paged'] - 1 ) * (int)$_args['number'];
 		}
 
 		// Sort the results by the given identifier. Defaults to 'display_name'.

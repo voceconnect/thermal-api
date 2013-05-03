@@ -461,7 +461,7 @@ class APIv1Test extends WP_UnitTestCase {
 				),
 			),
 			array( 'include_found',
-				array( true, true, true ),
+				array( false, false, true, true ),
 				array(
 					'paged' => array( -1, 0, 1, 5 ),
 				),
