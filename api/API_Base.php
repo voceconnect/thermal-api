@@ -26,6 +26,16 @@ abstract class API_Base {
 
 		$this->app = $app;
 
+		$this->app->notFound( function () use ( $app ) {
+			$data = array(
+				'error' => array(
+					'message' => 'Invalid route'
+				),
+			);
+			$app->contentType( 'application/json' );
+			$app->halt( 400, json_encode( $data ) );
+		} );
+
 	}
 
 	/**
