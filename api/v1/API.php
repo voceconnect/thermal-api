@@ -24,6 +24,7 @@ class APIv1 extends API_Base {
 	protected $version = '1';
 
 	/**
+	 * Register the allowed routes.
 	 * @param \Slim\Slim $app
 	 */
 	public function __construct( \Slim\Slim $app ) {
@@ -36,6 +37,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * posts/:id endpoint.
 	 * @param int $id [optional]
 	 * @return array
 	 */
@@ -72,7 +74,6 @@ class APIv1 extends API_Base {
 
 	/**
 	 * 'parse_query' action, force public post_status values for API requests
-	 *
 	 * @param $wp_query
 	 */
 	public static function _force_public_post_status( $wp_query ) {
@@ -111,6 +112,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * Filter and validate the parameters that will be passed to get_posts.
 	 * @param array $request_args
 	 * @param int $id [optional]
 	 * @return array
@@ -295,8 +297,9 @@ class APIv1 extends API_Base {
 
 		return isset( $found ) ? compact( 'found', 'users' ) : compact( 'users' );
 	}
+
 	/**
-	 * Filter and validate the parameters that will be passed to get_users
+	 * Filter and validate the parameters that will be passed to get_users.
 	 * @param $args [optional]
 	 * @return array
 	 */
@@ -373,7 +376,8 @@ class APIv1 extends API_Base {
 	}
 
 	/**
-	 * @param $name [optional]
+	 * taxonomies/:id endpoint.
+	 * @param string $name [optional]
 	 * @return array
 	 */
 	public function get_taxonomies( $name = null ) {
@@ -408,8 +412,9 @@ class APIv1 extends API_Base {
 	}
 
 	/**
-	 * @param $name
-	 * @param $term_id [optional]
+	 * taxonomies/:taxonomy/terms/:term endpoint.
+	 * @param string $name
+	 * @param int $term_id [optional]
 	 * @return array
 	 */
 	public function get_terms( $name, $term_id = null ) {
@@ -432,6 +437,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * Filter and validate the parameters that will be passed to get_terms.
 	 * @param array $request_args
 	 * @param int $term_id [optional]
 	 * @return array
@@ -490,6 +496,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * Format the output of a taxonomy.
 	 * @param $taxonomy
 	 * @return array
 	 */
@@ -508,7 +515,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
-	 * Format post data
+	 * Format the output of a post.
 	 * @param \WP_Post $post
 	 * @return array Formatted post data
 	 */
@@ -561,7 +568,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
-	 * Format user data
+	 * Format the output of a user.
 	 * @param \WP_User $user
 	 * @return array Formatted user data
 	 */
@@ -610,6 +617,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * Format the output of a media item.
 	 * @param \WP_Post $post
 	 * @return array
 	 */
@@ -650,6 +658,7 @@ class APIv1 extends API_Base {
 	}
 
 	/**
+	 * Format the output of a term.
 	 * @param $term
 	 * @return array
 	 */
