@@ -531,42 +531,13 @@ class APIv1 extends API_Base {
 				$order      = strtoupper( $gallery['order'] );
 				$orderby    = implode( ' ', $gallery['orderby'] );
 				$include    = empty( $gallery['include'] ) ? array() : $gallery['include'];
+				$exclude    = empty( $gallery['exclude'] ) ? array() : $gallery['exclude'];
 
 				if ( ! empty( $order ) && ( 'RAND' == $order ) ) {
 					$orderby = 'none';
 				}
 
-				$attachments_args = array(
-					'post_type'      => 'attachment',
-					'post_mime_type' => 'image',
-					'order'          => $order,
-					'orderby'        => $orderby,
-				);
-				$attachments = array();
-
-				if ( ! empty( $include ) ) {
-
-					$attachments_args['include'] = $include;
-					$_attachments = get_posts( $attachments_args );
-
-					foreach ( $_attachments as $key => $val ) {
-						$attachments[$val->ID] = $_attachments[$key];
-					}
-
-				} elseif ( !empty( $gallery['exclude'] ) ) {
-
-					$attachments_args = array_merge( $attachments_args, array(
-						'post_parent' => $gallery_id,
-						'exclude'     => $gallery['exclude'],
-					) );
-					$attachments = get_children( $attachments_args );
-
-				} else {
-
-					$attachments_args['post_parent'] = $gallery_id;
-					$attachments = get_children( $attachments_args );
-
-				}
+				$attachments = self::get_gallery_attachments( $gallery_id, $order, $orderby, $include, $exclude );
 
 				$ids = array();
 				foreach ( $attachments as $attachment ) {
@@ -583,6 +554,53 @@ class APIv1 extends API_Base {
 		}
 
 		return array( 'gallery_meta' => $gallery_meta, 'media' => $media );
+	}
+
+	/**
+	 * @param $gallery_id
+	 * @param $order
+	 * @param $orderby
+	 * @param $include
+	 * @param $exclude
+	 * @return array|bool
+	 */
+	public static function get_gallery_attachments( $gallery_id, $order, $orderby, $include, $exclude ) {
+
+		$args = array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'order'          => $order,
+			'orderby'        => $orderby,
+		);
+
+		$attachments = array();
+
+		if ( ! empty( $include ) ) {
+
+			$args['include'] = $include;
+			$_attachments    = get_posts( $args );
+
+			foreach ( $_attachments as $key => $val ) {
+				$attachments[$val->ID] = $_attachments[$key];
+			}
+
+		} else if ( ! empty( $exclude ) ) {
+
+			$args = array_merge( $args, array(
+				'post_parent' => $gallery_id,
+				'exclude'     => $exclude,
+			) );
+			$attachments = get_children( $args );
+
+		} else {
+
+			$args['post_parent'] = $gallery_id;
+			$attachments         = get_children( $args );
+
+		}
+
+		return $attachments;
+
 	}
 
 	/**
