@@ -389,6 +389,43 @@ Orderby will also accept an array of multiple identifiers.
                         "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
                         "type": "integer",
                         "minimum": 1
+                    },
+                    "gallery": {
+                    	"description": "An array of objects that represent the galleries in the post content.",
+                    	"type": "array",
+                    	"required": false,
+                    	"items": {
+                    	 	"ids": {
+                    	 		"description": "The IDs of the attachments to be used in the gallery.",
+                    	 		"type": "array",
+                    	 		"required": false
+                    	 	},
+                        	"orderby": {
+                        		"description": "Specifies how to sort the display thumbnails.",
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"order": {
+                        		"description": "Specifies the sort order used to display thumbnails."
+                        		"type": "string",
+                        		"required": false
+                        	},
+                        	"include": {
+                        		"description": "An array of IDs to only show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"exclude": {
+                        		"description": "An array of IDs to not show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"id": {
+                    	 		"description": "The ID of the post to be used in the gallery. Used for specifying other posts.",
+                    	 		"type": "integer",
+                    	 		"required": false
+                    	 	}
+                    	}
                     }
                 }
             },
@@ -488,7 +525,19 @@ Orderby will also accept an array of multiple identifiers.
 		"author": [User Object],
 		"mime_type": "",
 		"meta": {
-			"featuredImage": 123456
+			"featuredImage": 123456,
+			"gallery" : [
+				{
+					"ids": [23],
+					"orderby": [
+						"menu_order",
+						"ID"
+					],
+					"order": "ASC",
+					….
+				},
+				….
+			]
 		},
 		"taxonomies": {
 			"category": [
