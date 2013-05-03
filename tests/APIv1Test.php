@@ -567,19 +567,12 @@ POSTCONTENT;
 		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
 
 
-		// Other post's gallery with/without sort parameters, and with exclude, and just ids
-		$image_ids = array_slice( $attachment_ids_1, 1 );
-		$image_ids_string = implode( ',', $image_ids );
-
+		// Other post's gallery with/without sort parameters
 		$post_content = <<<POSTCONTENT
 			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
 			[gallery id={$test_post_id_1}]
-			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
 			[gallery id={$test_post_id_1} order="DESC" orderby="ID"]
-			and more recently with desktop publishing software like Aldus PageMaker
-			[gallery id={$test_post_id_1} exclude={$attachment_ids_1[1]}]
-			including versions of Lorem Ipsum.
-			[gallery ids={$image_ids_string}]
 POSTCONTENT;
 
 		$test_post_data_2 = self::_insert_post(
@@ -596,7 +589,7 @@ POSTCONTENT;
 
 		$all_attachments = array_unique( array_merge( $all_attachments, $attachment_ids_2 ) );
 
-		$expected = array(
+		$expected_meta = array(
 			array(
 				'ids' => $attachment_ids_1,
 				'orderby' => array(
@@ -612,16 +605,46 @@ POSTCONTENT;
 				),
 				'order' => 'DESC',
 			),
+		);
+
+		$expected_media = array_merge( $attachment_ids_1, $attachment_ids_2 );
+		sort( $expected_media );
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
+
+		$media = array_map( function( $img ) {
+			return $img['id'];
+		}, $formatted_post['media'] );
+		sort( $media );
+
+		// Other post's gallery
+		//  - without order parameters
+		//  - with order parameters
+		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+
+		// Media with other post's images
+		$this->assertSameSize( $expected_media, $formatted_post['media'] );
+		$this->assertEquals( $expected_media, $media );
+
+
+		// Other post's gallery with exclude
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery id={$test_post_id_1} exclude={$attachment_ids_1[1]}]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+POSTCONTENT;
+
+		self::_insert_post(
 			array(
-				'ids' => array_merge( array_diff( $attachment_ids_1, array( $attachment_ids_1[1] ) ) ),
-				'orderby' => array(
-					'menu_order',
-					'ID',
-				),
-				'order' => 'ASC',
-			),
+				'ID'           => $test_post_id_2,
+				'post_content' => $post_content,
+			)
+		);
+
+		$expected_ids = array_merge( array_diff( $attachment_ids_1, array( $attachment_ids_1[1] ) ) );
+		$expected_meta = array(
 			array(
-				'ids' => $image_ids,
+				'ids' => $expected_ids,
 				'orderby' => array(
 					'menu_order',
 					'ID',
@@ -630,16 +653,70 @@ POSTCONTENT;
 			),
 		);
 
+		$expected_media = array_merge( $expected_ids, $attachment_ids_2 );
+		sort( $expected_media );
+
 		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
 
-		// Other post's gallery
-		//  - without order parameters
-		//  - with order parameters
-		//  - with exclude parameter
-		// Individual IDs
-		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+		$media = array_map( function( $img ) {
+			return $img['id'];
+		}, $formatted_post['media'] );
+		sort( $media );
 
-//		self::_delete_attachment( $all_attachments );
+		// Other post's gallery with exclude
+		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+
+		// Media with other post's images
+		$this->assertSameSize( $expected_media, $formatted_post['media'] );
+		$this->assertEquals( $expected_media, $media );
+		
+
+		// List of IDs
+		$image_ids = array_slice( $attachment_ids_1, 1 );
+		$image_ids_string = implode( ',', $image_ids );
+
+		$post_content = <<<POSTCONTENT
+			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+			[gallery ids={$image_ids_string}]
+			It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+POSTCONTENT;
+
+		self::_insert_post(
+			array(
+				'ID'           => $test_post_id_2,
+				'post_content' => $post_content,
+			)
+		);
+
+		$expected_meta = array(
+			array(
+				'ids' => $image_ids,
+				'orderby' => array(
+					'post__in',
+				),
+				'order' => 'ASC',
+			),
+		);
+
+		$expected_media = array_merge( $image_ids, $attachment_ids_2 );
+		sort( $expected_media );
+
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_2 ) );
+
+		$media = array_map( function( $img ) {
+			return $img['id'];
+		}, $formatted_post['media'] );
+		sort( $media );
+
+		// Other post's gallery with exclude
+		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+
+		// Media with other post's images
+		$this->assertSameSize( $expected_media, $formatted_post['media'] );
+		$this->assertEquals( $expected_media, $media );
+
+
+		self::_delete_attachment( $all_attachments );
 	}
 
 	public function testGetGalleryData() {
@@ -722,7 +799,28 @@ POSTCONTENT;
 			'ids' => array( 5, 10, 15 ),
 			'orderby' => array( 'title' ),
 			'order'   => 'desc',
-			'include' => array( 2, 4, 6 ),
+			'include' => array( 5, 10, 15 ),
+			'exclude' => array( 1, 3, 5 ),
+		);
+
+		$data = WP_JSON_API\APIv1::parse_gallery_attrs( $test_data );
+		$this->assertEquals( $expected_data, $data );
+
+
+		$test_data = array(
+			'id'      => '5',
+			'ids'     => '5, 10, 15',
+			'order'   => 'desc',
+			'include' => '2, 4, 6',
+			'exclude' => '1, 3, 5',
+		);
+
+		$expected_data = array(
+			'id' => 5,
+			'ids' => array( 5, 10, 15 ),
+			'orderby' => array( 'post__in' ),
+			'order'   => 'desc',
+			'include' => array( 5, 10, 15 ),
 			'exclude' => array( 1, 3, 5 ),
 		);
 

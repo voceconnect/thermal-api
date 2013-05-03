@@ -422,15 +422,7 @@ class APIv1 extends API_Base {
 				$orderby    = implode( ' ', $gallery['orderby'] );
 				$include    = ! empty( $gallery['include'] ) ? $gallery['include'] : array();
 
-				if ( ! empty( $gallery['ids'] ) ) {
-					// 'ids' is explicitly ordered, unless you specify otherwise.
-					if ( empty( $gallery['orderby'] ) ) {
-						$orderby = 'post__in';
-					}
-					$include = $gallery['ids'];
-				}
-
-				if ( ! empty( $gallery['order'] ) && 'RAND' == strtoupper( $gallery['order'] ) ) {
+				if ( ! empty( $gallery['order'] ) && 'RAND' == $gallery['order'] ) {
 					$orderby = 'none';
 				}
 
@@ -561,6 +553,13 @@ class APIv1 extends API_Base {
 
 		if ( empty( $gallery_attrs['order'] ) ) {
 			$gallery_attrs['order'] = 'ASC';
+		}
+		if ( ! empty( $gallery_attrs['ids'] ) ) {
+			// 'ids' is explicitly ordered, unless you specify otherwise.
+			if ( empty( $gallery_attrs['orderby'] ) ) {
+				$gallery_attrs['orderby'] = 'post__in';
+			}
+			$gallery_attrs['include'] = $gallery_attrs['ids'];
 		}
 		if ( empty( $gallery_attrs['orderby'] ) ) {
 			$gallery_attrs['orderby'] = 'menu_order, ID';
