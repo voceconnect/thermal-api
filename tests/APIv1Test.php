@@ -52,13 +52,8 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	protected function _delete_attachment( $attachment ) {
-		if ( is_array( $attachment ) ) {
-			foreach ( $attachment as $id ) {
-				wp_delete_attachment( $id, true );
-			}
-		}
-		else {
-			wp_delete_attachment( $attachment, true );
+		foreach ( (array)$attachment as $id ) {
+			wp_delete_attachment( $id, true );
 		}
 	}
 
