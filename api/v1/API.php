@@ -271,8 +271,8 @@ class APIv1 extends API_Base {
 			$gallery_meta = array();
 			foreach ( $gallery_data as $gallery_key => $gallery ) {
 				$gallery_id = ! empty( $gallery['id'] ) ? intval( $gallery['id'] ) : $post->ID;
-				$order      = ! empty( $gallery['order'] ) ? strtoupper( $gallery['order'] ) : 'ASC';
-				$orderby    = ! empty( $gallery['orderby'] ) ? implode( ' ', $gallery['orderby'] ) : 'menu_order ID';
+				$order      = strtoupper( $gallery['order'] );
+				$orderby    = implode( ' ', $gallery['orderby'] );
 				$include    = ! empty( $gallery['include'] ) ? $gallery['include'] : array();
 
 				if ( ! empty( $gallery['ids'] ) ) {
@@ -316,13 +316,17 @@ class APIv1 extends API_Base {
 					$attachments = get_children( $attachments_args );
 				}
 
-				$gallery_meta[$gallery_key]['ids'] = array();
-				$gallery_meta[$gallery_key]['orderby'] = $orderby;
-				$gallery_meta[$gallery_key]['order'] = $order;
+				$ids = array();
 				foreach ( $attachments as $attachment ) {
 					$media[$attachment->ID] = self::format_image_media_item( $attachment );
-					$gallery_meta[$gallery_key]['ids'][] = $attachment->ID;
+					$ids[] = $attachment->ID;
 				}
+
+				$gallery_meta[] = array(
+					'ids' => $ids,
+					'orderby' => $gallery['orderby'],
+					'order' => $order,
+				);
 			}
 
 			$meta['gallery'] = $gallery_meta;
@@ -378,7 +382,6 @@ class APIv1 extends API_Base {
 		preg_match_all( "/$pattern/s", $post->post_content, $matches );
 
 		$gallery_data = array();
-
 		foreach ( $matches[3] as $gallery_args ) {
 			$attrs = shortcode_parse_atts( $gallery_args );
 			$gallery_data[] = self::parse_gallery_attrs( $attrs );
@@ -402,7 +405,6 @@ class APIv1 extends API_Base {
 			'include',
 			'exclude',
 		);
-
 		$array_params = array(
 			'ids',
 			'orderby',
@@ -410,8 +412,14 @@ class APIv1 extends API_Base {
 			'exclude',
 		);
 
-		$gallery = array();
+		if ( empty( $gallery_attrs['order'] ) ) {
+			$gallery_attrs['order'] = 'ASC';
+		}
+		if ( empty( $gallery_attrs['orderby'] ) ) {
+			$gallery_attrs['orderby'] = 'menu_order, ID';
+		}
 
+		$gallery = array();
 		foreach ( $params as $param ) {
 			if ( !empty( $gallery_attrs[$param] ) ) {
 				if ( in_array( $param, $array_params ) ) {

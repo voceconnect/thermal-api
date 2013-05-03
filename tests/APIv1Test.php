@@ -436,6 +436,16 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$data = WP_JSON_API\APIv1::parse_gallery_attrs( $test_data );
 		$this->assertEquals( $expected_data, $data );
+
+
+		$expected_data = array(
+			'orderby' => array( 'menu_order', 'ID' ),
+			'order'   => 'ASC',
+		);
+
+		$data = WP_JSON_API\APIv1::parse_gallery_attrs( '' );
+		$this->assertInternalType( 'array', $data );
+		$this->assertEquals( $expected_data, $data );
 	}
 
 	public function testGetRewriteRules() {
