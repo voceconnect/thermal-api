@@ -556,7 +556,7 @@ class APIv1 extends API_Base {
 			'mime_type'        => $post->post_mime_type,
 			'meta'             => (object)array(),
 			'media'            => $media,
-			'author'           => self::format_user( get_user_by( 'id', $post->post_author)),
+			'author'           => self::format_user( get_user_by( 'id', $post->post_author ) ),
 		);
 
 		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
