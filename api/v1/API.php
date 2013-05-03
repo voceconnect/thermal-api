@@ -381,13 +381,13 @@ class APIv1 extends API_Base {
 
 		foreach ( $matches[3] as $gallery_args ) {
 			$attrs = shortcode_parse_atts( $gallery_args );
-			$gallery_data[] = self::create_gallery_object( $attrs );
+			$gallery_data[] = self::parse_gallery_attrs( $attrs );
 		}
 
 		return $gallery_data;
 	}
 
-	public static function create_gallery_object( $gallery_attrs ) {
+	public static function parse_gallery_attrs( $gallery_attrs ) {
 
 		$clean_val = function( $val ) {
 			$trimmed = trim( $val );

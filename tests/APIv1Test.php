@@ -414,6 +414,30 @@ class APIv1Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $formatted_post );
 	}
 
+	public function testParseGalleryAttrs() {
+
+		$test_data = array(
+			'id'      => '5',
+			'ids'     => '5, 10, 15',
+			'orderby' => 'title',
+			'order'   => 'desc',
+			'include' => '2, 4, 6',
+			'exclude' => '1, 3, 5',
+		);
+
+		$expected_data = array(
+			'id' => 5,
+			'ids' => array( 5, 10, 15 ),
+			'orderby' => array( 'title' ),
+			'order'   => 'desc',
+			'include' => array( 2, 4, 6 ),
+			'exclude' => array( 1, 3, 5 ),
+		);
+
+		$data = WP_JSON_API\APIv1::parse_gallery_attrs( $test_data );
+		$this->assertEquals( $expected_data, $data );
+	}
+
 	public function testGetRewriteRules() {
 		$slim = new \Slim\Slim();
 		$api  = new \WP_JSON_API\APIv1( $slim );
