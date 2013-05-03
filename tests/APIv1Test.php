@@ -736,7 +736,7 @@ POSTCONTENT;
 		self::_delete_attachment( $all_attachments );
 	}
 
-	public function testGetGalleryData() {
+	public function testGetPostGalleries() {
 
 		$post_obj->post_content = <<<POSTCONTENT
 			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
@@ -763,12 +763,12 @@ POSTCONTENT;
 			)
 		);
 
-		$actual = WP_JSON_API\APIv1::get_gallery_data( $post );
+		$actual = WP_JSON_API\APIv1::get_post_galleries( $post );
 
 		$this->assertEquals( $expected, $actual );
 	}
 
-	public function testGetGalleryDataBadParameters() {
+	public function testGetPostGalleriesBadParameters() {
 
 		$post_obj->post_content = <<<POSTCONTENT
 			Lorem Ipsum is simply dummy text of the printing and typesetting industry.
@@ -795,7 +795,7 @@ POSTCONTENT;
 			)
 		);
 
-		$actual = WP_JSON_API\APIv1::get_gallery_data( $post );
+		$actual = WP_JSON_API\APIv1::get_post_galleries( $post );
 
 		$this->assertEquals( $expected, $actual );
 	}

@@ -514,31 +514,11 @@ class APIv1 extends API_Base {
 		);
 	}
 
-	/**
-	 * Format the output of a post.
-	 * @param \WP_Post $post
-	 * @return array Formatted post data
-	 */
-	public static function format_post( \WP_Post $post ) {
-		$GLOBALS['post'] = $post;
-		setup_postdata( $post );
-
-		$media = array();
-		$meta = array();
-
-		// get direct post attachments
-		$attachments = get_posts( array(
-			'post_parent'    => $post->ID,
-			'post_mime_type' => 'image',
-			'post_type'      => 'attachment',
-		) );
-		foreach ( $attachments as $attachment ) {
-			$media[$attachment->ID] = self::format_image_media_item( $attachment );
-		}
+	public static function get_gallery_meta( $post, $media ) {
+		$gallery_meta = array();
 
 		// check post content for gallery shortcode
-		if ( $gallery_data = self::get_gallery_data( $post ) ) {
-			$gallery_meta = array();
+		if ( $gallery_data = self::get_post_galleries( $post ) ) {
 			foreach ( $gallery_data as $gallery ) {
 				$gallery_id = ! empty( $gallery['id'] ) ? intval( $gallery['id'] ) : $post->ID;
 				$order      = strtoupper( $gallery['order'] );
@@ -590,8 +570,38 @@ class APIv1 extends API_Base {
 					'order'   => $order,
 				);
 			}
+		}
 
-			$meta['gallery'] = $gallery_meta;
+		return array( 'gallery_meta' => $gallery_meta, 'media' => $media );
+	}
+
+	/**
+	 * Format post data
+	 * @param \WP_Post $post
+	 * @return Array Formatted post data
+	 */
+	public function format_post( \WP_Post $post ) {
+		$GLOBALS['post'] = $post;
+		setup_postdata( $post );
+
+		$media = array();
+		$meta = array();
+
+		// get direct post attachments
+		$attachments = get_posts( array(
+			'post_parent'    => $post->ID,
+			'post_mime_type' => 'image',
+			'post_type'      => 'attachment',
+		) );
+		foreach ( $attachments as $attachment ) {
+			$media[$attachment->ID] = self::format_image_media_item( $attachment );
+		}
+
+		// get gallery meta
+		$gallery_meta = self::get_gallery_meta( $post, $media );
+		if ( !empty( $gallery_meta['gallery_meta'] ) ) {
+			$meta['gallery'] = $gallery_meta['gallery_meta'];
+			$media = $gallery_meta['media'];
 		}
 
 		if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
@@ -632,7 +642,7 @@ class APIv1 extends API_Base {
 		return $data;
 	}
 
-	public static function get_gallery_data( \WP_Post $post ) {
+	public static function get_post_galleries( \WP_Post $post ) {
 		global $shortcode_tags;
 
 		if ( !isset( $shortcode_tags['gallery'] ) )
