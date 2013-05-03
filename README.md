@@ -389,6 +389,43 @@ Orderby will also accept an array of multiple identifiers.
                         "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
                         "type": "integer",
                         "minimum": 1
+                    },
+                    "gallery": {
+                    	"description": "An array of objects that represent the galleries in the post content.",
+                    	"type": "array",
+                    	"required": false,
+                    	"items": {
+                    	 	"ids": {
+                    	 		"description": "The IDs of the attachments to be used in the gallery.",
+                    	 		"type": "array",
+                    	 		"required": false
+                    	 	},
+                        	"orderby": {
+                        		"description": "Specifies how to sort the display thumbnails.",
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"order": {
+                        		"description": "Specifies the sort order used to display thumbnails."
+                        		"type": "string",
+                        		"required": false
+                        	},
+                        	"include": {
+                        		"description": "An array of IDs to only show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"exclude": {
+                        		"description": "An array of IDs to not show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"id": {
+                    	 		"description": "The ID of the post to be used in the gallery. Used for specifying other posts.",
+                    	 		"type": "integer",
+                    	 		"required": false
+                    	 	}
+                    	}
                     }
                 }
             },
@@ -488,7 +525,19 @@ Orderby will also accept an array of multiple identifiers.
 		"author": [User Object],
 		"mime_type": "",
 		"meta": {
-			"featuredImage": 123456
+			"featuredImage": 123456,
+			"gallery" : [
+				{
+					"ids": [23],
+					"orderby": [
+						"menu_order",
+						"ID"
+					],
+					"order": "ASC",
+					….
+				},
+				….
+			]
 		},
 		"taxonomies": {
 			"category": [
@@ -586,7 +635,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of user ID's to include.</td>
 		</tr>
@@ -647,13 +696,13 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "string",
                 "required": false
             },
-            "postsUrl": {
+            "posts_url": {
                 "description": "The URL to the user's posts.",
                 "type": "string",
                 "format": "uri",
                 "required": false
             },
-            "userUrl": {
+            "user_url": {
                 "description": "The User's personal URL.",
                 "type": "string",
                 "required": false
@@ -699,8 +748,8 @@ Orderby will also accept an array of multiple identifiers.
 		"id_str" : "1234567",
 		"nicename": "john-doe",
 		"display_name":"John Doe",
-		"postsUrl": "http://example.com/author/john-doe/",
-		"userUrl": "http://vocecomm.com",
+		"posts_url": "http://example.com/author/john-doe/",
+		"user_url": "http://vocecomm.com",
 		"avatar": [
 			{
 				"url":"http://1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64",

@@ -911,6 +911,8 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testFormatTerm() {
+		$term = get_term( 1, 'category' );
+
 		$expected = array(
 			'id' => 1,
 			'id_str' => '1',
@@ -922,12 +924,138 @@ class APIv1Test extends WP_UnitTestCase {
 			'slug' => 'uncategorized',
 			'taxonomy' => 'category',
 			'description' => '',
-			'post_count' => 4,
+			'post_count' => $term->count,
 			'meta' => (object)array(),
 		);
-		$actual = \WP_JSON_API\APIv1::format_term( get_term( 1, 'category' ) );
+		$actual = \WP_JSON_API\APIv1::format_term( $term );
 
 		$this->assertEquals( $actual, $expected );
 	}
 
+	/**
+	 *
+	 */
+	public function _user_args() {
+		return array(
+			array( 'offset',
+				array( 0, 0, 0, 5, 10, 60 ),
+				array(
+					'paged'    => array(  0, -1, 0, 2, 2, 11 ),
+					'per_page' => array( -1,  0, 5, 5, 50, 6 ),
+				),
+			),
+			array( 'number',
+				array( 10, 10, 5, 5, 10, 5, 5, 10 ),
+				array(
+					'per_page' => array( -1, 0, 5, 5, 50, 5, 5, 'foo' ),
+				),
+			),
+			array( 'orderby',
+				array( array( 'display_name' ), array( 'post_count' ), array(), array( 'display_name', 'post_count' ) ),
+				array(
+					'orderby' => array( 'display_name', 'POST_COUNT', 'foo', array( 'display_name', 'post_count' ) ),
+				),
+			),
+			array( 'order',
+				array( 'desc', 'asc', 'desc' ),
+				array(
+					'order' => array( 'desc', 'ASC', 'foo' ),
+				),
+			),
+			array( 'include',
+				array( array( 1 ), array( 1, 2, 3 ) ),
+				array(
+					'include' => array( 1, array( 1, 2, 3 ) ),
+				)
+			),
+			array( 'offset',
+				array( 0, 0, 0, 0, 10, 5, 20 ),
+				array(
+					'offset' => array( 0, 0, 0, 0, 10, 5, 20 ),
+				),
+			),
+			array( 'include_found',
+				array( false, false, true, true ),
+				array(
+					'paged' => array( -1, 0, 1, 5 ),
+				),
+			),
+			array( 'include_found',
+				array( true, false, false ),
+				array(
+					'include_found' => array( true, false, 'foo' ),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Test that the parameters that are passted to the get_users function
+	 * are correct.
+	 * @group Users
+	 * @dataProvider _user_args
+	 * @param $param
+	 * @param $expected
+	 * @param $args
+	 */
+	public function testGetUserArgs( $param, $expected, $args ) {
+		for ( $i = 0; $i < count( $expected ); $i++ ) {
+			$_args = array();
+			foreach ( $args as $key => $value ) {
+				$_args[$key] = $value[$i];
+			}
+			$actual = \WP_JSON_API\APIv1::get_user_args( $_args );
+			$this->assertEquals( $expected[$i], $actual[$param] );
+		}
+	}
+
+	/**
+	 * Test that the format user method returns the correct result.
+	 * @group Users
+	 */
+	public function testFormatUser() {
+		$actual   = \WP_JSON_API\APIv1::format_user( get_userdata( 1 ) );
+		$expected = array(
+			'id'           => 1,
+			'id_str'       => '1',
+			'nicename'     => 'admin',
+			'display_name' => 'admin',
+			'user_url'     => '',
+			'posts_url'    => home_url( '?author=1' ),
+			'avatar'       => array(
+				array(
+					'url'    => 'http://1.gravatar.com/avatar/96614ec98aa0c0d2ee75796dced6df54?s=96&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D96&amp;r=G',
+					'width'  => 96,
+					'height' => 96,
+				),
+			),
+			'meta'         => (object)array(),
+		);
+
+		$this->assertEquals( $expected, $actual );
+	}
+
+	/**
+	 * Test the users/:id endpoint.
+	 * @group Users
+	 */
+	public function testGetUsers() {
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/users',
+			'QUERY_STRING' => http_build_query( array(
+				'include_found' => true,
+			) ),
+		));
+
+		$api = new \WP_JSON_API\APIv1( new \Slim\Slim() );
+
+		$users = $api->get_users();
+		$this->assertArrayHasKey( 'found', $users );
+		$this->assertArrayHasKey( 'users', $users );
+
+		$users = $api->get_users( 1 );
+		$this->assertArrayHasKey( 'users', $users );
+		$this->assertCount( 1, $users['users'] );
+	}
 }
