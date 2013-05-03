@@ -52,24 +52,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 	}
 
-
-	public function getPostsSetUp( $query_args = array(), $id = null ) {
-
-		$query_string = build_query( $query_args );
-
-		\Slim\Environment::mock( array(
-			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO'      => WP_API_BASE . '/v1/test',
-			'QUERY_STRING'   => $query_string,
-		) );
-
-		$app = new \Slim\Slim();
-
-		$api = new \WP_JSON_API\APIv1( $app );
-
-		return $api->get_post_query( $app->request(), $id );
-	}
-
 	public function testGetPosts() {
 		\Slim\Environment::mock( array(
 			'REQUEST_METHOD' => 'GET',
@@ -95,6 +77,20 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$app  = new \Slim\Slim();
 		$api  = new \WP_JSON_API\APIv1( $app );
+		$data = $api->get_posts();
+
+		$this->assertArrayHasKey( 'posts', $data );
+		$this->assertArrayHasKey( 'found', $data );
+
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts',
+			'QUERY_STRING' => 'paged=1',
+		));
+
+		$app = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $app );
 		$data = $api->get_posts();
 
 		$this->assertArrayHasKey( 'posts', $data );
@@ -135,14 +131,32 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'posts', $data );
 		$this->assertEmpty( $data['posts'] );
+
+
+		$test_post_id = wp_insert_post( array(
+			'post_status'           => 'draft',
+			'post_title'            => 'testGetPostDraft',
+		) );
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/posts/' . $test_post_id,
+			'QUERY_STRING' => '',
+		));
+
+		$app = new \Slim\Slim();
+		$api = new \WP_JSON_API\APIv1( $app );
+		$data = $api->get_posts( $test_post_id );
+
+		$this->assertEmpty( $data['posts'] );
 	}
 
 	// All parameters are correct, using arrays for parameters when possible
-	public function testGetPostQuery() {
+	public function testGetPostArgs() {
 
 		$test_args = array(
 			'taxonomy' => array(
-				'post_tag'  => array( 1, 2, 3 )
+				'post_tag' => array( 1, 2, 3 )
 			),
 			'after'    => '2013-01-05',
 			'before'   => '2013-01-01',
@@ -150,14 +164,14 @@ class APIv1Test extends WP_UnitTestCase {
 			'cat'      => array( 7, 8, -9 ),
 			'orderby'  => array( 'ID', 'author' ),
 			'per_page' => 5,
-			'paged'    => 1 // also should set 'found_posts'
+			'paged'    => 1,
+			'fake'     => 'data not in whitelist',
 		);
 
-		$api_get_posts = $this->getPostsSetUp( $test_args );
+		$query_vars = \WP_JSON_API\APIv1::get_post_args( $test_args );
+		$query      = new \WP_Query( $query_vars );
 
-		$query_vars = $api_get_posts->query_vars;
-
-		//Taxonomies and Categories
+		// Taxonomies and Categories
 		$tax_array = array(
 			'relation' => 'OR',
 			array(
@@ -181,29 +195,41 @@ class APIv1Test extends WP_UnitTestCase {
 		);
 		$tax_object = new WP_Tax_Query( $tax_array );
 
-		$this->assertEquals( $tax_object, $api_get_posts->tax_query );
+		$this->assertEquals( $tax_object, $query->tax_query );
 
+		// After
+		$this->assertContains( "post_date > '2013-01-05'", $query->request );
 
-		//After
-		$this->assertContains( "post_date > '2013-01-05'", $api_get_posts->request );
+		// Before
+		$this->assertContains( "post_date < '2013-01-01'", $query->request );
 
-		//Before
-		$this->assertContains( "post_date < '2013-01-01'", $api_get_posts->request );
-
-		//Author
+		// Author
 		$this->assertEquals( '1,5', $query_vars['author'] );
 
-		//Orderby
+		// Orderby
 		$this->assertEquals( 'ID author', $query_vars['orderby'] );
 
-		//Posts_per_page
-		$this->assertEquals( $query_vars['posts_per_page'], $test_args['per_page'] );
+		// Posts_per_page
+		$this->assertEquals( $test_args['per_page'], $query_vars['posts_per_page'] );
 
-		//Paged
-		$this->assertEquals( $query_vars['paged'], $test_args['paged'] );
-		// also verify that found posts is set, since paged is set
-		$this->assertEquals( $query_vars['found_posts'], true );
+		// Paged
+		$this->assertEquals( $test_args['paged'], $query_vars['paged'] );
 
+		// No forbidded vars
+		$this->assertArrayNotHasKey( 'fake', $query_vars );
+
+	}
+
+	public function testGetPostsByIdParameterNotRoute() {
+
+		$test_args = array(
+			'p' => 1
+		);
+
+		$query_vars = \WP_JSON_API\APIv1::get_post_args( $test_args );
+
+		// P(ost ID)
+		$this->assertEquals( $test_args['p'], $query_vars['p'] );
 	}
 
 	// Parameters correct and use strings when possible
@@ -214,9 +240,8 @@ class APIv1Test extends WP_UnitTestCase {
 			'orderby' => 'author',
 		);
 
-		$api_get_posts = $this->getPostsSetUp( $test_args );
-
-		$query_vars = $api_get_posts->query_vars;
+		$query_vars = \WP_JSON_API\APIv1::get_post_args( $test_args );
+		$query = new \WP_Query( $query_vars );
 
 		//Author
 		$this->assertEquals( '1', $query_vars['author'] );
@@ -232,7 +257,7 @@ class APIv1Test extends WP_UnitTestCase {
 		);
 		$tax_object = new WP_Tax_Query( $tax_array );
 
-		$this->assertEquals( $tax_object, $api_get_posts->tax_query );
+		$this->assertEquals( $tax_object, $query->tax_query );
 
 		//Orderby
 		$this->assertEquals( 'author', $query_vars['orderby'] );
@@ -248,9 +273,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'per_page' => 20,                      // MAX_POSTS_PER_PAGE set to 10 in API
 		);
 
-		$api_get_posts = $this->getPostsSetUp( $test_args );
-
-		$query_vars = $api_get_posts->query_vars;
+		$query_vars = \WP_JSON_API\APIv1::get_post_args( $test_args );
 
 		//Author
 		$this->assertEmpty( $query_vars['author'] );
@@ -273,9 +296,6 @@ class APIv1Test extends WP_UnitTestCase {
 
 		add_filter( 'pre_option_permalink_structure', $blank_permalink );
 		add_filter( 'pre_option_gmt_offset', '__return_zero' );
-
-		$slim = new \Slim\Slim();
-		$api = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
@@ -319,7 +339,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$test_post = get_post( $test_post_id );
 
-		$actual = $api->format_post( $test_post );
+		$actual = \WP_JSON_API\APIv1::format_post( $test_post );
 
 		$this->assertEquals( $expected, $actual );
 
@@ -329,8 +349,6 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testPostMetaFeaturedID() {
-		$slim = new \Slim\Slim();
-		$api  = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
@@ -353,7 +371,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		set_post_thumbnail( $test_post_id, $attachment_id );
 
-		$formatted_post = $api->format_post( get_post( $test_post_id ) );
+		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id ) );
 
 		$this->assertArrayHasKey( 'meta', $formatted_post );
 		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
@@ -362,8 +380,6 @@ class APIv1Test extends WP_UnitTestCase {
 	}
 
 	public function testFormatImageMediaItem() {
-		$slim = new \Slim\Slim();
-		$api  = new \WP_JSON_API\APIv1( $slim );
 
 		$test_post_id = wp_insert_post( array(
 			'post_status'           => 'publish',
@@ -408,8 +424,8 @@ class APIv1Test extends WP_UnitTestCase {
 			),
 		);
 
-		$post           = get_post( $attachment_id );
-		$formatted_post = $api->format_image_media_item( $post );
+		$post = get_post( $attachment_id );
+		$formatted_post = \WP_JSON_API\APIv1::format_image_media_item( $post );
 
 		$this->assertEquals( $expected, $formatted_post );
 	}
