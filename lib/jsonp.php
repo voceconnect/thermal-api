@@ -41,12 +41,9 @@ class JSONP {
 	 * @return bool
 	 */
 	public static function has_reserved_word($identifier) {
-		foreach (self::$reserved_words as $word) {
-			if (strpos($identifier, $word) !== false) {
-				return true;
-			}
-		}
-		return false;
+
+		return in_array( $identifier, self::$reserved_words );
+
 	}
 
 	/**
@@ -55,6 +52,7 @@ class JSONP {
 	 * @return bool
 	 */
 	public static function has_valid_syntax($identifier) {
+		// TODO: accept square bracket notation (nested?)
 		$syntax = '/^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\x{200C}\x{200D}\.]*+$/u';
 
 		if (preg_match($syntax, $identifier) == 1) {

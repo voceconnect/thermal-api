@@ -10,8 +10,9 @@ require_once(__DIR__ . '/../lib/jsonp.php');
 class JSONPTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {
-		$this->good_callback = 'jQuery19103165583838708699_1367588311424';
-		$this->bad_callback = 'alert%28document.cookie%29%3Bfoo';
+		$this->good_callback     = 'jQuery19103165583838708699_1367588311424';
+		$this->bad_callback      = 'alert%28document.cookie%29%3Bfoo';
+		$this->reserved_callback = 'switch';
 	}
 
 	public function testIsUTF8() {
@@ -20,7 +21,7 @@ class JSONPTest extends PHPUnit_Framework_TestCase {
 
 
 	public function testHasReservedWord() {
-		$this->assertTrue( \Voce\JSONP::has_reserved_word($this->bad_callback));
+		$this->assertTrue( \Voce\JSONP::has_reserved_word($this->reserved_callback));
 	}
 
 	public function testHasReservedWordFalse() {
@@ -38,6 +39,14 @@ class JSONPTest extends PHPUnit_Framework_TestCase {
 	public function testHasValidSyntaxjQuery(){
 		$this->assertTrue( \Voce\JSONP::has_valid_syntax('$.ajaxHandler'));
 	}
+
+//	public function testHasValidSyntaxSquareBrackets(){
+//		$this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass["callback"]'));
+//	}
+//
+//	public function testHasValidSyntaxDotNotationSquareBrackets(){
+//		$this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass.callbackList["callback"]'));
+//	}
 
 	public function testHasValidSyntaxFalse() {
 		$this->assertFalse( \Voce\JSONP::has_valid_syntax('foo()'));
