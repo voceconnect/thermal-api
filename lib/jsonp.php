@@ -57,7 +57,6 @@ class JSONP {
 	public static function has_valid_syntax($identifier) {
 		$syntax = '/^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\x{200C}\x{200D}\.]*+$/u';
 
-		var_dump($identifier, preg_match($syntax, $identifier));
 		if (preg_match($syntax, $identifier) == 1) {
 			return true;
 		}
