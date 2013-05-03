@@ -636,6 +636,18 @@ class APIv1 extends API_Base {
 			$meta['featured_image'] = (int)$thumbnail_id;
 		}
 
+
+		// get taxonomy data
+		$post_taxonomies = array();
+		$taxonomies = get_object_taxonomies( $post->post_type );
+		foreach ( $taxonomies as $taxonomy ) {
+			// get the terms related to post
+			$terms = get_the_terms( $post->ID, $taxonomy );
+			if ( ! empty( $terms ) ) {
+				$post_taxonomies[$taxonomy] = array_values( $terms );
+			}
+		}
+
 		remove_filter( 'the_content', 'do_shortcode', 11 );
 		remove_filter( 'the_content', 'convert_smilies' );
 		remove_filter( 'the_content', 'shortcode_unautop' );
@@ -662,6 +674,7 @@ class APIv1 extends API_Base {
 			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
 			'meta'             => (object)$meta,
+			'taxonomies'       => $post_taxonomies,
 			'media'            => array_values( $media ),
 		);
 
