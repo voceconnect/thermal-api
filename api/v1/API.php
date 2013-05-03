@@ -639,11 +639,11 @@ class APIv1 extends API_Base {
 
 		// get taxonomy data
 		$post_taxonomies = array();
-		$taxonomies = get_object_taxonomies( $post->post_type );
+		$taxonomies      = get_object_taxonomies( $post->post_type );
 		foreach ( $taxonomies as $taxonomy ) {
 			// get the terms related to post
 			$terms = get_the_terms( $post->ID, $taxonomy );
-			if ( ! empty( $terms ) ) {
+			if ( !empty( $terms ) ) {
 				$post_taxonomies[$taxonomy] = array_values( array_map( array( __CLASS__, 'format_term' ), $terms ) );
 			}
 		}
