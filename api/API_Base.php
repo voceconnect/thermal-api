@@ -56,11 +56,23 @@ abstract class API_Base {
 		$app = $this->app;
 
 		return $this->app->$method( $match, function() use ( $app, $callback ) {
-			$data = call_user_func_array( $callback, func_get_args() );
 
-			$res = $app->response();
-			$app->contentType( 'application/json' );
-			$res->write(json_encode($data), true);
+			$data = call_user_func_array( $callback, func_get_args() );
+			$json = json_encode( $data );
+			$res  = $app->response();
+
+			if ( $json_p = $app->request()->get( 'callback' ) ) {
+
+				$app->contentType( 'application/javascript' );
+				$res->write( sprintf( '%s(%s)', $json_p, $json ) );
+
+			} else {
+
+				$app->contentType( 'application/json' );
+				$res->write(json_encode($data), true);
+
+			}
+
 		});
 	}
 
