@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_JSON_API;
+namespace Voce\Thermal;
 
 if ( ! defined( 'MAX_POSTS_PER_PAGE' ) ) {
 	define( 'MAX_POSTS_PER_PAGE', 10 );

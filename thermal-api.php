@@ -9,21 +9,21 @@
   Author URI:  http://voceplatforms.com/
  */
 
-namespace WP_JSON_API;
+namespace Voce\Thermal;
 
-if ( !defined( 'WP_API_BASE' ) ) {
-	define( 'WP_API_BASE', '/wp_api' );
+if ( !defined( 'API_BASE' ) ) {
+	define( 'API_BASE', '/wp_api' );
 }
 
 function api_base_url() {
-	return home_url( user_trailingslashit( WP_API_BASE ) );
+	return home_url( user_trailingslashit( API_BASE ) );
 }
 
 class API_Dispatcher {
 
 	public function __construct() {
 		//if requested url starts with api_base_url()
-		if ( false !== strpos( $_SERVER['REQUEST_URI'], WP_API_BASE ) ) {
+		if ( false !== strpos( $_SERVER['REQUEST_URI'], API_BASE ) ) {
 			add_action( 'wp_loaded', array( $this, 'dispatch_api' ) );
 		}
 	}

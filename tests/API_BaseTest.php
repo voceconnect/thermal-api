@@ -1,6 +1,6 @@
 <?php
 
-define( 'WP_API_BASE', 'api' );
+define( 'Voce\\Thermal\\API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
 require_once( __DIR__ . '/../api/API_Base.php' );
@@ -37,25 +37,25 @@ class API_BaseTest extends WP_UnitTestCase {
 		$apiTest = new API_Test_v1( $slim );
 
 		$test = $apiTest->registerRoute( 'get', 'abc', function(){} );
-		$this->assertEquals( WP_API_BASE . '/v1/abc', $test->getPattern() );
+		$this->assertEquals( Voce\Thermal\API_BASE . '/v1/abc', $test->getPattern() );
 
 		$apiTest = new API_Test_v2( $slim );
 
 		$test = $apiTest->registerRoute( 'get', 'abc', function(){} );
-		$this->assertEquals( WP_API_BASE . '/v2/abc', $test->getPattern() );
+		$this->assertEquals( Voce\Thermal\API_BASE . '/v2/abc', $test->getPattern() );
 	}
 
 	public function testAPIOutput() {
 
 		\Slim\Environment::mock(array(
             'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => WP_API_BASE . '/v1/test',
+            'PATH_INFO' => Voce\Thermal\API_BASE . '/v1/test',
         ));
 		$slim = new \Slim\Slim();
 
 		$apiTest = new API_Test_v1( $slim );
 
-		$testData = array( 'testKey' => WP_API_BASE . '/test' );
+		$testData = array( 'testKey' => Voce\Thermal\API_BASE . '/test' );
 
 		$apiTest->registerRoute( 'GET', 'test', function () use ( $testData ) {
 			return $testData;
@@ -74,7 +74,7 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		\Slim\Environment::mock( array(
 			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO'      => WP_API_BASE . '/v1/test',
+			'PATH_INFO'      => Voce\Thermal\API_BASE . '/v1/test',
 			'QUERY_STRING'   => 'callback=doStuff',
 		) );
 
@@ -99,7 +99,7 @@ class API_BaseTest extends WP_UnitTestCase {
 	public function testBadRoute() {
 		\Slim\Environment::mock(array(
 			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO' => WP_API_BASE . '/v1/foobar',
+			'PATH_INFO' => Voce\Thermal\API_BASE . '/v1/foobar',
 		));
 		$app = new \Slim\Slim();
 
