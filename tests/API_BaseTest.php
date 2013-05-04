@@ -45,6 +45,28 @@ class API_BaseTest extends WP_UnitTestCase {
 		$this->assertEquals( Voce\Thermal\API_BASE . '/v2/abc', $test->getPattern() );
 	}
 
+	public function testAccessControlHeader() {
+
+		\Slim\Environment::mock(array(
+            'REQUEST_METHOD' => 'GET',
+            'PATH_INFO' => Voce\Thermal\API_BASE . '/v1/test',
+        ));
+
+		$slim = new \Slim\Slim();
+		$apiTest = new API_Test_v1( $slim );
+
+		$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] = 'test_header';
+
+		$apiTest->registerRoute( 'GET', 'test', function(){ return ''; } );
+
+		ob_start();
+		$apiTest->app->run();
+		ob_end_clean();
+
+		$res = $apiTest->app->response();
+		$this->assertEquals( 'test_header', $res->header( 'access-control-allow-headers' ) );
+	}
+
 	public function testAPIOutput() {
 
 		\Slim\Environment::mock(array(
