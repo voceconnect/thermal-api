@@ -1,5 +1,7 @@
-# WP JSON API v0.1
+# Thermal API v0.5
+
 ## Overview
+
 ### Versions
 In order to support migration, the API plugin will support up to 2 versions of the API.  Once a 
 version is more than 1 cycle old, it will no longer respond at it's API root unless configured

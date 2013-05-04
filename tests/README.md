@@ -1,8 +1,8 @@
-# WP JSON API Unit Tests
+# Thermal API Unit Tests
 
 ## Overview
 
-The test suite for WP JSON API is built using the `WP_UnitTestCase` class created for testing core WordPress functionality.
+The test suite for Thermal API is built using the `WP_UnitTestCase` class created for testing core WordPress functionality.
 
 You can read more about unit testing WordPress here: [http://make.wordpress.org/core/handbook/automated-testing/](http://make.wordpress.org/core/handbook/automated-testing/)
 
