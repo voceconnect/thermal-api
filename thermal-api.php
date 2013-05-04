@@ -1,12 +1,12 @@
 <?php
 
 /*
-  Plugin Name: Some API
-  Version: 0.1
-  Plugin URI: http://voceplatforms.com/
-  Description: Interfaces Stuff
-  Author: Voce Platforms
-  Author URI: http://voceplatforms.com/
+  Plugin Name: Thermal API
+  Version:     0.5
+  Plugin URI:  http://thermal-api.com/
+  Description: The power of WP_Query in a RESTful API.
+  Author:      Voce Platforms
+  Author URI:  http://voceplatforms.com/
  */
 
 namespace WP_JSON_API;
