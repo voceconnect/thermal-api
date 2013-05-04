@@ -67,7 +67,50 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		$res = $apiTest->app->response();
 		$this->assertEquals( json_encode( $testData ), $res->body() );
-		$this->assertEquals( 'application/json', $res->header( 'Content-Type' ) );
+		$this->assertEquals( 'application/json; charset=utf-8;', $res->header( 'Content-Type' ) );
+	}
+
+	public function testJSONP() {
+
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO'      => WP_API_BASE . '/v1/test',
+			'QUERY_STRING'   => 'callback=doStuff',
+		) );
+
+		$slim = new \Slim\Slim();
+
+		$apiTest = new API_Test_v1( $slim );
+
+		$apiTest->registerRoute( 'GET', 'test', function () {
+			return 'test';
+		});
+
+		ob_start();
+		$apiTest->app->run();
+		ob_end_clean();
+
+		$res = $apiTest->app->response();
+		$this->assertEquals( 'doStuff("test")', $res->body() );
+		$this->assertEquals( 'application/javascript; charset=utf-8;', $res->header( 'Content-Type' ) );
+
+	}
+
+	public function testBadRoute() {
+		\Slim\Environment::mock(array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => WP_API_BASE . '/v1/foobar',
+		));
+		$app = new \Slim\Slim();
+
+		$apiTest = new API_Test_v1( $app );
+
+		ob_start();
+		$apiTest->app->run();
+		ob_end_clean();
+
+		$response = $apiTest->app->response();
+		$this->assertObjectHasAttribute( 'error', json_decode( $response->body() ) );
 	}
 
 }

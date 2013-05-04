@@ -389,6 +389,43 @@ Orderby will also accept an array of multiple identifiers.
                         "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
                         "type": "integer",
                         "minimum": 1
+                    },
+                    "gallery": {
+                    	"description": "An array of objects that represent the galleries in the post content.",
+                    	"type": "array",
+                    	"required": false,
+                    	"items": {
+                    	 	"ids": {
+                    	 		"description": "The IDs of the attachments to be used in the gallery.",
+                    	 		"type": "array",
+                    	 		"required": false
+                    	 	},
+                        	"orderby": {
+                        		"description": "Specifies how to sort the display thumbnails.",
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"order": {
+                        		"description": "Specifies the sort order used to display thumbnails."
+                        		"type": "string",
+                        		"required": false
+                        	},
+                        	"include": {
+                        		"description": "An array of IDs to only show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"exclude": {
+                        		"description": "An array of IDs to not show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"id": {
+                    	 		"description": "The ID of the post to be used in the gallery. Used for specifying other posts.",
+                    	 		"type": "integer",
+                    	 		"required": false
+                    	 	}
+                    	}
                     }
                 }
             },
@@ -488,7 +525,19 @@ Orderby will also accept an array of multiple identifiers.
 		"author": [User Object],
 		"mime_type": "",
 		"meta": {
-			"featuredImage": 123456
+			"featuredImage": 123456,
+			"gallery" : [
+				{
+					"ids": [23],
+					"orderby": [
+						"menu_order",
+						"ID"
+					],
+					"order": "ASC",
+					….
+				},
+				….
+			]
 		},
 		"taxonomies": {
 			"category": [
@@ -586,7 +635,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of user ID's to include.</td>
 		</tr>
@@ -647,13 +696,13 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "string",
                 "required": false
             },
-            "postsUrl": {
+            "posts_url": {
                 "description": "The URL to the user's posts.",
                 "type": "string",
                 "format": "uri",
                 "required": false
             },
-            "userUrl": {
+            "user_url": {
                 "description": "The User's personal URL.",
                 "type": "string",
                 "required": false
@@ -699,8 +748,8 @@ Orderby will also accept an array of multiple identifiers.
 		"id_str" : "1234567",
 		"nicename": "john-doe",
 		"display_name":"John Doe",
-		"postsUrl": "http://example.com/author/john-doe/",
-		"userUrl": "http://vocecomm.com",
+		"posts_url": "http://example.com/author/john-doe/",
+		"user_url": "http://vocecomm.com",
 		"avatar": [
 			{
 				"url":"http://1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64",
@@ -850,7 +899,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
-			<td>paged</td>
+			<td>paged*</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
@@ -889,24 +938,29 @@ Orderby will also accept an array of multiple identifiers.
 			<td colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of term ID's to include.</td>
 		</tr>
 		<tr>
-			<td>slug_in</td>
-			<td>array|string</td>
-			<td>An array of term slugs to include.</td>
+			<td>slug</td>
+			<td>string</td>
+			<td>A term slug to include.</td>
 		</tr>
 		<tr>
-			<td>parent_in</td>
-			<td>array|id</td>
-			<td>Include the children of the provided term ID's.</td>
+			<td>parent</td>
+			<td>id</td>
+			<td>Include the children of the provided term ID.</td>
 		</tr>
 		<tr>
-			<td>exclude_empty</td>
+			<td>hide_empty</td>
 			<td>boolean</td>
-			<td>If false, only terms with attached posts will be returned.  Default is true.</td>
+			<td>If true, only terms with attached posts will be returned.  Default is true.</td>
+		</tr>
+		<tr>
+			<td>pad_counts</td>
+			<td>boolean</td>
+			<td>If true, count all of the children along with the term.  Default is false.</td>
 		</tr>
 		<tr>
 			<td colspan="3">
@@ -969,13 +1023,8 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "number",
                 "required": false
             },
-            "post_count_padded": {
-                "description": "The distinct count of posts attached to this term and all child terms.  This only includes posts of type 'post'.",
-                "type": "number",
-                "required": false
-            },
             "post_count": {
-                "description": "The distinct count of posts attached to this term.  This only includes posts of type 'post'.",
+                "description": "The distinct count of posts attached to this term.  If 'pad_count' is set to true, this will also include all posts attached to child terms.  This only includes posts of type 'post'.",
                 "type": "number",
                 "required": false
             },
@@ -1028,7 +1077,6 @@ Orderby will also accept an array of multiple identifiers.
 		"taxonomy": "category",
 		"description": "News reports from around Polk County",
 		"post_count": 25,
-		"post_count_padded": 33, //padded post count includes posts from child terms.  This only differs from post_count if the taxonomy is hierarchical
 		"meta":{
 		}
 	}
@@ -1083,7 +1131,7 @@ Orderby will also accept an array of multiple identifiers.
 		"base_url": "http://example.com/",
 		"rewrite_rules": [
 			{
-				regex: "category/(.+?)/?$",
+				"regex": "category/(.+?)/?$",
 				"query_expression": "category_name=$1"
 			}
 			….
