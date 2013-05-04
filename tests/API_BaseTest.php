@@ -100,7 +100,7 @@ class API_BaseTest extends WP_UnitTestCase {
 		\Slim\Environment::mock(array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => WP_API_BASE . '/v1/foobar',
-		) );
+		));
 		$app = new \Slim\Slim();
 
 		$apiTest = new API_Test_v1( $app );
@@ -109,6 +109,7 @@ class API_BaseTest extends WP_UnitTestCase {
 		$apiTest->app->run();
 		ob_end_clean();
 
+		$response = $apiTest->app->response();
 		$this->assertObjectHasAttribute( 'error', json_decode( $response->body() ) );
 	}
 
