@@ -156,6 +156,7 @@ class APIv1Test extends WP_UnitTestCase {
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'publish',
 			'post_title'  => 'testGetPost',
+			'post_author' => 1,
 		) );
 
 		\Slim\Environment::mock( array(
@@ -398,6 +399,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'meta'             => (object)array(),
 			'taxonomies'       => (object)$expected_taxonomy,
 			'media'            => array(),
+			'author'           => \WP_JSON_API\APIv1::format_user( get_user_by( 'id', 1 ) ),
 		);
 
 		$test_post = get_post( $test_post_id );
@@ -467,8 +469,8 @@ class APIv1Test extends WP_UnitTestCase {
 		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id ) );
 
 		$this->assertArrayHasKey( 'meta', $formatted_post );
-		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
-		$this->assertEquals( $attachment_id, $formatted_post['meta']->featured_image );
+		$this->assertArrayHasKey( 'featured_image', $formatted_post['meta'] );
+		$this->assertEquals( $attachment_id, $formatted_post['meta']['featured_image'] );
 
 		self::_delete_attachment( $attachment_id );
 	}
@@ -557,11 +559,11 @@ POSTCONTENT;
 		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_1 ) );
 
 		// Gallery should be created if there are galleries
-		$this->assertAttributeNotEmpty( 'gallery', $formatted_post['meta'] );
+		$this->assertArrayHasKey( 'gallery', $formatted_post['meta'] );
 		// Single post's gallery
 		//  - without order parameters
 		//  - with order parameters
-		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+		$this->assertEquals( $expected, $formatted_post['meta']['gallery'] );
 
 
 		// Single post gallery with exclude
@@ -585,7 +587,7 @@ POSTCONTENT;
 
 		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_1 ) );
 		// Single post's gallery with exclude
-		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
+		$this->assertEquals( $expected, $formatted_post['meta']['gallery'] );
 
 
 		// Other post's gallery with/without sort parameters
@@ -641,7 +643,7 @@ POSTCONTENT;
 		// Other post's gallery
 		//  - without order parameters
 		//  - with order parameters
-		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+		$this->assertEquals( $expected_meta, $formatted_post['meta']['gallery'] );
 
 		// Media with other post's images
 		$this->assertSameSize( $expected_media, $formatted_post['media'] );
@@ -685,7 +687,7 @@ POSTCONTENT;
 		sort( $media );
 
 		// Other post's gallery with exclude
-		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+		$this->assertEquals( $expected_meta, $formatted_post['meta']['gallery'] );
 
 		// Media with other post's images
 		$this->assertSameSize( $expected_media, $formatted_post['media'] );
@@ -730,7 +732,7 @@ POSTCONTENT;
 		sort( $media );
 
 		// Other post's gallery with exclude
-		$this->assertEquals( $expected_meta, $formatted_post['meta']->gallery );
+		$this->assertEquals( $expected_meta, $formatted_post['meta']['gallery'] );
 
 		// Media with other post's images
 		$this->assertSameSize( $expected_media, $formatted_post['media'] );
@@ -752,7 +754,7 @@ POSTCONTENT;
 
 		$formatted_post = \WP_JSON_API\APIv1::format_post( get_post( $test_post_id_3 ) );
 		// Test RAND ordering
-		$this->assertEquals( 'RAND', $formatted_post['meta']->gallery[0]['order'] );
+		$this->assertEquals( 'RAND', $formatted_post['meta']['gallery'][0]['order'] );
 
 		self::_delete_attachment( $all_attachments );
 	}

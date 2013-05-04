@@ -675,7 +675,8 @@ class APIv1 extends API_Base {
 			'mime_type'        => $post->post_mime_type,
 			'meta'             => (object)$meta,
 			'taxonomies'       => (object)$post_taxonomies,
-			'media'            => array_values( $media ),
+			'media'            => $media,
+			'author'           => self::format_user( get_user_by( 'id', $post->post_author ) ),
 		);
 
 		wp_reset_postdata();
