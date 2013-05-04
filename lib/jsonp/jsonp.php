@@ -41,9 +41,7 @@ class JSONP {
 	 * @return bool
 	 */
 	public static function has_reserved_word($identifier) {
-
 		return in_array( $identifier, self::$reserved_words );
-
 	}
 
 	/**
@@ -52,10 +50,9 @@ class JSONP {
 	 * @return bool
 	 */
 	public static function has_valid_syntax($identifier) {
-		// TODO: accept square bracket notation (nested?)
-		$syntax = '/^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\x{200C}\x{200D}\.]*+$/u';
-
-		if (preg_match($syntax, $identifier) == 1) {
+		$syntax = '/^[_$a-zA-Z][_$a-zA-Z0-9]*[.]*[_$a-zA-Z0-9]*[\[{1}]*["_$a-zA-Z0-9.]*[\]{1}]*/';
+		preg_match($syntax, $identifier, $matches);
+		if ($matches && $matches[0] === $identifier) {
 			return true;
 		}
 		return false;
