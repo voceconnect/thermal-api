@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_JSON_API;
+namespace Voce\Thermal;
 
 abstract class API_Base {
 
@@ -61,7 +61,7 @@ abstract class API_Base {
 			return false;
 		}
 
-		$match = trailingslashit( WP_API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern;
+		$match = trailingslashit( API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern;
 
 		$app = $this->app;
 
