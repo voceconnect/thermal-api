@@ -71,14 +71,19 @@ abstract class API_Base {
 			$json = json_encode( $data );
 			$res  = $app->response();
 
+			$res->header('Access-Control-Allow-Origin', '*');
+			if ( isset( $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] ) ){
+				$res->header('Access-Control-Allow-Headers', $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+			}
+
 			if ( $json_p = $app->request()->get( 'callback' ) ) {
 
-				$app->contentType( 'application/javascript' );
+				$app->contentType( 'application/javascript; charset=utf-8;' );
 				$res->write( sprintf( '%s(%s)', $json_p, $json ) );
 
 			} else {
 
-				$app->contentType( 'application/json' );
+				$app->contentType( 'application/json; charset=utf-8;' );
 				$res->write(json_encode($data), true);
 
 			}

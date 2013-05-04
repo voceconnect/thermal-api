@@ -67,7 +67,7 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		$res = $apiTest->app->response();
 		$this->assertEquals( json_encode( $testData ), $res->body() );
-		$this->assertEquals( 'application/json', $res->header( 'Content-Type' ) );
+		$this->assertEquals( 'application/json; charset=utf-8;', $res->header( 'Content-Type' ) );
 	}
 
 	public function testJSONP() {
@@ -92,7 +92,7 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		$res = $apiTest->app->response();
 		$this->assertEquals( 'doStuff("test")', $res->body() );
-		$this->assertEquals( 'application/javascript', $res->header( 'Content-Type' ) );
+		$this->assertEquals( 'application/javascript; charset=utf-8;', $res->header( 'Content-Type' ) );
 
 	}
 
