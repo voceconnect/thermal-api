@@ -330,13 +330,18 @@ Orderby will also accept an array of multiple identifiers.
                 "enum": ["open", "closed"],
                 "required": true
             },
-            "content_filtered": {
-                "description": "The content of the post after it has been run through the set 'the_content' filters.",
+            "content_display": {
+                "description": "The content of the post after it has been run through the set 'the_content' filters.  Shortcodes are not expanded.",
                 "type": "string",
                 "required": true
             },
             "content": {
                 "description": "The raw content of the post as it's stored in the database.",
+                "type": "string",
+                "required": true
+            },
+            "content_filtered": {
+                "description": "The raw content of the post_content_filtered column as it's stored in the database.",
                 "type": "string",
                 "required": true
             },
@@ -346,7 +351,7 @@ Orderby will also accept an array of multiple identifiers.
                 "format": "date-time",
                 "required": true
             },
-            "excerpt_filtered": {
+            "excerpt_display": {
                 "description": "The excerpt of the post after it has been run through the 'the_excerpt' filters.",
                 "type": "string",
                 "required": true
@@ -521,9 +526,10 @@ Orderby will also accept an array of multiple identifiers.
 		"title": "Lorem Ipsum Dolor!",
 		"name": "loerm-ipsum-dolor"	,
 		"excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.",
-		"excerpt_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
+		"excerpt_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
 		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.\n\n[gallery ids=\"1,2,3,4\"]\n\nNullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas",
-		"content_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
+		"content_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
+		"content_filtered": "",
 		"author": [User Object],
 		"mime_type": "",
 		"meta": {
