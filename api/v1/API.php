@@ -652,6 +652,10 @@ class APIv1 extends API_Base {
 		remove_filter( 'the_content', 'convert_smilies' );
 		remove_filter( 'the_content', 'shortcode_unautop' );
 
+		// remove "<!--more-->" teaser text for display content
+		$post_more       = get_extended( $post->post_content );
+		$content_display = $post_more['extended'] ? $post_more['extended'] : $post_more['main'];
+
 		$data = array(
 			'id'               => $post->ID,
 			'id_str'           => (string)$post->ID,
@@ -667,11 +671,10 @@ class APIv1 extends API_Base {
 			'menu_order'       => $post->menu_order,
 			'title'            => $post->post_title,
 			'name'             => $post->post_name,
-			'excerpt_raw'      => $post->post_excerpt,
-			'excerpt'          => apply_filters( 'the_excerpt', get_the_excerpt() ),
-			'content_raw'      => $post->post_content,
-			'content'          => apply_filters( 'the_content', get_the_content() ),
-			'content_filtered' => $post->post_content_filtered,
+			'excerpt'          => $post->post_excerpt,
+			'excerpt_display'  => apply_filters( 'the_excerpt', get_the_excerpt() ),
+			'content'          => $post->post_content,
+			'content_display'  => apply_filters( 'the_content', $content_display ),
 			'mime_type'        => $post->post_mime_type,
 			'meta'             => (object)$meta,
 			'taxonomies'       => (object)$post_taxonomies,
