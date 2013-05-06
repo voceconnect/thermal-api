@@ -1,6 +1,10 @@
-# Thermal API v0.5
+# Thermal API <small>Version 0.5</small>
 
 ## Overview
+Thermal is the WordPress plugin that gives you the access and control to your content
+from outside of the WordPress admin.  Thermal supports client-based decisions that, 
+when combined with a responsive design framework, allows for a truly responsive 
+application leveraging a WordPress content source.
 
 ### Versions
 In order to support migration, the API plugin will support up to 2 versions of the API.  Once a 
@@ -12,6 +16,7 @@ The URL root of the API will be the version number of the API prefixed by the si
 
 	http://example.com/wp_api/v0.1/
 
+---
 ## Resource Types
 The following resources are available
 
