@@ -394,7 +394,6 @@ class APIv1Test extends WP_UnitTestCase {
 			'excerpt_display'  => "<p>This is the excerpt.</p>\n",
 			'content'          => 'This is the content.',
 			'content_display'  => "<p>This is the content.</p>\n",
-			'content_filtered' => '',
 			'mime_type'        => '',
 			'meta'             => (object)array(),
 			'taxonomies'       => (object)$expected_taxonomy,

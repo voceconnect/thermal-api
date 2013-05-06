@@ -675,7 +675,6 @@ class APIv1 extends API_Base {
 			'excerpt_display'  => apply_filters( 'the_excerpt', get_the_excerpt() ),
 			'content'          => $post->post_content,
 			'content_display'  => apply_filters( 'the_content', $content_display ),
-			'content_filtered' => $post->post_content_filtered,
 			'mime_type'        => $post->post_mime_type,
 			'meta'             => (object)$meta,
 			'taxonomies'       => (object)$post_taxonomies,
