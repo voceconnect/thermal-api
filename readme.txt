@@ -14,7 +14,7 @@ Thermal is the WordPress plugin that gives you the power of WP_Query in a RESTfu
 
 == Installation ==
 
-1. Upload `thermal-api.php` to the `/wp-content/plugins/` directory
+1. Upload the `thermal-api` directory to your `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Define `Voce\Thermal\API_BASE` in `wp-config.php` to change API root url. (optional)
 
