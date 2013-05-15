@@ -3,7 +3,7 @@ Contributors: voceplatforms
 Tags: thermal, JSON, API
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 0.5
+Stable tag: 0.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,5 +26,5 @@ Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
 
-= 0.5 =
+= 0.5.1 =
 * Initial public version of Thermal API.
