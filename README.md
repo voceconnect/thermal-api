@@ -8,7 +8,7 @@ version is more than 1 cycle old, it will no longer respond at it's API root unl
 to do so.
 
 ### API Root
-The URL root of the API will be the version number of the API prefixed by the site_url and the API_ROOT.  By default the API root is set to 'wp_api'.  For example, the v0.1 will have a root URL of:
+The URL root of the API will be the version number of the API prefixed by the `site_url` and the `API_ROOT`.  By default the API root is set to `wp_api`.  For example, the v0.1 will have a root URL of:
 
 	http://example.com/wp_api/v0.1/
 
