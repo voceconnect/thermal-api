@@ -11,8 +11,8 @@
 
 namespace Voce\Thermal;
 
-if ( !defined( 'API_BASE' ) ) {
-	define( 'API_BASE', '/wp_api' );
+if ( !defined( 'Voce\Thermal\API_BASE' ) ) {
+	define( 'Voce\Thermal\API_BASE', '/wp_api' );
 }
 
 function api_base_url() {
