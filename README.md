@@ -1,4 +1,6 @@
-# Thermal API v0.5
+# Thermal API 
+
+Current API version: v1
 
 ## Overview
 
@@ -8,9 +10,13 @@ version is more than 1 cycle old, it will no longer respond at it's API root unl
 to do so.
 
 ### API Root
-The URL root of the API will be the version number of the API prefixed by the `site_url` and the `API_ROOT`.  By default the API root is set to `wp_api`.  For example, the v0.1 will have a root URL of:
+The URL root of the API will be the version number of the API prefixed by your
+WordPress site URL and the `Voce\Thermal\API_ROOT` constant.  By default this
+is set to `wp_api` but can be overridden by setting it in `wp-config.php`.
 
-	http://example.com/wp_api/v0.1/
+The current API version is v1 so the default URL root is:
+
+	http://example.com/wp_api/v1/
 
 ## Resource Types
 The following resources are available
