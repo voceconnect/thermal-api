@@ -61,7 +61,7 @@ abstract class API_Base {
 			return false;
 		}
 
-		$match = trailingslashit( API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern;
+		$match = get_api_base() . trailingslashit( 'v' . $this->version ) . $pattern;
 
 		$app = $this->app;
 
