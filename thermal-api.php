@@ -9,41 +9,16 @@
   Author URI:  http://voceplatforms.com/
  */
 
-namespace Voce\Thermal;
+define( "THERMAL_API_MIN_PHP_VER", '5.3.0' );
 
-if ( !defined( 'Voce\Thermal\API_BASE' ) ) {
-	define( 'Voce\Thermal\API_BASE', '/wp_api' );
-}
+register_activation_hook( __FILE__, 'thermal_activation' );
 
-function api_base_url() {
-	return home_url( user_trailingslashit( API_BASE ) );
-}
-
-class API_Dispatcher {
-
-	public function __construct() {
-		//if requested url starts with api_base_url()
-		if ( false !== strpos( $_SERVER['REQUEST_URI'], API_BASE ) ) {
-			add_action( 'wp_loaded', array( $this, 'dispatch_api' ) );
-		}
+function thermal_activation() {
+	if ( version_compare( phpversion(), THERMAL_API_MIN_PHP_VER, '<' ) ) {
+		die( sprintf( "The minimum PHP version required for Thermal API is %s", THERMAL_API_MIN_PHP_VER ) );
 	}
-
-	public function dispatch_api() {
-		//determine API version
-		require_once( 'lib/Slim/Slim/Slim.php' );
-		require_once( 'api/v1/API.php' );
-
-		\Slim\Slim::registerAutoloader();
-
-		$app = new \Slim\Slim();
-
-		$v1 = new APIv1( $app );
-
-		$app->run();
-
-		exit;
-	}
-
 }
 
-new API_Dispatcher();
+if ( version_compare( phpversion(), THERMAL_API_MIN_PHP_VER, '>=' ) ) {
+	require(__DIR__ . '/dispatcher.php');
+}
