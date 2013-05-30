@@ -16,26 +16,24 @@ abstract class API_Base {
 	 */
 	protected $version = '';
 
-
 	/**
 	 * Constructor
 	 * 
 	 * @param \Slim\Slim $app Slim app reference
 	 */
-	public function __construct( \Slim\Slim $app) {
+	public function __construct( \Slim\Slim $app ) {
 
 		$this->app = $app;
 
 		$this->app->notFound( function () use ( $app ) {
-			$data = array(
-				'error' => array(
-					'message' => 'Invalid route'
-				),
-			);
-			$app->contentType( 'application/json' );
-			$app->halt( 400, json_encode( $data ) );
-		} );
-
+				$data = array(
+					'error' => array(
+						'message' => 'Invalid route'
+					),
+				);
+				$app->contentType( 'application/json' );
+				$app->halt( 400, json_encode( $data ) );
+			} );
 	}
 
 	/**
@@ -57,7 +55,7 @@ abstract class API_Base {
 			'options',
 		);
 
-		if ( ! in_array( $method, $valid_methods ) ) {
+		if ( !in_array( $method, $valid_methods ) ) {
 			return false;
 		}
 
@@ -67,28 +65,25 @@ abstract class API_Base {
 
 		return $this->app->$method( $match, function() use ( $app, $callback ) {
 
-			$data = call_user_func_array( $callback, func_get_args() );
-			$json = json_encode( $data );
-			$res  = $app->response();
+					$data = call_user_func_array( $callback, func_get_args() );
+					$json = json_encode( $data );
+					$res = $app->response();
 
-			$res->header('Access-Control-Allow-Origin', '*');
-			if ( isset( $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] ) ){
-				$res->header('Access-Control-Allow-Headers', $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
-			}
+					$res->header( 'Access-Control-Allow-Origin', '*' );
+					if ( isset( $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] ) ) {
+						$res->header( 'Access-Control-Allow-Headers', $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] );
+					}
 
-			if ( $json_p = $app->request()->get( 'callback' ) ) {
+					if ( ( $json_p = $app->request()->get( 'callback' ) ) && ( \Voce\JSONP::is_valid_callback( $json_p ) ) ) {
 
-				$app->contentType( 'application/javascript; charset=utf-8;' );
-				$res->write( sprintf( '%s(%s)', $json_p, $json ) );
+						$app->contentType( 'application/javascript; charset=utf-8;' );
+						$res->write( sprintf( '%s(%s)', $json_p, $json ) );
+					} else {
 
-			} else {
-
-				$app->contentType( 'application/json; charset=utf-8;' );
-				$res->write(json_encode($data), true);
-
-			}
-
-		});
+						$app->contentType( 'application/json; charset=utf-8;' );
+						$res->write( json_encode( $data ), true );
+					}
+				} );
 	}
 
 }

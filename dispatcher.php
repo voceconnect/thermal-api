@@ -26,6 +26,8 @@ class API_Dispatcher {
 	public function dispatch_api() {
 		//determine API version
 		require_once( 'lib/Slim/Slim/Slim.php' );
+		require_once( 'lib/jsonp/jsonp.php' );
+
 		require_once( 'api/v1/API.php' );
 
 		\Slim\Slim::registerAutoloader();
