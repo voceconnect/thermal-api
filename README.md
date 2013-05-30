@@ -1,14 +1,26 @@
-# WP JSON API v0.1
+# Thermal API 
+
+Current API version: v1
+
 ## Overview
+Thermal is the WordPress plugin that gives you the access and control to your content
+from outside of the WordPress admin.  Thermal supports client-based decisions that, 
+when combined with a responsive design framework, allows for a truly responsive 
+application leveraging a WordPress content source.
+
 ### Versions
 In order to support migration, the API plugin will support up to 2 versions of the API.  Once a 
 version is more than 1 cycle old, it will no longer respond at it's API root unless configured
 to do so.
 
 ### API Root
-The URL root of the API will be the version number of the API prefixed by the site_url and the API_ROOT.  By default the API root is set to 'wp_api'.  For example, the v0.1 will have a root URL of:
+The URL root of the API will be the version number of the API prefixed by your
+WordPress site URL and the `Voce\Thermal\API_ROOT` constant.  By default this
+is set to `wp_api` but can be overridden by setting it in `wp-config.php`.
 
-	http://example.com/wp_api/v0.1/
+The current API version is v1 so the default URL root is:
+
+	http://example.com/wp_api/v1/
 
 ## Resource Types
 The following resources are available
@@ -18,7 +30,7 @@ The following resources are available
 * [Taxonomies](#taxonomies)
 * [Terms](#terms)
 * [Rewrite Rules](#rewrite_rules)
-* [Media Items](media_items)
+* [Media Items](#media_items)
 
 
 ## Posts
@@ -41,7 +53,7 @@ The following resources are available
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 			Date Filters
 			</td>
 		</tr>
@@ -108,7 +120,7 @@ Examples:
 			the result will be relative to the timezone of the site.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Search Filtering</td>
+			<td class="shade" colspan="3">Search Filtering</td>
 		</tr>
 		<tr>
 			<td>s</td>
@@ -130,7 +142,7 @@ Examples:
 			<td>Default false.  If true, the search string will not be split up into individual 			tokens and the expression will be matched in its entirety.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Taxonomy Filters</td>
+			<td class="shade" colspan="3">Taxonomy Filters</td>
 		</tr>
 		<tr>
 			<td>cat**</td>
@@ -155,7 +167,7 @@ Examples:
 			results.  Only public taxonomies will be recognized.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Pagination Filters</td>
+			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
 			<td>paged</td>
@@ -175,7 +187,7 @@ Examples:
 			<td>The number of posts to skip over before returning the result set.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Ordering Parameters</td>
+			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
 			<td>orderby**</td>
@@ -205,7 +217,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
 		</tr>
 		<tr>
-			<td colspan="3">General Filters</td>
+			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
 			<td>author_name</td>
@@ -271,7 +283,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>Array or single Post ID to pull child posts from.</td>
 		</tr>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 				Response Altering Parameters
 			</td>
 		</tr>
@@ -328,8 +340,8 @@ Orderby will also accept an array of multiple identifiers.
                 "enum": ["open", "closed"],
                 "required": true
             },
-            "content_filtered": {
-                "description": "The content of the post after it has been run through the set 'the_content' filters.",
+            "content_display": {
+                "description": "The content of the post after it has been run through the set 'the_content' filters.  Shortcodes are not expanded.",
                 "type": "string",
                 "required": true
             },
@@ -344,7 +356,7 @@ Orderby will also accept an array of multiple identifiers.
                 "format": "date-time",
                 "required": true
             },
-            "excerpt_filtered": {
+            "excerpt_display": {
                 "description": "The excerpt of the post after it has been run through the 'the_excerpt' filters.",
                 "type": "string",
                 "required": true
@@ -389,6 +401,43 @@ Orderby will also accept an array of multiple identifiers.
                         "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
                         "type": "integer",
                         "minimum": 1
+                    },
+                    "gallery": {
+                    	"description": "An array of objects that represent the galleries in the post content.",
+                    	"type": "array",
+                    	"required": false,
+                    	"items": {
+                    	 	"ids": {
+                    	 		"description": "The IDs of the attachments to be used in the gallery.",
+                    	 		"type": "array",
+                    	 		"required": false
+                    	 	},
+                        	"orderby": {
+                        		"description": "Specifies how to sort the display thumbnails.",
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"order": {
+                        		"description": "Specifies the sort order used to display thumbnails."
+                        		"type": "string",
+                        		"required": false
+                        	},
+                        	"include": {
+                        		"description": "An array of IDs to only show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"exclude": {
+                        		"description": "An array of IDs to not show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"id": {
+                    	 		"description": "The ID of the post to be used in the gallery. Used for specifying other posts.",
+                    	 		"type": "integer",
+                    	 		"required": false
+                    	 	}
+                    	}
                     }
                 }
             },
@@ -482,13 +531,25 @@ Orderby will also accept an array of multiple identifiers.
 		"title": "Lorem Ipsum Dolor!",
 		"name": "loerm-ipsum-dolor"	,
 		"excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.",
-		"excerpt_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
+		"excerpt_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
 		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.\n\n[gallery ids=\"1,2,3,4\"]\n\nNullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas",
-		"content_filtered": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
+		"content_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
 		"author": [User Object],
 		"mime_type": "",
 		"meta": {
-			"featuredImage": 123456
+			"featuredImage": 123456,
+			"gallery" : [
+				{
+					"ids": [23],
+					"orderby": [
+						"menu_order",
+						"ID"
+					],
+					"order": "ASC",
+					….
+				},
+				….
+			]
 		},
 		"taxonomies": {
 			"category": [
@@ -544,7 +605,7 @@ Orderby will also accept an array of multiple identifiers.
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="3">Pagination Filters</td>
+			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
 			<td>paged</td>
@@ -564,7 +625,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The number of posts to skip over before returning the result set.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Ordering Parameters</td>
+			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
 			<td>orderby**</td>
@@ -583,15 +644,15 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
 		</tr>
 		<tr>
-			<td colspan="3">General Filters</td>
+			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of user ID's to include.</td>
 		</tr>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 				Response Altering Parameters
 			</td>
 		</tr>
@@ -647,13 +708,13 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "string",
                 "required": false
             },
-            "postsUrl": {
+            "posts_url": {
                 "description": "The URL to the user's posts.",
                 "type": "string",
                 "format": "uri",
                 "required": false
             },
-            "userUrl": {
+            "user_url": {
                 "description": "The User's personal URL.",
                 "type": "string",
                 "required": false
@@ -699,8 +760,8 @@ Orderby will also accept an array of multiple identifiers.
 		"id_str" : "1234567",
 		"nicename": "john-doe",
 		"display_name":"John Doe",
-		"postsUrl": "http://example.com/author/john-doe/",
-		"userUrl": "http://vocecomm.com",
+		"posts_url": "http://example.com/author/john-doe/",
+		"user_url": "http://vocecomm.com",
 		"avatar": [
 			{
 				"url":"http://1.gravatar.com/avatar/7a10459e7210f3bbaf2a75351255d9a3?s=64",
@@ -847,10 +908,10 @@ Orderby will also accept an array of multiple identifiers.
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="3">Pagination Filters</td>
+			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
-			<td>paged</td>
+			<td>paged*</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
@@ -867,7 +928,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The number of posts to skip over before returning the result set.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Ordering Parameters</td>
+			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
 			<td>orderby**</td>
@@ -886,30 +947,35 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
 		</tr>
 		<tr>
-			<td colspan="3">General Filters</td>
+			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>in</td>
+			<td>include</td>
 			<td>array|integer</td>
 			<td>An array of term ID's to include.</td>
 		</tr>
 		<tr>
-			<td>slug_in</td>
-			<td>array|string</td>
-			<td>An array of term slugs to include.</td>
+			<td>slug</td>
+			<td>string</td>
+			<td>A term slug to include.</td>
 		</tr>
 		<tr>
-			<td>parent_in</td>
-			<td>array|id</td>
-			<td>Include the children of the provided term ID's.</td>
+			<td>parent</td>
+			<td>id</td>
+			<td>Include the children of the provided term ID.</td>
 		</tr>
 		<tr>
-			<td>exclude_empty</td>
+			<td>hide_empty</td>
 			<td>boolean</td>
-			<td>If false, only terms with attached posts will be returned.  Default is true.</td>
+			<td>If true, only terms with attached posts will be returned.  Default is true.</td>
 		</tr>
 		<tr>
-			<td colspan="3">
+			<td>pad_counts</td>
+			<td>boolean</td>
+			<td>If true, count all of the children along with the term.  Default is false.</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">
 				Response Altering Parameters
 			</td>
 		</tr>
@@ -969,13 +1035,8 @@ Orderby will also accept an array of multiple identifiers.
                 "type": "number",
                 "required": false
             },
-            "post_count_padded": {
-                "description": "The distinct count of posts attached to this term and all child terms.  This only includes posts of type 'post'.",
-                "type": "number",
-                "required": false
-            },
             "post_count": {
-                "description": "The distinct count of posts attached to this term.  This only includes posts of type 'post'.",
+                "description": "The distinct count of posts attached to this term.  If 'pad_count' is set to true, this will also include all posts attached to child terms.  This only includes posts of type 'post'.",
                 "type": "number",
                 "required": false
             },
@@ -1028,7 +1089,6 @@ Orderby will also accept an array of multiple identifiers.
 		"taxonomy": "category",
 		"description": "News reports from around Polk County",
 		"post_count": 25,
-		"post_count_padded": 33, //padded post count includes posts from child terms.  This only differs from post_count if the taxonomy is hierarchical
 		"meta":{
 		}
 	}

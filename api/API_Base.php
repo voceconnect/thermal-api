@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_JSON_API;
+namespace Voce\Thermal;
 
 abstract class API_Base {
 
@@ -25,6 +25,16 @@ abstract class API_Base {
 	public function __construct( \Slim\Slim $app) {
 
 		$this->app = $app;
+
+		$this->app->notFound( function () use ( $app ) {
+			$data = array(
+				'error' => array(
+					'message' => 'Invalid route'
+				),
+			);
+			$app->contentType( 'application/json' );
+			$app->halt( 400, json_encode( $data ) );
+		} );
 
 	}
 
@@ -51,7 +61,7 @@ abstract class API_Base {
 			return false;
 		}
 
-		$match = trailingslashit( WP_API_BASE ) . trailingslashit( 'v' . $this->version ) . $pattern;
+		$match = get_api_base() . trailingslashit( 'v' . $this->version ) . $pattern;
 
 		$app = $this->app;
 
@@ -61,14 +71,19 @@ abstract class API_Base {
 			$json = json_encode( $data );
 			$res  = $app->response();
 
+			$res->header('Access-Control-Allow-Origin', '*');
+			if ( isset( $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] ) ){
+				$res->header('Access-Control-Allow-Headers', $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+			}
+
 			if ( $json_p = $app->request()->get( 'callback' ) ) {
 
-				$app->contentType( 'application/javascript' );
+				$app->contentType( 'application/javascript; charset=utf-8;' );
 				$res->write( sprintf( '%s(%s)', $json_p, $json ) );
 
 			} else {
 
-				$app->contentType( 'application/json' );
+				$app->contentType( 'application/json; charset=utf-8;' );
 				$res->write(json_encode($data), true);
 
 			}

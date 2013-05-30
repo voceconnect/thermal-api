@@ -1,29 +1,24 @@
 <?php
 
-/*
-  Plugin Name: Some API
-  Version: 0.1
-  Plugin URI: http://voceplatforms.com/
-  Description: Interfaces Stuff
-  Author: Voce Platforms
-  Author URI: http://voceplatforms.com/
- */
+namespace Voce\Thermal;
 
-namespace WP_JSON_API;
+if ( !defined( 'Voce\Thermal\API_BASE' ) ) {
+	define( 'Voce\Thermal\API_BASE', '/wp_api' );
+}
 
-if ( !defined( 'WP_API_BASE' ) ) {
-	define( 'WP_API_BASE', '/wp_api' );
+function get_api_base() {
+	return '/' . trim( API_BASE, '/' ) . '/';
 }
 
 function api_base_url() {
-	return home_url( user_trailingslashit( WP_API_BASE ) );
+	return home_url( get_api_base() );
 }
 
 class API_Dispatcher {
 
 	public function __construct() {
 		//if requested url starts with api_base_url()
-		if ( false !== strpos( $_SERVER['REQUEST_URI'], WP_API_BASE ) ) {
+		if ( false !== strpos( $_SERVER['REQUEST_URI'], get_api_base() ) ) {
 			add_action( 'wp_loaded', array( $this, 'dispatch_api' ) );
 		}
 	}
@@ -45,5 +40,3 @@ class API_Dispatcher {
 	}
 
 }
-
-new API_Dispatcher();
