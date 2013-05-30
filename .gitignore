@@ -1,2 +1,5 @@
 # config files
 tests/wp-tests-config.php
+composer.json
+composer.lock
+vendor/
