@@ -6,6 +6,7 @@ define( 'WP_USE_THEMES', false );
 require_once( __DIR__ . '/../dispatcher.php' );
 require_once( __DIR__ . '/../api/API_Base.php' );
 require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
+require_once( __DIR__ . '/../lib/jsonp/jsonp.php' );
 
 require_once( __DIR__ . '/stubs/API_Test_v1.php' );
 require_once( __DIR__ . '/stubs/API_Test_v2.php' );
