@@ -3,6 +3,10 @@
 Current API version: v1
 
 ## Overview
+Thermal is the WordPress plugin that gives you the access and control to your content
+from outside of the WordPress admin.  Thermal supports client-based decisions that, 
+when combined with a responsive design framework, allows for a truly responsive 
+application leveraging a WordPress content source.
 
 ### Versions
 In order to support migration, the API plugin will support up to 2 versions of the API.  Once a 
@@ -26,7 +30,7 @@ The following resources are available
 * [Taxonomies](#taxonomies)
 * [Terms](#terms)
 * [Rewrite Rules](#rewrite_rules)
-* [Media Items](media_items)
+* [Media Items](#media_items)
 
 
 ## Posts
@@ -49,7 +53,7 @@ The following resources are available
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 			Date Filters
 			</td>
 		</tr>
@@ -116,7 +120,7 @@ Examples:
 			the result will be relative to the timezone of the site.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Search Filtering</td>
+			<td class="shade" colspan="3">Search Filtering</td>
 		</tr>
 		<tr>
 			<td>s</td>
@@ -138,7 +142,7 @@ Examples:
 			<td>Default false.  If true, the search string will not be split up into individual 			tokens and the expression will be matched in its entirety.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Taxonomy Filters</td>
+			<td class="shade" colspan="3">Taxonomy Filters</td>
 		</tr>
 		<tr>
 			<td>cat**</td>
@@ -163,7 +167,7 @@ Examples:
 			results.  Only public taxonomies will be recognized.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Pagination Filters</td>
+			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
 			<td>paged</td>
@@ -183,7 +187,7 @@ Examples:
 			<td>The number of posts to skip over before returning the result set.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Ordering Parameters</td>
+			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
 			<td>orderby**</td>
@@ -213,7 +217,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
 		</tr>
 		<tr>
-			<td colspan="3">General Filters</td>
+			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
 			<td>author_name</td>
@@ -279,7 +283,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>Array or single Post ID to pull child posts from.</td>
 		</tr>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 				Response Altering Parameters
 			</td>
 		</tr>
@@ -601,7 +605,7 @@ Orderby will also accept an array of multiple identifiers.
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="3">Pagination Filters</td>
+			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
 			<td>paged</td>
@@ -621,7 +625,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The number of posts to skip over before returning the result set.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Ordering Parameters</td>
+			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
 			<td>orderby**</td>
@@ -640,7 +644,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
 		</tr>
 		<tr>
-			<td colspan="3">General Filters</td>
+			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
 			<td>include</td>
@@ -648,7 +652,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>An array of user ID's to include.</td>
 		</tr>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 				Response Altering Parameters
 			</td>
 		</tr>
@@ -904,7 +908,7 @@ Orderby will also accept an array of multiple identifiers.
 	</thead>
 	<tbody>
 		<tr>
-			<td colspan="3">Pagination Filters</td>
+			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
 			<td>paged*</td>
@@ -924,7 +928,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The number of posts to skip over before returning the result set.</td>
 		</tr>
 		<tr>
-			<td colspan="3">Ordering Parameters</td>
+			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
 			<td>orderby**</td>
@@ -943,7 +947,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
 		</tr>
 		<tr>
-			<td colspan="3">General Filters</td>
+			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
 			<td>include</td>
@@ -971,7 +975,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>If true, count all of the children along with the term.  Default is false.</td>
 		</tr>
 		<tr>
-			<td colspan="3">
+			<td class="shade" colspan="3">
 				Response Altering Parameters
 			</td>
 		</tr>
