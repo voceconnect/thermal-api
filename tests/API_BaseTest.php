@@ -3,19 +3,19 @@
 define( 'Voce\\Thermal\\API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
+require_once( __DIR__ . '/../dispatcher.php' );
 require_once( __DIR__ . '/../api/API_Base.php' );
 require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
 
 require_once( __DIR__ . '/stubs/API_Test_v1.php' );
 require_once( __DIR__ . '/stubs/API_Test_v2.php' );
 
-
 class API_BaseTest extends WP_UnitTestCase {
 
 	public function setUp() {
 
 		\Slim\Slim::registerAutoloader();
-    }
+	}
 
 	public function testRegisterRouteWhitelist() {
 
@@ -23,11 +23,15 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		$apitest1 = new API_Test_v1( $slim );
 
-		$test = $apitest1->registerRoute( 'get', 'abc', function(){} );
+		$test = $apitest1->registerRoute( 'get', 'abc', function() {
+				
+			} );
 		$this->assertInstanceOf( '\Slim\Route', $test );
 		$this->assertContains( 'GET', $test->getHttpMethods() );
 
-		$test2 = $apitest1->registerRoute( 'yum', 'abc', function(){} );
+		$test2 = $apitest1->registerRoute( 'yum', 'abc', function() {
+				
+			} );
 		$this->assertFalse( $test2 );
 	}
 
@@ -36,28 +40,34 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		$apiTest = new API_Test_v1( $slim );
 
-		$test = $apiTest->registerRoute( 'get', 'abc', function(){} );
-		$this->assertEquals( Voce\Thermal\API_BASE . '/v1/abc', $test->getPattern() );
+		$test = $apiTest->registerRoute( 'get', 'abc', function() {
+				
+			} );
+		$this->assertEquals( '/' . Voce\Thermal\API_BASE . '/v1/abc', $test->getPattern() );
 
 		$apiTest = new API_Test_v2( $slim );
 
-		$test = $apiTest->registerRoute( 'get', 'abc', function(){} );
-		$this->assertEquals( Voce\Thermal\API_BASE . '/v2/abc', $test->getPattern() );
+		$test = $apiTest->registerRoute( 'get', 'abc', function() {
+				
+			} );
+		$this->assertEquals( '/' . Voce\Thermal\API_BASE . '/v2/abc', $test->getPattern() );
 	}
 
 	public function testAccessControlHeader() {
 
-		\Slim\Environment::mock(array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => Voce\Thermal\API_BASE . '/v1/test',
-        ));
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/test',
+		) );
 
 		$slim = new \Slim\Slim();
 		$apiTest = new API_Test_v1( $slim );
 
 		$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] = 'test_header';
 
-		$apiTest->registerRoute( 'GET', 'test', function(){ return ''; } );
+		$apiTest->registerRoute( 'GET', 'test', function() {
+				return '';
+			} );
 
 		ob_start();
 		$apiTest->app->run();
@@ -69,10 +79,10 @@ class API_BaseTest extends WP_UnitTestCase {
 
 	public function testAPIOutput() {
 
-		\Slim\Environment::mock(array(
-            'REQUEST_METHOD' => 'GET',
-            'PATH_INFO' => Voce\Thermal\API_BASE . '/v1/test',
-        ));
+		\Slim\Environment::mock( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/test',
+		) );
 		$slim = new \Slim\Slim();
 
 		$apiTest = new API_Test_v1( $slim );
@@ -80,8 +90,8 @@ class API_BaseTest extends WP_UnitTestCase {
 		$testData = array( 'testKey' => Voce\Thermal\API_BASE . '/test' );
 
 		$apiTest->registerRoute( 'GET', 'test', function () use ( $testData ) {
-			return $testData;
-		});
+				return $testData;
+			} );
 
 		ob_start();
 		$apiTest->app->run();
@@ -96,8 +106,8 @@ class API_BaseTest extends WP_UnitTestCase {
 
 		\Slim\Environment::mock( array(
 			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO'      => Voce\Thermal\API_BASE . '/v1/test',
-			'QUERY_STRING'   => 'callback=doStuff',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/test',
+			'QUERY_STRING' => 'callback=doStuff',
 		) );
 
 		$slim = new \Slim\Slim();
@@ -105,8 +115,8 @@ class API_BaseTest extends WP_UnitTestCase {
 		$apiTest = new API_Test_v1( $slim );
 
 		$apiTest->registerRoute( 'GET', 'test', function () {
-			return 'test';
-		});
+				return 'test';
+			} );
 
 		ob_start();
 		$apiTest->app->run();
@@ -115,14 +125,13 @@ class API_BaseTest extends WP_UnitTestCase {
 		$res = $apiTest->app->response();
 		$this->assertEquals( 'doStuff("test")', $res->body() );
 		$this->assertEquals( 'application/javascript; charset=utf-8;', $res->header( 'Content-Type' ) );
-
 	}
 
 	public function testBadRoute() {
-		\Slim\Environment::mock(array(
+		\Slim\Environment::mock( array(
 			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO' => Voce\Thermal\API_BASE . '/v1/foobar',
-		));
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/foobar',
+		) );
 		$app = new \Slim\Slim();
 
 		$apiTest = new API_Test_v1( $app );
