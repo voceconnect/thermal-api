@@ -81,7 +81,7 @@ abstract class API_Base {
 					} else {
 
 						$app->contentType( 'application/json; charset=utf-8;' );
-						$res->write( json_encode( $data ), true );
+						$res->write( $json, true );
 					}
 				} );
 	}

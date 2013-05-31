@@ -31,6 +31,7 @@ The following resources are available
 * [Terms](#terms)
 * [Rewrite Rules](#rewrite_rules)
 * [Media Items](#media_items)
+* [Comments](#comments)
 
 
 ## Posts
@@ -1245,6 +1246,211 @@ Orderby will also accept an array of multiple identifiers.
             }
         }
     }
+
+
+## Comments
+<span id="comments"></span>Terms are individual classifications within a taxonomy.
+### Methods
+#### List
+
+##### Request
+    GET {api root}/taxonomies/{name}/terms
+##### Parameters
+
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Data Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="shade" colspan="3">Pagination Filters</td>
+		</tr>
+		<tr>
+			<td>paged*</td>
+			<td>integer</td>
+			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
+				and paged. Using this filter will cause include_found to be true.
+			</td>
+		</tr>
+		<tr>
+			<td>per_page*</td>
+			<td>integer</td>
+			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_TERMS_PER_PAGE.</td>
+		</tr>
+		<tr>
+			<td>offset</td>
+			<td>integer</td>
+			<td>The number of posts to skip over before returning the result set.</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">Ordering Parameters</td>
+		</tr>
+		<tr>
+			<td>orderby**</td>
+			<td>string</td>
+			<td>Sort the results by the given identifier.  Defaults to 'name'.  Supported values are:
+				<ul>
+					<li>'name' - The user readable name of the term.</li>
+					<li>'slug' - The slug of the term.</li>
+					<li>'count' - The number of posts the term is connected to.</li>
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<td>order</td>
+			<td>string</td>
+			<td>The order direction.  Options are 'ASC' and 'DESC'.  Default is 'DESC'</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">General Filters</td>
+		</tr>
+		<tr>
+			<td>include</td>
+			<td>array|integer</td>
+			<td>An array of term ID's to include.</td>
+		</tr>
+		<tr>
+			<td>slug</td>
+			<td>string</td>
+			<td>A term slug to include.</td>
+		</tr>
+		<tr>
+			<td>parent</td>
+			<td>id</td>
+			<td>Include the children of the provided term ID.</td>
+		</tr>
+		<tr>
+			<td>hide_empty</td>
+			<td>boolean</td>
+			<td>If true, only terms with attached posts will be returned.  Default is true.</td>
+		</tr>
+		<tr>
+			<td>pad_counts</td>
+			<td>boolean</td>
+			<td>If true, count all of the children along with the term.  Default is false.</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">
+				Response Altering Parameters
+			</td>
+		</tr>
+		<tr>
+			<td>include_found*</td>
+			<td>boolean</td>
+			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
+			overhead in generating the total count so this should only be turned on when needed.  This is 
+			automatically turned on if the 'paged' filter is used.</td>
+		</tr>
+	</tbody>
+</table>
+
+
+##### Response
+	{
+		"found": 25,  //only provided if include_found == true
+		"terms": [
+			[Term Object]
+			….
+		]
+	}
+
+
+
+#### Single Entity
+
+##### Request
+    GET {api root}/taxonomies/{name}/terms/{term_id}
+    
+#### Term JSON Schema
+	{
+        "type": "object",
+        "required": false,
+        "properties": {
+            "description": {
+                "description": "A long text describing the term.",
+                "type": "string",
+                "required": false
+            },
+            "meta": {
+                "description": "Extended Term data.",
+                "type": "object",
+            },
+            "name": {
+                "description": "The title/name of the term as displayed to users.",
+                "type": "string",
+                "required": false
+            },
+            "parent_str": {
+                "description": "The ID of the parent term as a string, if exists.",
+                "type": "string",
+                "required": false
+            },
+            "parent": {
+                "description": "The ID of the parent term, if exists.",
+                "type": "number",
+                "required": false
+            },
+            "post_count": {
+                "description": "The distinct count of posts attached to this term.  If 'pad_count' is set to true, this will also include all posts attached to child terms.  This only includes posts of type 'post'.",
+                "type": "number",
+                "required": false
+            },
+            "slug": {
+                "description": "The name (slug) of the term as used in URLs.",
+                "type": "string",
+                "required": false
+            },
+            "taxonomy": {
+                "type": "string",
+                "required": false
+            },
+            "id_str": {
+                "description": "The ID of the term as a string.",
+                "type": "string",
+                "id": "http://jsonschema.net/term_id_str",
+                "required": false
+            },
+            "id": {
+                "description": "The ID of the term.",
+                "type": "number",
+                "id": "http://jsonschema.net/term_id",
+                "required": false
+            },
+            "term_taxonomy_id_str": {
+                "description": "The ID that uniquely represents this term/taxonomy as ing asterms are shared across multiple taxonomies.",
+                "type": "string",
+                "id": "http://jsonschema.net/term_taxonomy_id_str",
+                "required": false
+            },
+            "term_taxonomy_id": {
+                "description": "The ID that uniquely represents this term/taxonomy as terms are shared across multiple taxonomies.",
+                "type": "number",
+                "id": "http://jsonschema.net/term_taxonomy_id",
+                "required": false
+            }
+        }
+    }
+
+##### Example Term Response
+	{
+		"ID": 123456,
+		"term_id_str": "123456",
+		"term_taxonomy_id": 123456789,
+		"term_taxonomy_id_str": "123456789",
+		"parent": 1234567,
+		"parent_str": "1234567",
+		"name": "Local News",
+		"slug": "local-news",
+		"taxonomy": "category",
+		"description": "News reports from around Polk County",
+		"post_count": 25,
+		"meta":{
+		}
+	}
 
 
 ##Notes
