@@ -30,6 +30,9 @@ Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
 
+= 0.6.1 =
+* Fixed error with missing namespace around dispatcher initialization.
+
 = 0.6.0 =
 * Improved handling of missing slashes around API_BASE constant.
 * Applying VOCE\Thermal namespace to API_BASE matching.
