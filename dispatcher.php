@@ -34,7 +34,7 @@ class API_Dispatcher {
 
 		$app = new \Slim\Slim();
 
-		$v1 = new APIv1( $app );
+		new APIv1( $app );
 
 		$app->run();
 
