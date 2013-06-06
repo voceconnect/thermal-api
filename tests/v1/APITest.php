@@ -199,7 +199,7 @@ class APITest extends WP_UnitTestCase {
 
 		$data = json_decode( $body );
 
-		$this->assertEquals( '404', $status );
+		$this->assertEquals( '401', $status );
 	}
 
 	public function testGetPostsByIdParameterNotRoute() {
@@ -226,4 +226,32 @@ class APITest extends WP_UnitTestCase {
 		$this->assertEquals( 1, count( $data->posts ) );
 	}
 
+	public function testGetUsers() {
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		$this->assertEquals('401', $status);
+	}
+	
+	public function testGetUser() {
+		$user_id = wp_insert_user(array(
+			'user_login' => 'test_get_user',
+		));
+		if(is_wp_error($user_id)) {
+			$user_id = get_user_by('login', 'test_get_user')->ID;
+		}
+		
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/' . $user_id,
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		$this->assertEquals('401', $status);
+	}
 }

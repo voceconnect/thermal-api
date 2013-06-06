@@ -50,21 +50,17 @@ class PostsController {
 	public static function findById( $app, $id ) {
 		$post = self::model()->findById( $id );
 		if ( !$post ) {
-			$app->halt( '404', 'Invalid Post' );
+			$app->halt( '404', get_status_header_desc('404') );
 		}
 		$post_type_obj = get_post_type_object( get_post_type( $post ) );
 		$post_status_obj = get_post_status_object( get_post_status( $post ) );
-		$can_access = true;
+
 		if ( is_user_logged_in() ) {
 			if ( !current_user_can( $post_type_obj->cap->read, $post->ID ) ) {
-				$can_access = false;
+				$app->halt( '403', get_status_header_desc('403') );
 			}
 		} elseif ( !($post_type_obj->public && $post_status_obj->public) ) {
-			$can_access = false;
-		}
-
-		if ( !$can_access ) {
-			$app->halt( '404', 'Invalid Permissions' );
+			$app->halt( '401', get_status_header_desc('401') );
 		}
 
 		self::format( $post, 'read' );

@@ -16,6 +16,14 @@ class UsersController {
 	}
 
 	public static function find( $app ) {
+		if ( !is_user_logged_in() ) {
+			$app->halt( '401', get_status_header_desc( '401' ) );
+		}
+
+		if ( !current_user_can( 'list_users' ) ) {
+			$app->halt( '403', get_status_header_desc( '403' ) );
+		}
+
 		$found = 0;
 		$posts = array( );
 		$request_args = $app->request()->get();
@@ -31,7 +39,21 @@ class UsersController {
 	}
 
 	public static function findById( $app, $id ) {
-		
+		if ( !is_user_logged_in() ) {
+			$app->halt( '401', get_status_header_desc( '401' ) );
+		}
+
+		if ( !current_user_can( 'list_users' ) && $id !== get_current_user_id() ) {
+			$app->halt( '403', get_status_header_desc( '403' ) );
+		}
+
+		$model = self::model();
+		$user = $model->findById($id);
+		if ( !$user ) {
+			$user->halt( '404', get_status_header_desc('404') );
+		}
+		self::format($user, 'read');
+		return $user;
 	}
 
 	/**
