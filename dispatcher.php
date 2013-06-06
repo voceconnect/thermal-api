@@ -34,7 +34,7 @@ class API_Dispatcher {
 
 		$app = new \Slim\Slim();
 
-		new APIv1( $app );
+		new \Voce\Thermal\v1\API( $app );
 
 		$app->run();
 

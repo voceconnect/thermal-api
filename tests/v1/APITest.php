@@ -3,11 +3,11 @@
 define( 'Voce\\Thermal\\API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
-require_once( __DIR__ . '/../dispatcher.php' );
-require_once( __DIR__ . '/../api/v1/API.php' );
-require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
+require_once( __DIR__ . '/../../dispatcher.php' );
+require_once( __DIR__ . '/../../api/v1/API.php' );
+require_once( __DIR__ . '/../../lib/Slim/Slim/Slim.php' );
 
-class APIv1PostRouteTest extends WP_UnitTestCase {
+class APITest extends WP_UnitTestCase {
 
 	protected function _insert_post( $args = array( ), $imgs = array( ) ) {
 
@@ -95,7 +95,7 @@ class APIv1PostRouteTest extends WP_UnitTestCase {
 	protected function _getResponse( $envArgs ) {
 		\Slim\Environment::mock( $envArgs );
 		$app = new \Slim\Slim();
-		new \Voce\Thermal\APIv1( $app );
+		new \Voce\Thermal\v1\API( $app );
 		$app->call();
 		return $app->response()->finalize();
 	}
@@ -113,6 +113,7 @@ class APIv1PostRouteTest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
+
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
@@ -170,10 +171,9 @@ class APIv1PostRouteTest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
-
+		$this->assertEquals('200', $status);
 		$this->assertInternalType( 'object', $data );
-		//$this->assertEquals( $test_post_id, $data->id );
-		$this->markTestSkipped( 'temporarily removed' );
+		$this->assertEquals( $test_post_id, $data->id );
 
 		$id = 9999999;
 
@@ -184,9 +184,7 @@ class APIv1PostRouteTest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
-
-		//$this->assertEquals('404', $status);
-		$this->markTestSkipped( 'temporarily removed' );
+		$this->assertEquals('404', $status);
 
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'draft',
