@@ -3,8 +3,10 @@ namespace Voce\Thermal\v1;
 
 class PostsModel {
 
-	public function find( $args = array( ), &$found ) {
-
+	public function find( $args = array( ), &$found = null ) {
+		// I would prefer the permissions handling to be in the controller
+		// rather than the model, but WP_Query is a dirty bit of code that
+		// doesn't quite give the flexibility needed with it's query_vars
 		add_action( 'parse_query', array( __CLASS__, '_force_public_post_status' ) );
 		$wp_posts = new \WP_Query( $args );
 		remove_action( 'parse_query', array( __CLASS__, '_force_public_post_status' ) );

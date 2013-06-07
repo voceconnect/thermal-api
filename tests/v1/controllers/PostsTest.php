@@ -3,11 +3,9 @@
 define( 'Voce\\Thermal\\API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
-require_once( __DIR__ . '/../../dispatcher.php' );
-require_once( __DIR__ . '/../../api/v1/API.php' );
-require_once( __DIR__ . '/../../lib/Slim/Slim/Slim.php' );
+require_once( __DIR__ . '/../../APITestCase.php' );
 
-class APITest extends WP_UnitTestCase {
+class PostsControllerTest extends APITestCase {
 
 	protected function _insert_post( $args = array( ), $imgs = array( ) ) {
 
@@ -88,23 +86,6 @@ class APITest extends WP_UnitTestCase {
 		return $id;
 	}
 
-	/**
-	 * 
-	 * @return array ['status', 'headers', 'body']
-	 */
-	protected function _getResponse( $envArgs ) {
-		\Slim\Environment::mock( $envArgs );
-		$app = new \Slim\Slim();
-		new \Voce\Thermal\v1\API( $app );
-		$app->call();
-		return $app->response()->finalize();
-	}
-
-	public function setUp() {
-
-		\Slim\Slim::registerAutoloader();
-	}
-
 	public function testGetPosts() {
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -117,6 +98,7 @@ class APITest extends WP_UnitTestCase {
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType('array', $data->posts);
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
 
@@ -171,7 +153,7 @@ class APITest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
-		$this->assertEquals('200', $status);
+		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertEquals( $test_post_id, $data->id );
 
@@ -184,7 +166,7 @@ class APITest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
-		$this->assertEquals('404', $status);
+		$this->assertEquals( '404', $status );
 
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'draft',
@@ -195,7 +177,7 @@ class APITest extends WP_UnitTestCase {
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $test_post_id,
 			'QUERY_STRING' => '',
-		) );
+			) );
 
 		$data = json_decode( $body );
 
@@ -214,11 +196,11 @@ class APITest extends WP_UnitTestCase {
 			'p' => $test_post_id
 		);
 
-		list($status, $headers, $body) = $this->_getResponse(array(
+		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
 			'QUERY_STRING' => http_build_query( $test_args ),
-		));
+		) );
 
 		$data = json_decode( $body );
 
@@ -234,17 +216,17 @@ class APITest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
-		$this->assertEquals('401', $status);
+		$this->assertEquals( '401', $status );
 	}
-	
+
 	public function testGetUser() {
-		$user_id = wp_insert_user(array(
+		$user_id = wp_insert_user( array(
 			'user_login' => 'test_get_user',
-		));
-		if(is_wp_error($user_id)) {
-			$user_id = get_user_by('login', 'test_get_user')->ID;
+		) );
+		if ( is_wp_error( $user_id ) ) {
+			$user_id = get_user_by( 'login', 'test_get_user' )->ID;
 		}
-		
+
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/' . $user_id,
@@ -252,6 +234,7 @@ class APITest extends WP_UnitTestCase {
 			) );
 
 		$data = json_decode( $body );
-		$this->assertEquals('401', $status);
+		$this->assertEquals( '401', $status );
 	}
+
 }
