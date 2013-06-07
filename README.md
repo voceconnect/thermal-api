@@ -423,7 +423,7 @@ Orderby will also accept an array of multiple identifiers.
                         		"type": "string",
                         		"required": false
                         	},
-                        	"include": {
+                        	"in": {
                         		"description": "An array of IDs to only show the images from these attachments."
                         		"type": "array",
                         		"required": false
@@ -648,7 +648,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>include</td>
+			<td>in</td>
 			<td>array|integer</td>
 			<td>An array of user ID's to include.</td>
 		</tr>
@@ -951,7 +951,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>include</td>
+			<td>in</td>
 			<td>array|integer</td>
 			<td>An array of term ID's to include.</td>
 		</tr>
@@ -1309,7 +1309,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">General Filters</td>
 		</tr>
 		<tr>
-			<td>include</td>
+			<td>in</td>
 			<td>array|integer</td>
 			<td>An array of term ID's to include.</td>
 		</tr>

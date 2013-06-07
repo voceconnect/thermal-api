@@ -30,6 +30,10 @@ Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
 
+= 0.7.0 =
+* Split endpoint handling into separate controllers/models.
+* Changed 'include' argumetn to 'in' for terms and users.
+
 = 0.6.1 =
 * Fixed error with missing namespace around dispatcher initialization.
 

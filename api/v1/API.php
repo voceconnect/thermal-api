@@ -33,51 +33,17 @@ class API extends \Voce\Thermal\API_Base {
 	public function __construct( \Slim\Slim $app ) {
 		parent::__construct( $app );
 		$this->registerRoute( 'GET', 'posts/?', array( __NAMESPACE__ . '\\PostsController', 'find' ) );
-		$this->registerRoute( 'GET', 'posts/(:id)/?', array( __NAMESPACE__ . '\\PostsController', 'findById' ) );
+		$this->registerRoute( 'GET', 'posts/:id/?', array( __NAMESPACE__ . '\\PostsController', 'findById' ) );
 		$this->registerRoute( 'GET', 'users/?', array( __NAMESPACE__ . '\\UsersController', 'find' ) );
-		$this->registerRoute( 'GET', 'users/(:id)/?', array( __NAMESPACE__ . '\\UsersController', 'findById' ) );
+		$this->registerRoute( 'GET', 'users/:id/?', array( __NAMESPACE__ . '\\UsersController', 'findById' ) );
 		$this->registerRoute( 'GET', 'taxonomies/?', array( __NAMESPACE__ . '\\TaxonomiesController', 'find' ) );
-		$this->registerRoute( 'GET', 'taxonomies/?(:name)/?', array( __NAMESPACE__ . '\\TaxonomiesController', 'findById' ) );
-		$this->registerRoute( 'GET', 'taxonomies/:name/terms/?(:term_id)/?', array( $this, 'get_terms' ) );
+		$this->registerRoute( 'GET', 'taxonomies/:name/?', array( __NAMESPACE__ . '\\TaxonomiesController', 'findById' ) );
+		$this->registerRoute( 'GET', 'taxonomies/:taxonomy_name/terms/?', array( __NAMESPACE__ . '\\TermsController', 'find' ) );
+		$this->registerRoute( 'GET', 'taxonomies/:taxonomy_name/terms/?(:term_id)/?', array( __NAMESPACE__ . '\\TermsController', 'findById' ) );
 		$this->registerRoute( 'GET', 'rewrite_rules/?', array( $this, 'get_rewrite_rules' ) );
 	}
 
-	/**
-	 * taxonomies/:id endpoint.
-	 * @param string $name [optional]
-	 * @return array
-	 */
-	public function get_taxonomies( $name = null ) {
-		$args = array(
-			'public' => true,
-		);
-
-		if ( !is_null( $name ) ) {
-			$args['name'] = $name;
-		}
-
-		$t = get_taxonomies( $args, 'object' );
-		$args = $this->app->request()->get();
-		$taxonomies = array( );
-		foreach ( $t as $taxonomy ) {
-			if ( isset( $args['in'] ) ) {
-				if ( !in_array( $taxonomy->name, ( array ) $args['in'] ) ) {
-					continue;
-				}
-			}
-
-			if ( isset( $args['post_type'] ) ) {
-				if ( 0 === count( array_intersect( $taxonomy->object_type, ( array ) $args['post_type'] ) ) ) {
-					continue;
-				}
-			}
-
-			$taxonomies[] = $this->format_taxonomy( $taxonomy );
-		}
-
-		return compact( 'taxonomies' );
-	}
-
+	
 	/**
 	 * taxonomies/:taxonomy/terms/:term endpoint.
 	 * @param string $name
@@ -222,4 +188,20 @@ class API extends \Voce\Thermal\API_Base {
 		);
 	}
 
+}
+
+function toBool( $value ) {
+	return ( bool ) $value;
+}
+
+function toArray( $value ) {
+	return ( array ) $value;
+}
+
+function applyInt( $value ) {
+	return array_map( 'intval', $value );
+}
+
+function toCommaSeparated( $value ) {
+	return implode( ',', $value );
 }

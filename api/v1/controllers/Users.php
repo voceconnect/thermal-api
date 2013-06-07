@@ -114,7 +114,7 @@ class UsersController {
 			'offset' => array( '\\intval' ),
 			'orderby' => array( ),
 			'order' => array( ),
-			'include' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
+			'in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
 			'include_found' => array( __NAMESPACE__ . '\\toBool' )
 		);
 
@@ -127,6 +127,11 @@ class UsersController {
 				$value = call_user_func( $callback, $value );
 			}
 			$request_args[$key] = $value;
+		}
+		
+		if(!empty($request_args['in'])) {
+			$request_args['include'] = $request_args['in'];
+			unset($request_args['in']);
 		}
 
 		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > Voce\Thermal\MAX_USERS_PER_PAGE ) {

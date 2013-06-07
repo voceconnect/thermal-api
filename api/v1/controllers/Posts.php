@@ -4,22 +4,6 @@ namespace Voce\Thermal\v1;
 
 require_once(__DIR__ . '/../models/Posts.php');
 
-function toBool( $value ) {
-	return ( bool ) $value;
-}
-
-function toArray( $value ) {
-	return ( array ) $value;
-}
-
-function applyInt( $value ) {
-	return array_map( 'intval', $value );
-}
-
-function toCommaSeparated( $value ) {
-	return implode( ',', $value );
-}
-
 class PostsController {
 
 	private static $_model;

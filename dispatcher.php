@@ -1,5 +1,4 @@
 <?php
-
 namespace Voce\Thermal;
 
 if ( !defined( 'Voce\Thermal\API_BASE' ) ) {
