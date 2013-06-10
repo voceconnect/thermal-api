@@ -27,7 +27,7 @@ class TaxonomiesModel {
 					return false;
 				} );
 		}
-
+		
 		return array_values($taxonomies);
 	}
 

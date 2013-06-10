@@ -1079,7 +1079,7 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Example Term Response
 	{
-		"ID": 123456,
+		"id": 123456,
 		"term_id_str": "123456",
 		"term_taxonomy_id": 123456789,
 		"term_taxonomy_id_str": "123456789",

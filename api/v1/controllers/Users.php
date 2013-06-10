@@ -64,7 +64,7 @@ class UsersController {
 	 */
 	public static function format( &$user, $state = 'read' ) {
 		if ( !$user ) {
-			return null;
+			return $user = null;
 		}
 
 		//allow for use with array_walk
@@ -100,6 +100,8 @@ class UsersController {
 				'meta' => ( object ) array( )
 				) );
 		}
+		
+		$user = (object) $data;
 	}
 
 	/**

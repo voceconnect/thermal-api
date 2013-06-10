@@ -17,7 +17,7 @@ class TermsController {
 
 	public static function find( $app, $taxonomy_name ) {
 		$taxonomy = TaxonomiesController::findById( $app, $taxonomy_name );
-		
+
 		$found = 0;
 
 		$request_args = $app->request()->get();
@@ -26,40 +26,20 @@ class TermsController {
 
 		$model = self::model();
 
-		$terms = $model->find( $taxonomy, $args, $found );
-
-		$terms = array_filter( $terms, function($term) {
-				if ( !$term->public ) {
-					if ( is_user_logged_in() || !current_user_can( $term->cap->manage_terms, $term->ID ) ) {
-						return false;
-					}
-				}
-				return true;
-			} );
+		$terms = $model->find( $taxonomy->name, $args, $found );
 
 		array_walk( $terms, array( __CLASS__, 'format' ), 'read' );
 		$terms = array_values( $terms );
-		return compact( 'terms' );
+		return empty( $args['include_found'] ) ? compact( 'terms' ) : compact( 'terms', 'found' );
 	}
 
-	public static function findById( $app, $id ) {
+	public static function findById( $app, $taxonomy_name, $id ) {
 		$taxonomy = TaxonomiesController::findById( $app, $taxonomy_name );
 
-		$term = self::model()->findById( $id );
+		$term = self::model()->findById( $taxonomy_name, $id );
 		if ( !$term ) {
 			$app->halt( '404', get_status_header_desc( '404' ) );
 		}
-
-		if ( !$term->public ) {
-			if ( is_user_logged_in() ) {
-				if ( !current_user_can( $term->cap->manage_terms, $term->ID ) ) {
-					$app->halt( '403', get_status_header_desc( '403' ) );
-				}
-			} else {
-				$app->halt( '401', get_status_header_desc( '401' ) );
-			}
-		}
-
 		self::format( $term, 'read' );
 		return $term;
 	}
@@ -94,13 +74,13 @@ class TermsController {
 			}
 			$request_args[$key] = $value;
 		}
-		
+
 		//convert 'in' to 'include'
-		if(!empty($request_args['in'])) {
+		if ( !empty( $request_args['in'] ) ) {
 			$request_args['include'] = $request_args['in'];
-			unset($request_args['in']);
+			unset( $request_args['in'] );
 		}
-		
+
 		if ( !empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) ) {
 			$request_args['include_found'] = true;
 		}
@@ -112,21 +92,41 @@ class TermsController {
 	 * 
 	 * @param \WP_Post $term
 	 */
-	public static function format( &$term ) {
+	public static function format( &$term, $state = 'read' ) {
 		if ( !$term ) {
-			return null;
+			return $term = null;
+		}
+
+		//allow for use with array_walk
+		if ( func_num_args() > 2 ) {
+			$state = func_get_arg( func_num_args() - 1 );
+		}
+		if ( !in_array( $state, array( 'read', 'new', 'edit' ) ) ) {
+			$state = 'read';
 		}
 
 		$data = array(
 			'name' => $term->name,
-			'post_types' => $term->object_type,
-			'hierarchical' => $term->hierarchical,
-			'queryVar' => $term->query_var,
-			'labels' => $term->labels,
-			'meta' => new \stdClass()
+			'slug' => $term->slug,
+			'parent' => intval( $term->parent ),
+			'parent_str' => ( string ) $term->parent,
+			'description' => $term->description,
+			'post_count' => intval( $term->count ),
 		);
 
-		$term = $data;
+		if ( $state == 'read' ) {
+			$data = array_merge( $data, array(
+				'id' => intval( $term->term_id ),
+				'term_id_str' => ( string ) $term->term_id,
+				'term_taxonomy_id' => intval( $term->term_taxonomy_id ),
+				'term_taxonomy_id_str' => ( string ) $term->term_taxonomy_id,
+				'taxonomy' => $term->taxonomy,
+				'post_count' => intval( $term->count ),
+				'meta' => new \stdClass()
+				) );
+		}
+
+		$term = ( object ) $data;
 	}
 
 }

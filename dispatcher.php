@@ -1,8 +1,8 @@
 <?php
 namespace Voce\Thermal;
 
-if ( !defined( 'Voce\Thermal\API_BASE' ) ) {
-	define( 'Voce\Thermal\API_BASE', '/wp_api' );
+if ( !defined( __NAMESPACE__ . '\\API_BASE' ) ) {
+	define( __NAMESPACE__ . '\\API_BASE', '/wp_api' );
 }
 
 function get_api_base() {

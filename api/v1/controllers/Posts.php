@@ -34,17 +34,17 @@ class PostsController {
 	public static function findById( $app, $id ) {
 		$post = self::model()->findById( $id );
 		if ( !$post ) {
-			$app->halt( '404', get_status_header_desc('404') );
+			$app->halt( '404', get_status_header_desc( '404' ) );
 		}
 		$post_type_obj = get_post_type_object( get_post_type( $post ) );
 		$post_status_obj = get_post_status_object( get_post_status( $post ) );
 
 		if ( is_user_logged_in() ) {
 			if ( !current_user_can( $post_type_obj->cap->read, $post->ID ) ) {
-				$app->halt( '403', get_status_header_desc('403') );
+				$app->halt( '403', get_status_header_desc( '403' ) );
 			}
 		} elseif ( !($post_type_obj->public && $post_status_obj->public) ) {
-			$app->halt( '401', get_status_header_desc('401') );
+			$app->halt( '401', get_status_header_desc( '401' ) );
 		}
 
 		self::format( $post, 'read' );
@@ -184,7 +184,7 @@ class PostsController {
 	 */
 	public static function format( &$post, $state = 'read' ) {
 		if ( !$post ) {
-			return null;
+			return $post = null;
 		}
 
 		//allow for use with array_walk
@@ -200,8 +200,6 @@ class PostsController {
 		setup_postdata( $post );
 
 		$data = array(
-			'id' => $post->ID,
-			'id_str' => ( string ) $post->ID,
 			'type' => $post->post_type,
 			'parent' => $post->post_parent,
 			'parent_str' => ( string ) $post->post_parent,
@@ -268,6 +266,8 @@ class PostsController {
 			UsersController::format( $author, 'read' );
 
 			$data = array_merge( $data, array(
+				'id' => $post->ID,
+				'id_str' => ( string ) $post->ID,
 				'permalink' => get_permalink( $post ),
 				'modified' => get_post_modified_time( 'c', true, $post ),
 				'comment_status' => $post->comment_status,
@@ -284,7 +284,7 @@ class PostsController {
 
 		wp_reset_postdata();
 
-		$post = $data;
+		$post = ( object ) $data;
 	}
 
 	protected static function _get_post_galleries( \WP_Post $post ) {

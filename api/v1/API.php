@@ -2,22 +2,23 @@
 
 namespace Voce\Thermal\v1;
 
-if ( !defined( 'MAX_POSTS_PER_PAGE' ) ) {
-	define( 'MAX_POSTS_PER_PAGE', 100 );
+if ( !defined( __NAMESPACE__ . '\\MAX_POSTS_PER_PAGE' ) ) {
+	define( __NAMESPACE__ . '\\MAX_POSTS_PER_PAGE', 100 );
 }
 
-if ( !defined( 'MAX_TERMS_PER_PAGE' ) ) {
-	define( 'MAX_TERMS_PER_PAGE', 100 );
+if ( !defined( __NAMESPACE__ . '\\MAX_TERMS_PER_PAGE' ) ) {
+	define( __NAMESPACE__ . '\\MAX_TERMS_PER_PAGE', 100 );
 }
 
-if ( !defined( 'MAX_USERS_PER_PAGE' ) ) {
-	define( 'MAX_USERS_PER_PAGE', 100 );
+if ( !defined( __NAMESPACE__ . '\\MAX_USERS_PER_PAGE' ) ) {
+	define( __NAMESPACE__ . '\\MAX_USERS_PER_PAGE', 100 );
 }
 
 require_once( __DIR__ . '/../API_Base.php' );
 require_once( __DIR__ . '/controllers/Posts.php');
 require_once( __DIR__ . '/controllers/Users.php');
 require_once( __DIR__ . '/controllers/Taxonomies.php');
+require_once( __DIR__ . '/controllers/Terms.php');
 
 /**
  *
@@ -39,7 +40,7 @@ class API extends \Voce\Thermal\API_Base {
 		$this->registerRoute( 'GET', 'taxonomies/?', array( __NAMESPACE__ . '\\TaxonomiesController', 'find' ) );
 		$this->registerRoute( 'GET', 'taxonomies/:name/?', array( __NAMESPACE__ . '\\TaxonomiesController', 'findById' ) );
 		$this->registerRoute( 'GET', 'taxonomies/:taxonomy_name/terms/?', array( __NAMESPACE__ . '\\TermsController', 'find' ) );
-		$this->registerRoute( 'GET', 'taxonomies/:taxonomy_name/terms/?(:term_id)/?', array( __NAMESPACE__ . '\\TermsController', 'findById' ) );
+		$this->registerRoute( 'GET', 'taxonomies/:taxonomy_name/terms/:term_id/?', array( __NAMESPACE__ . '\\TermsController', 'findById' ) );
 		$this->registerRoute( 'GET', 'rewrite_rules/?', array( $this, 'get_rewrite_rules' ) );
 	}
 

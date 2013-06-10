@@ -89,7 +89,7 @@ class TaxonomiesController {
 	 */
 	public static function format( &$taxonomy ) {
 		if ( !$taxonomy ) {
-			return null;
+			return $taxonomy = null;
 		}
 
 		$data = array(
@@ -101,7 +101,7 @@ class TaxonomiesController {
 			'meta' => new \stdClass()
 		);
 
-		$taxonomy = $data;
+		$taxonomy = (object) $data;
 	}
 
 }
