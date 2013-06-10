@@ -248,7 +248,8 @@ class PostsController {
 				// get the terms related to post
 				$terms = get_the_terms( $post->ID, $taxonomy );
 				if ( !empty( $terms ) ) {
-					$post_taxonomies[$taxonomy] = array_values( array_map( array( __NAMESPACE__ . '\API', 'format_term' ), $terms ) );
+					array_walk($terms, array(__NAMESPACE__ . '\TermsController', 'format'), $state);
+					$post_taxonomies[$taxonomy] = $terms;
 				}
 			}
 
