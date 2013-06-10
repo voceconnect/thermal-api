@@ -1,9 +1,8 @@
 <?php
-
 namespace Voce\Thermal;
 
-if ( !defined( 'Voce\Thermal\API_BASE' ) ) {
-	define( 'Voce\Thermal\API_BASE', '/wp_api' );
+if ( !defined( __NAMESPACE__ . '\\API_BASE' ) ) {
+	define( __NAMESPACE__ . '\\API_BASE', '/wp_api' );
 }
 
 function get_api_base() {
@@ -34,7 +33,7 @@ class API_Dispatcher {
 
 		$app = new \Slim\Slim();
 
-		$v1 = new APIv1( $app );
+		new \Voce\Thermal\v1\API( $app );
 
 		$app->run();
 

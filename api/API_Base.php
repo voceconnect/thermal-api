@@ -42,6 +42,7 @@ abstract class API_Base {
 	 * @param string $method HTTP method
 	 * @param string $pattern The path pattern to match
 	 * @param callback $callback Callback function for route
+	 * @return \Slim\Route
 	 */
 	public function registerRoute( $method, $pattern, $callback ) {
 		$method = strtolower( $method );
@@ -64,9 +65,9 @@ abstract class API_Base {
 		$app = $this->app;
 
 		return $this->app->$method( $match, function() use ( $app, $callback ) {
+					$args = func_get_args();
+					array_unshift( $args, $app );
 
-					$data = call_user_func_array( $callback, func_get_args() );
-					$json = json_encode( $data );
 					$res = $app->response();
 
 					$res->header( 'Access-Control-Allow-Origin', '*' );
@@ -75,13 +76,22 @@ abstract class API_Base {
 					}
 
 					if ( ( $json_p = $app->request()->get( 'callback' ) ) && ( \Voce\JSONP::is_valid_callback( $json_p ) ) ) {
-
 						$app->contentType( 'application/javascript; charset=utf-8;' );
-						$res->write( sprintf( '%s(%s)', $json_p, $json ) );
-					} else {
 
+						$res->write( $json_p . '(' );
+					} else {
 						$app->contentType( 'application/json; charset=utf-8;' );
-						$res->write( json_encode( $data ), true );
+						$json_p = false;
+					}
+
+					$data = call_user_func_array( $callback, $args );
+					if ( !is_null( $data ) ) {
+						$json = json_encode( $data );
+						$res->write( $json );
+					}
+
+					if ( $json_p ) {
+						$res->write( ')' );
 					}
 				} );
 	}

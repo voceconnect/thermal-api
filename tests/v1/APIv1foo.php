@@ -3,12 +3,12 @@
 define( 'Voce\\Thermal\\API_BASE', 'api' );
 define( 'WP_USE_THEMES', false );
 
-require_once( __DIR__ . '/../dispatcher.php' );
-require_once( __DIR__ . '/../api/v1/API.php' );
-require_once( __DIR__ . '/../lib/Slim/Slim/Slim.php' );
+require_once( __DIR__ . '/../../dispatcher.php' );
+require_once( __DIR__ . '/../../api/v1/API.php' );
+require_once( __DIR__ . '/../../lib/Slim/Slim/Slim.php' );
 
 
-class APIv1Test extends WP_UnitTestCase {
+class APIv1Test {
 
 	protected function _insert_post( $args = array(), $imgs = array() ) {
 
@@ -102,7 +102,7 @@ class APIv1Test extends WP_UnitTestCase {
 		) );
 
 		$app  = new \Slim\Slim();
-		$api  = new \Voce\Thermal\APIv1( $app );
+		$api  = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts();
 
 		$this->assertInternalType( 'array', $data );
@@ -116,9 +116,9 @@ class APIv1Test extends WP_UnitTestCase {
 			'PATH_INFO'      => Voce\Thermal\API_BASE . '/v1/posts',
 			'QUERY_STRING'   => 'include_found=true',
 		) );
-
+		
 		$app  = new \Slim\Slim();
-		$api  = new \Voce\Thermal\APIv1( $app );
+		$api  = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts();
 
 		$this->assertArrayHasKey( 'posts', $data );
@@ -132,7 +132,7 @@ class APIv1Test extends WP_UnitTestCase {
 		));
 
 		$app = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $app );
+		$api = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts();
 
 		$this->assertArrayHasKey( 'posts', $data );
@@ -146,7 +146,7 @@ class APIv1Test extends WP_UnitTestCase {
 		));
 
 		$app = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $app );
+		$api = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts();
 
 		$this->assertArrayHasKey( 'posts', $data );
@@ -167,7 +167,7 @@ class APIv1Test extends WP_UnitTestCase {
 		) );
 
 		$app  = new \Slim\Slim();
-		$api  = new \Voce\Thermal\APIv1( $app );
+		$api  = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts( $test_post_id );
 
 		$this->assertArrayHasKey( 'posts', $data );
@@ -182,7 +182,7 @@ class APIv1Test extends WP_UnitTestCase {
 		));
 
 		$app  = new \Slim\Slim();
-		$api  = new \Voce\Thermal\APIv1( $app );
+		$api  = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts( $id );
 
 		$this->assertArrayHasKey( 'posts', $data );
@@ -201,7 +201,7 @@ class APIv1Test extends WP_UnitTestCase {
 		));
 
 		$app = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $app );
+		$api = new \Voce\Thermal\v1\API( $app );
 		$data = $api->get_posts( $test_post_id );
 
 		$this->assertEmpty( $data['posts'] );
@@ -224,7 +224,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'fake'     => 'data not in whitelist',
 		);
 
-		$query_vars = \Voce\Thermal\APIv1::get_post_args( $test_args );
+		$query_vars = \Voce\Thermal\v1\API::get_post_args( $test_args );
 		$query      = new \WP_Query( $query_vars );
 
 		// Taxonomies and Categories
@@ -282,7 +282,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'p' => 1
 		);
 
-		$query_vars = \Voce\Thermal\APIv1::get_post_args( $test_args );
+		$query_vars = \Voce\Thermal\v1\API::get_post_args( $test_args );
 
 		// P(ost ID)
 		$this->assertEquals( $test_args['p'], $query_vars['p'] );
@@ -296,7 +296,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'orderby' => 'author',
 		);
 
-		$query_vars = \Voce\Thermal\APIv1::get_post_args( $test_args );
+		$query_vars = \Voce\Thermal\v1\API::get_post_args( $test_args );
 		$query = new \WP_Query( $query_vars );
 
 		//Author
@@ -329,7 +329,7 @@ class APIv1Test extends WP_UnitTestCase {
 			'per_page' => 20,                      // MAX_POSTS_PER_PAGE set to 10 in API
 		);
 
-		$query_vars = \Voce\Thermal\APIv1::get_post_args( $test_args );
+		$query_vars = \Voce\Thermal\v1\API::get_post_args( $test_args );
 
 		//Author
 		$this->assertEmpty( $query_vars['author'] );
@@ -399,12 +399,12 @@ class APIv1Test extends WP_UnitTestCase {
 			'meta'             => (object)array(),
 			'taxonomies'       => (object)$expected_taxonomy,
 			'media'            => array(),
-			'author'           => \Voce\Thermal\APIv1::format_user( get_user_by( 'id', 1 ) ),
+			'author'           => \Voce\Thermal\v1\API::format_user( get_user_by( 'id', 1 ) ),
 		);
 
 		$test_post = get_post( $test_post_id );
 
-		$actual = \Voce\Thermal\APIv1::format_post( $test_post );
+		$actual = \Voce\Thermal\v1\API::format_post( $test_post );
 
 		$this->assertEquals( $expected, $actual );
 
@@ -420,7 +420,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$example_query->query_vars = $query_vars;
 
-		\Voce\Thermal\APIv1::_force_public_post_status(&$example_query);
+		\Voce\Thermal\v1\API::_force_public_post_status(&$example_query);
 
 		$this->assertEquals( array(), $example_query->query_vars['post_status'] );
 	}
@@ -432,7 +432,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$example_query->query_vars = $query_vars;
 
-		\Voce\Thermal\APIv1::_force_public_post_status(&$example_query);
+		\Voce\Thermal\v1\API::_force_public_post_status(&$example_query);
 
 		$this->assertEquals( array( 'publish' => 'publish' ), $example_query->query_vars['post_status'] );
 	}
@@ -444,7 +444,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		$example_query->query_vars = $query_vars;
 
-		\Voce\Thermal\APIv1::_force_public_post_status(&$example_query);
+		\Voce\Thermal\v1\API::_force_public_post_status(&$example_query);
 
 		$filter = has_filter( 'posts_request', array( 'Voce\Thermal\\APIv1', '_force_blank_request' ) );
 
@@ -453,7 +453,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 	public function testForceBlankRequest() {
 
-		$value = \Voce\Thermal\APIv1::_force_blank_request();
+		$value = \Voce\Thermal\v1\API::_force_blank_request();
 
 		$this->assertEquals( $value, '' );
 	}
@@ -466,7 +466,7 @@ class APIv1Test extends WP_UnitTestCase {
 
 		set_post_thumbnail( $test_post_id, $attachment_id );
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id ) );
 
 		$this->assertArrayHasKey( 'meta', $formatted_post );
 		$this->assertObjectHasAttribute( 'featured_image', $formatted_post['meta'] );
@@ -505,7 +505,7 @@ class APIv1Test extends WP_UnitTestCase {
 		);
 
 		$post = get_post( $attachment_id );
-		$formatted_post = \Voce\Thermal\APIv1::format_image_media_item( $post );
+		$formatted_post = \Voce\Thermal\v1\API::format_image_media_item( $post );
 
 		$this->assertEquals( $expected, $formatted_post );
 
@@ -556,7 +556,7 @@ POSTCONTENT;
 			),
 		);
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id_1 ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id_1 ) );
 
 		// Gallery should be created if there are galleries
 		$this->assertObjectHasAttribute( 'gallery', $formatted_post['meta'] );
@@ -585,7 +585,7 @@ POSTCONTENT;
 			),
 		);
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id_1 ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id_1 ) );
 		// Single post's gallery with exclude
 		$this->assertEquals( $expected, $formatted_post['meta']->gallery );
 
@@ -633,7 +633,7 @@ POSTCONTENT;
 		$expected_media = array_merge( $attachment_ids_1, $attachment_ids_2 );
 		sort( $expected_media );
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id_2 ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id_2 ) );
 
 		$media = array_map( function( $img ) {
 			return $img['id'];
@@ -679,7 +679,7 @@ POSTCONTENT;
 		$expected_media = array_merge( $expected_ids, $attachment_ids_2 );
 		sort( $expected_media );
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id_2 ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id_2 ) );
 
 		$media = array_map( function( $img ) {
 			return $img['id'];
@@ -724,7 +724,7 @@ POSTCONTENT;
 		$expected_media = array_merge( $image_ids, $attachment_ids_2 );
 		sort( $expected_media );
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id_2 ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id_2 ) );
 
 		$media = array_map( function( $img ) {
 			return $img['id'];
@@ -752,7 +752,7 @@ POSTCONTENT;
 			)
 		);
 
-		$formatted_post = \Voce\Thermal\APIv1::format_post( get_post( $test_post_id_3 ) );
+		$formatted_post = \Voce\Thermal\v1\API::format_post( get_post( $test_post_id_3 ) );
 		// Test RAND ordering
 		$this->assertEquals( 'RAND', $formatted_post['meta']->gallery[0]['order'] );
 
@@ -883,7 +883,7 @@ POSTCONTENT;
 
 	public function testGetRewriteRules() {
 		$slim = new \Slim\Slim();
-		$api  = new \Voce\Thermal\APIv1( $slim );
+		$api  = new \Voce\Thermal\v1\API( $slim );
 
 		add_filter( 'pre_option_rewrite_rules', '__return_empty_array' );
 		$api_rules = $api->get_rewrite_rules();
@@ -940,7 +940,7 @@ POSTCONTENT;
 
 		$slim = new \Slim\Slim();
 
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$api_get_taxonomies = $api->get_taxonomies();
 
@@ -968,7 +968,7 @@ POSTCONTENT;
 
 		$slim = new \Slim\Slim();
 
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$api_get_taxonomies = $api->get_taxonomies();
 
@@ -1012,7 +1012,7 @@ POSTCONTENT;
 
 		$slim = new \Slim\Slim();
 
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$api_get_taxonomies = $api->get_taxonomies();
 
@@ -1049,7 +1049,7 @@ POSTCONTENT;
 
 		$slim = new \Slim\Slim();
 
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$api_get_taxonomies = $api->get_taxonomies('category');
 
@@ -1067,7 +1067,7 @@ POSTCONTENT;
 
 		$slim = new \Slim\Slim();
 
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$formatted_taxonomy = $api->format_taxonomy( get_taxonomy( 'category' ) );
 
@@ -1191,7 +1191,7 @@ POSTCONTENT;
 				$_args[$key] = $value[$i];
 			}
 
-			$actual = \Voce\Thermal\APIv1::get_terms_args( $_args );
+			$actual = \Voce\Thermal\v1\API::get_terms_args( $_args );
 			$this->assertEquals( $expected[$i], $actual[$param] );
 		}
 	}
@@ -1204,7 +1204,7 @@ POSTCONTENT;
 		));
 
 		$slim = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$terms = $api->get_terms( 'category', 1 );
 
@@ -1266,7 +1266,7 @@ POSTCONTENT;
 		));
 
 		$slim = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$terms = $api->get_terms( 'category' );
 
@@ -1281,7 +1281,7 @@ POSTCONTENT;
 		));
 
 		$slim = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$terms = $api->get_terms( 'category' );
 
@@ -1295,7 +1295,7 @@ POSTCONTENT;
 		));
 
 		$slim = new \Slim\Slim();
-		$api = new \Voce\Thermal\APIv1( $slim );
+		$api = new \Voce\Thermal\v1\API( $slim );
 
 		$terms = $api->get_terms( 'category' );
 
@@ -1319,7 +1319,7 @@ POSTCONTENT;
 			'post_count' => $term->count,
 			'meta' => (object)array(),
 		);
-		$actual = \Voce\Thermal\APIv1::format_term( $term );
+		$actual = \Voce\Thermal\v1\API::format_term( $term );
 
 		$this->assertEquals( $actual, $expected );
 	}
@@ -1396,7 +1396,7 @@ POSTCONTENT;
 			foreach ( $args as $key => $value ) {
 				$_args[$key] = $value[$i];
 			}
-			$actual = \Voce\Thermal\APIv1::get_user_args( $_args );
+			$actual = \Voce\Thermal\v1\API::get_user_args( $_args );
 			$this->assertEquals( $expected[$i], $actual[$param] );
 		}
 	}
@@ -1406,7 +1406,7 @@ POSTCONTENT;
 	 * @group Users
 	 */
 	public function testFormatUser() {
-		$actual   = \Voce\Thermal\APIv1::format_user( get_userdata( 1 ) );
+		$actual   = \Voce\Thermal\v1\API::format_user( get_userdata( 1 ) );
 		$expected = array(
 			'id'           => 1,
 			'id_str'       => '1',
@@ -1440,7 +1440,7 @@ POSTCONTENT;
 			) ),
 		));
 
-		$api = new \Voce\Thermal\APIv1( new \Slim\Slim() );
+		$api = new \Voce\Thermal\v1\API( new \Slim\Slim() );
 
 		$users = $api->get_users();
 		$this->assertArrayHasKey( 'found', $users );
