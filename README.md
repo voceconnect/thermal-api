@@ -1249,13 +1249,15 @@ Orderby will also accept an array of multiple identifiers.
 
 
 ## Comments
-<span id="Posts"></span>A comment represents a user response to a post
+<span id="Comments"></span>A comment represents a user response to a post
 
 ### Methods
 #### List
 
 ##### Request
     GET {api root}/comments
+
+    GET {api root}/posts/{#post_id}/comments
 ##### Parameters
 
 <table>
@@ -1301,14 +1303,14 @@ Orderby will also accept an array of multiple identifiers.
 		<tr>
 			<td>paged</td>
 			<td>integer</td>
-			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
+			<td>A positive integer specifiying the page (or subset of results) to return.  This filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
 			</td>
 		</tr>
 		<tr>
 			<td>per_page</td>
 			<td>integer</td>
-			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_POSTS_PER_PAGE.</td>
+			<td>The maximum number of posts to return.  The value must range from 1 to MAX_COMMENTS_PER_PAGE.</td>
 		</tr>
 		<tr>
 			<td>offset</td>
@@ -1467,7 +1469,7 @@ Orderby will also accept an array of multiple identifiers.
                 "required": true
             },
             "type": {
-                "description": "The post_type of the post",
+                "description": "The type of comment.  Deafult enum: 'comment', 'pingback', 'trackback'",
                 "type": "string",
                 "required": true
             },
