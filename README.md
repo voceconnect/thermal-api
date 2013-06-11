@@ -1249,12 +1249,13 @@ Orderby will also accept an array of multiple identifiers.
 
 
 ## Comments
-<span id="comments"></span>Terms are individual classifications within a taxonomy.
+<span id="Posts"></span>A comment represents a user response to a post
+
 ### Methods
 #### List
 
 ##### Request
-    GET {api root}/taxonomies/{name}/terms
+    GET {api root}/comments
 ##### Parameters
 
 <table>
@@ -1267,10 +1268,38 @@ Orderby will also accept an array of multiple identifiers.
 	</thead>
 	<tbody>
 		<tr>
+			<td class="shade" colspan="3">
+			Date Filters
+			</td>
+		</tr>
+		<tr>
+			<td>before* </td>
+			<td>string</td>
+			<td>A parsable formatted date string.  Unless specified in the format used, 
+			the result will be relative to the timezone of the site.</td>
+		</tr>
+		<tr>
+			<td>after* </td>
+			<td>string</td>
+			<td>A parsable formatted date string.  Unless specified in the format used, 
+			the result will be relative to the timezone of the site.</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">Search Filtering</td>
+		</tr>
+		<tr>
+			<td>s</td>
+			<td>string</td>
+			<td>
+				Search keyword or string, by default this searches against the author, author email, author url, author ip, and content
+				The search expression is looks for phrase entire phrase matches.
+			</td>
+		</tr>
+		<tr>
 			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
-			<td>paged*</td>
+			<td>paged</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
@@ -1279,7 +1308,7 @@ Orderby will also accept an array of multiple identifiers.
 		<tr>
 			<td>per_page*</td>
 			<td>integer</td>
-			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_TERMS_PER_PAGE.</td>
+			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_POSTS_PER_PAGE.</td>
 		</tr>
 		<tr>
 			<td>offset</td>
@@ -1291,13 +1320,20 @@ Orderby will also accept an array of multiple identifiers.
 		</tr>
 		<tr>
 			<td>orderby**</td>
-			<td>string</td>
-			<td>Sort the results by the given identifier.  Defaults to 'name'.  Supported values are:
+			<td>array|string</td>
+			<td>Sort the results by the given identifier.  Defaults to 'date'.  Supported values are:
 				<ul>
-					<li>'name' - The user readable name of the term.</li>
-					<li>'slug' - The slug of the term.</li>
-					<li>'count' - The number of posts the term is connected to.</li>
+					<li>'comment_date_gmt' - (Default) The GMT date of the post.</li>
+					<li>'comment_ID' - The ID of the post.</li>
+					<li>'comment_author' - The value of the author ID.</li>
+					<li>'comment_date' - The date of the comment..</li>
+					<li>'comment_type' - The type of comment.</li>
+					<li>'comment parent'- The ID of the comment's parent</li>
+					<li>'comment_post_ID' - The ID of the post which the comment belongs.</li>
+					<li>'user_id' - The ID of the user making the comments.</li>
 				</ul>
+
+Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
@@ -1310,28 +1346,38 @@ Orderby will also accept an array of multiple identifiers.
 		</tr>
 		<tr>
 			<td>in</td>
-			<td>array|integer</td>
-			<td>An array of term ID's to include.</td>
-		</tr>
-		<tr>
-			<td>slug</td>
-			<td>string</td>
-			<td>A term slug to include.</td>
+			<td>integer|array</td>
+			<td>Array of Ids of comments to include.</td>
 		</tr>
 		<tr>
 			<td>parent</td>
-			<td>id</td>
-			<td>Include the children of the provided term ID.</td>
+			<td>integer</td>
+			<td>ID of the parent comment to pull from.</td>
 		</tr>
 		<tr>
-			<td>hide_empty</td>
-			<td>boolean</td>
-			<td>If true, only terms with attached posts will be returned.  Default is true.</td>
+			<td>post_id</td>
+			<td>integer</td>
+			<td>ID of post from which to pull comments.</td>
 		</tr>
 		<tr>
-			<td>pad_counts</td>
-			<td>boolean</td>
-			<td>If true, count all of the children along with the term.  Default is false.</td>
+			<td>post_name</td>
+			<td>string</td>
+			<td>Slug/Name of the post from which to pull comments.</td>
+		</tr>
+		<tr>
+			<td>type</td>
+			<td>string</td>
+			<td>The type of comments to return.  Default options: 'comment', 'pingback', 'trackback', 'pings' (returns trackbacks and pingbacks').</td>
+		</tr>
+		<tr>
+			<td>status</td>
+			<td>string</td>
+			<td>The status of comments to return.  Default: 'approved'.</td>
+		</tr>
+		<tr>
+			<td>user_id</td>
+			<td>int</td>
+			<td>User ID of commentor making the comments.</td>
 		</tr>
 		<tr>
 			<td class="shade" colspan="3">
@@ -1349,11 +1395,12 @@ Orderby will also accept an array of multiple identifiers.
 </table>
 
 
+
 ##### Response
 	{
-		"found": 25,  //only provided if include_found == true
-		"terms": [
-			[Term Object]
+		'found': 40, //only provided if include_found == true
+		"posts": [
+			[Post Object],
 			….
 		]
 	}
@@ -1363,93 +1410,274 @@ Orderby will also accept an array of multiple identifiers.
 #### Single Entity
 
 ##### Request
-    GET {api root}/taxonomies/{name}/terms/{term_id}
-    
-#### Term JSON Schema
+    GET {api root}/posts/{id}
+
+##### Post JSON Schema
 	{
+        "title": "Post Object",
+        "description": "A representation of a single post object",
         "type": "object",
-        "required": false,
+        "id": "#post",
         "properties": {
-            "description": {
-                "description": "A long text describing the term.",
+            "author": {
+                "description": "The user set as the author of the post.",
+                "type": {
+                    "$ref": "#user"
+                },
+                "required": true
+            },
+            "comment_count": {
+                "description": "The number of comments for this post.",
+                "type": "integer",
+                "minimum": 0,
+                "required": true
+            },
+            "comment_status": {
+                "description": "The current status determining whether the post is accepting comments.",
+                "enum": ["open", "closed"],
+                "required": true
+            },
+            "content_display": {
+                "description": "The content of the post after it has been run through the set 'the_content' filters.  Shortcodes are not expanded.",
                 "type": "string",
-                "required": false
+                "required": true
+            },
+            "content": {
+                "description": "The raw content of the post as it's stored in the database.",
+                "type": "string",
+                "required": true
+            },
+            "date": {
+                "description": "The post's creation time in iso 8601 format.",
+                "type": "string",
+                "format": "date-time",
+                "required": true
+            },
+            "excerpt_display": {
+                "description": "The excerpt of the post after it has been run through the 'the_excerpt' filters.",
+                "type": "string",
+                "required": true
+            },
+            "excerpt": {
+                "description": "The raw excerpt as it is stored in the database.",
+                "type": "string",
+                "required": true
+            },
+            "id_str": {
+                "description": "The ID of the post represented as a string.",
+                "type": "string",
+                "required": true
+            },
+            "id": {
+                "description": "The ID of the post",
+                "type": "integer",
+                "minimum": 1,
+                "required": true
+            },
+            "type": {
+                "description": "The post_type of the post",
+                "type": "string",
+                "required": true
+            },
+            "media": {
+                "type": "array",
+                "required": false,
+                "items": {
+                    "type": {
+                        "$ref": "#mediaItem"
+                    }
+                }
             },
             "meta": {
-                "description": "Extended Term data.",
+                "description": "Additional data for the Post object.  Handling must be provided by other plugins to expand the provided meta beyond core properties.",
                 "type": "object",
+                "required": false,
+                "default": {},
+                "additionalProperties": {
+                    "featuredImage": {
+                        "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "gallery": {
+                    	"description": "An array of objects that represent the galleries in the post content.",
+                    	"type": "array",
+                    	"required": false,
+                    	"items": {
+                    	 	"ids": {
+                    	 		"description": "The IDs of the attachments to be used in the gallery.",
+                    	 		"type": "array",
+                    	 		"required": false
+                    	 	},
+                        	"orderby": {
+                        		"description": "Specifies how to sort the display thumbnails.",
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"order": {
+                        		"description": "Specifies the sort order used to display thumbnails."
+                        		"type": "string",
+                        		"required": false
+                        	},
+                        	"in": {
+                        		"description": "An array of IDs to only show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"exclude": {
+                        		"description": "An array of IDs to not show the images from these attachments."
+                        		"type": "array",
+                        		"required": false
+                        	},
+                        	"id": {
+                    	 		"description": "The ID of the post to be used in the gallery. Used for specifying other posts.",
+                    	 		"type": "integer",
+                    	 		"required": false
+                    	 	}
+                    	}
+                    }
+                }
+            },
+            "mime_type": {
+                "description": "The mime type of the represented object",
+                "type": "string",
+                "required": true,
+                "default": "text/html"
+            },
+            "modified": {
+                "type": "string",
+                "format": "date-time",
+                "required": true
             },
             "name": {
-                "description": "The title/name of the term as displayed to users.",
+                "description": "The name (slug) for the post, used in URLs.",
                 "type": "string",
-                "required": false
+                "required": true
             },
             "parent_str": {
-                "description": "The ID of the parent term as a string, if exists.",
+                "description": "The ID of the post's parent as a string, if it has one.",
                 "type": "string",
                 "required": false
             },
             "parent": {
-                "description": "The ID of the parent term, if exists.",
-                "type": "number",
+                "description": "The ID of the post's parent as a string, if it has one.",
+                "type": "integer",
                 "required": false
             },
-            "post_count": {
-                "description": "The distinct count of posts attached to this term.  If 'pad_count' is set to true, this will also include all posts attached to child terms.  This only includes posts of type 'post'.",
-                "type": "number",
-                "required": false
-            },
-            "slug": {
-                "description": "The name (slug) of the term as used in URLs.",
+            "permalink": {
+                "description": "The full permalink URL to the post.",
                 "type": "string",
-                "required": false
+                "formate": "uri",
+                "required": true
             },
-            "taxonomy": {
+            "status": {
+                "description": "The status of the post.",
+                "type": {
+                    "enum": ["publish", "draft", "pending", "future", "trash"]
+                },
+                "required": true
+            },
+            "taxonomies": {
+                "description": "Key/Value pairs of taxonomies that exist for the given post where the Key is the name of the taxonomy.",
+                "type": "object",
+                "required": false,
+                "default": {},
+                "additionalProperties": {
+                    "category": {
+                        "type": "array",
+                        "items": {
+                            "type": {
+                                "$ref": "#term"
+                            }
+                        },
+                        "required": false
+                    },
+                    "post_tag": {
+                        "type": "array",
+                        "items": {
+                            "type": {
+                                "$ref": "#term"
+                            }
+                        },
+                        "required": false
+                    }
+                }
+            },
+            "title": {
+                "description": "The title of the Post.",
                 "type": "string",
-                "required": false
-            },
-            "id_str": {
-                "description": "The ID of the term as a string.",
-                "type": "string",
-                "id": "http://jsonschema.net/term_id_str",
-                "required": false
-            },
-            "id": {
-                "description": "The ID of the term.",
-                "type": "number",
-                "id": "http://jsonschema.net/term_id",
-                "required": false
-            },
-            "term_taxonomy_id_str": {
-                "description": "The ID that uniquely represents this term/taxonomy as ing asterms are shared across multiple taxonomies.",
-                "type": "string",
-                "id": "http://jsonschema.net/term_taxonomy_id_str",
-                "required": false
-            },
-            "term_taxonomy_id": {
-                "description": "The ID that uniquely represents this term/taxonomy as terms are shared across multiple taxonomies.",
-                "type": "number",
-                "id": "http://jsonschema.net/term_taxonomy_id",
-                "required": false
+                "required": true
             }
         }
     }
-
-##### Example Term Response
+	
+##### Example Post Response
 	{
-		"ID": 123456,
-		"term_id_str": "123456",
-		"term_taxonomy_id": 123456789,
-		"term_taxonomy_id_str": "123456789",
-		"parent": 1234567,
-		"parent_str": "1234567",
-		"name": "Local News",
-		"slug": "local-news",
-		"taxonomy": "category",
-		"description": "News reports from around Polk County",
-		"post_count": 25,
-		"meta":{
-		}
+		"id" : 1234567,
+		"id_str" : "1234567",
+		"type" : "post",
+		"permalink": "http://example.com/posts/foobar/",
+		"parent": 12345,
+		"parent_str": "12345",
+		"date": "2012-01-01T12:59:59+00:00",
+		"modified": "2012-01-01T12:59:59+00:00",
+		"status": "publish",
+		"comment_status":"open",
+		"comment_count": 99,
+		"menu_order": 99,
+		"title": "Lorem Ipsum Dolor!",
+		"name": "loerm-ipsum-dolor"	,
+		"excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.",
+		"excerpt_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
+		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.\n\n[gallery ids=\"1,2,3,4\"]\n\nNullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas",
+		"content_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
+		"author": [User Object],
+		"mime_type": "",
+		"meta": {
+			"featuredImage": 123456,
+			"gallery" : [
+				{
+					"ids": [23],
+					"orderby": [
+						"menu_order",
+						"ID"
+					],
+					"order": "ASC",
+					….
+				},
+				….
+			]
+		},
+		"taxonomies": {
+			"category": [
+				[Term Object],
+				….
+			],
+			"post_tag": [
+				[Term Object],
+				….
+			],
+			….
+		},
+		"media": [
+			{
+				"type":
+				"id": 123456,
+				"id_str": ""123445",
+				"altText": "Lorem ipsum doler set amut.",
+				"mime_type": "image/jpg",
+				"sizes": [
+					{
+						"name": "thumbnail",
+						"width": 100,
+						"height": 80,
+						"url": "http://example.com/wp-content/uploads/2012/02/foobar-100x80.jpg"
+					},
+					….
+				]
+			},
+			….
+		]
 	}
 
 

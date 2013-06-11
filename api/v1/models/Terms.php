@@ -7,7 +7,7 @@ class TermsModel {
 	public function find( $taxonomy, $args = array( ), &$found = null ) {
 
 		//setup paging
-		if ( empty( $request_args['per_page'] ) || $request_args['per_page'] > MAX_TERMS_PER_PAGE ) {
+		if ( empty( $request_args['per_page'] ) || absint($request_args['per_page']) > MAX_TERMS_PER_PAGE ) {
 			$number = MAX_TERMS_PER_PAGE;
 		} else {
 			$number = absint( $request_args['per_page'] );
