@@ -1502,7 +1502,7 @@ Orderby will also accept an array of multiple identifiers.
         }
     }
 	
-##### Example Post Response
+##### Example Comment Response
     {
         "id": 597,
         "id_str": "597",
