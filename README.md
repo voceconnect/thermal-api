@@ -109,13 +109,13 @@ Examples:
 			<td>Second (from 0 to 59)</td>
 		</tr>
 		<tr>
-			<td>before* </td>
+			<td>before</td>
 			<td>string</td>
 			<td>A parsable formatted date string.  Unless specified in the format used, 
 			the result will be relative to the timezone of the site.</td>
 		</tr>
 		<tr>
-			<td>after* </td>
+			<td>after</td>
 			<td>string</td>
 			<td>A parsable formatted date string.  Unless specified in the format used, 
 			the result will be relative to the timezone of the site.</td>
@@ -146,7 +146,7 @@ Examples:
 			<td class="shade" colspan="3">Taxonomy Filters</td>
 		</tr>
 		<tr>
-			<td>cat**</td>
+			<td>cat</td>
 			<td>array|integer</td>
 			<td>The term_id of the category to include.  An array of IDs will also be accepted.</td>
 		</tr>
@@ -161,7 +161,7 @@ Examples:
 			<td>The slug of a single tag</td>
 		</tr>
 		<tr>
-			<td>taxonomy*</td>
+			<td>taxonomy</td>
 			<td>associative array</td>
 			<td>An associative array where the key is the name of the taxonomy and the value is 
 			an array of term IDs.  Post that exist in any of the terms will be included in the
@@ -178,7 +178,7 @@ Examples:
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_POSTS_PER_PAGE.</td>
 		</tr>
@@ -191,7 +191,7 @@ Examples:
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>array|string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'date'.  Supported values are:
 				<ul>
@@ -226,7 +226,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The user_nicename of the author.</td>
 		</tr>
 		<tr>
-			<td>author**</td>
+			<td>author</td>
 			<td>integer</td>
 			<td>The ID of the authors to include.  An array of IDs will also be accepted.  Negative
 			ID's can be used to denote exclusion.</td>
@@ -289,7 +289,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -616,7 +616,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_USERS_PER_PAGE.</td>
 		</tr>
@@ -629,7 +629,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'display_name'.  Supported values are:
 				<ul>
@@ -658,7 +658,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -912,14 +912,14 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
-			<td>paged*</td>
+			<td>paged</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_TERMS_PER_PAGE.</td>
 		</tr>
@@ -932,7 +932,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'name'.  Supported values are:
 				<ul>
@@ -981,7 +981,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -1273,13 +1273,13 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>before* </td>
+			<td>before </td>
 			<td>string</td>
 			<td>A parsable formatted date string.  Unless specified in the format used, 
 			the result will be relative to the timezone of the site.</td>
 		</tr>
 		<tr>
-			<td>after* </td>
+			<td>after </td>
 			<td>string</td>
 			<td>A parsable formatted date string.  Unless specified in the format used, 
 			the result will be relative to the timezone of the site.</td>
@@ -1306,7 +1306,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_POSTS_PER_PAGE.</td>
 		</tr>
@@ -1319,7 +1319,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>array|string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'date'.  Supported values are:
 				<ul>
@@ -1385,7 +1385,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -1399,8 +1399,8 @@ Orderby will also accept an array of multiple identifiers.
 ##### Response
 	{
 		'found': 40, //only provided if include_found == true
-		"posts": [
-			[Post Object],
+		"comments": [
+			[Comment Object],
 			….
 		]
 	}
@@ -1410,58 +1410,50 @@ Orderby will also accept an array of multiple identifiers.
 #### Single Entity
 
 ##### Request
-    GET {api root}/posts/{id}
+    GET {api root}/comments/{id}
 
-##### Post JSON Schema
+##### Comment JSON Schema
 	{
-        "title": "Post Object",
+        "title": "Comment Object",
         "description": "A representation of a single post object",
         "type": "object",
-        "id": "#post",
+        "id": "#comment",
         "properties": {
             "author": {
-                "description": "The user set as the author of the post.",
-                "type": {
-                    "$ref": "#user"
-                },
-                "required": true
-            },
-            "comment_count": {
-                "description": "The number of comments for this post.",
-                "type": "integer",
-                "minimum": 0,
-                "required": true
-            },
-            "comment_status": {
-                "description": "The current status determining whether the post is accepting comments.",
-                "enum": ["open", "closed"],
-                "required": true
-            },
-            "content_display": {
-                "description": "The content of the post after it has been run through the set 'the_content' filters.  Shortcodes are not expanded.",
+                "description": "Display name of the author of the comment.",
                 "type": "string",
                 "required": true
-            },
-            "content": {
-                "description": "The raw content of the post as it's stored in the database.",
+            }
+            "author_url": {
+                "description": "URL set for the author of the comment.",
                 "type": "string",
-                "required": true
-            },
+                "required": false
+            }
             "date": {
-                "description": "The post's creation time in iso 8601 format.",
+                "description": "The comment's creation time in iso 8601 format.",
                 "type": "string",
                 "format": "date-time",
                 "required": true
             },
-            "excerpt_display": {
-                "description": "The excerpt of the post after it has been run through the 'the_excerpt' filters.",
+            "content": {
+                "description": "The raw comment content.",
                 "type": "string",
                 "required": true
             },
-            "excerpt": {
-                "description": "The raw excerpt as it is stored in the database.",
+            "content_display": {
+                "description": "Display formatted content of the comment.",
                 "type": "string",
                 "required": true
+            },
+            "user": {
+                "description": "ID of the user making the comment",
+                "type": "integer",
+                "required": false
+            },
+						"user_id_str": {
+                "description": "String version of the ID of the user making the comment",
+                "type": "string",
+                "required": false
             },
             "id_str": {
                 "description": "The ID of the post represented as a string.",
@@ -1488,201 +1480,46 @@ Orderby will also accept an array of multiple identifiers.
                     }
                 }
             },
-            "meta": {
-                "description": "Additional data for the Post object.  Handling must be provided by other plugins to expand the provided meta beyond core properties.",
-                "type": "object",
-                "required": false,
-                "default": {},
-                "additionalProperties": {
-                    "featuredImage": {
-                        "description": "The ID of the image being referenced as the featured image.  The referenced image should be present in the media property.",
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "gallery": {
-                    	"description": "An array of objects that represent the galleries in the post content.",
-                    	"type": "array",
-                    	"required": false,
-                    	"items": {
-                    	 	"ids": {
-                    	 		"description": "The IDs of the attachments to be used in the gallery.",
-                    	 		"type": "array",
-                    	 		"required": false
-                    	 	},
-                        	"orderby": {
-                        		"description": "Specifies how to sort the display thumbnails.",
-                        		"type": "array",
-                        		"required": false
-                        	},
-                        	"order": {
-                        		"description": "Specifies the sort order used to display thumbnails."
-                        		"type": "string",
-                        		"required": false
-                        	},
-                        	"in": {
-                        		"description": "An array of IDs to only show the images from these attachments."
-                        		"type": "array",
-                        		"required": false
-                        	},
-                        	"exclude": {
-                        		"description": "An array of IDs to not show the images from these attachments."
-                        		"type": "array",
-                        		"required": false
-                        	},
-                        	"id": {
-                    	 		"description": "The ID of the post to be used in the gallery. Used for specifying other posts.",
-                    	 		"type": "integer",
-                    	 		"required": false
-                    	 	}
-                    	}
-                    }
-                }
-            },
-            "mime_type": {
-                "description": "The mime type of the represented object",
-                "type": "string",
-                "required": true,
-                "default": "text/html"
-            },
-            "modified": {
-                "type": "string",
-                "format": "date-time",
-                "required": true
-            },
-            "name": {
-                "description": "The name (slug) for the post, used in URLs.",
-                "type": "string",
-                "required": true
-            },
             "parent_str": {
-                "description": "The ID of the post's parent as a string, if it has one.",
+                "description": "The ID of the comment's parent as a string, if it has one.",
                 "type": "string",
                 "required": false
             },
             "parent": {
-                "description": "The ID of the post's parent as a string, if it has one.",
+                "description": "The ID of the comment's parent as a string, if it has one.",
                 "type": "integer",
                 "required": false
             },
-            "permalink": {
-                "description": "The full permalink URL to the post.",
-                "type": "string",
-                "formate": "uri",
-                "required": true
-            },
             "status": {
-                "description": "The status of the post.",
+                "description": "The status of the comment.",
                 "type": {
-                    "enum": ["publish", "draft", "pending", "future", "trash"]
+                    "enum": ["approve", "pending", "spam", "trash"]
                 },
-                "required": true
-            },
-            "taxonomies": {
-                "description": "Key/Value pairs of taxonomies that exist for the given post where the Key is the name of the taxonomy.",
-                "type": "object",
-                "required": false,
-                "default": {},
-                "additionalProperties": {
-                    "category": {
-                        "type": "array",
-                        "items": {
-                            "type": {
-                                "$ref": "#term"
-                            }
-                        },
-                        "required": false
-                    },
-                    "post_tag": {
-                        "type": "array",
-                        "items": {
-                            "type": {
-                                "$ref": "#term"
-                            }
-                        },
-                        "required": false
-                    }
-                }
-            },
-            "title": {
-                "description": "The title of the Post.",
-                "type": "string",
                 "required": true
             }
         }
     }
 	
 ##### Example Post Response
-	{
-		"id" : 1234567,
-		"id_str" : "1234567",
-		"type" : "post",
-		"permalink": "http://example.com/posts/foobar/",
-		"parent": 12345,
-		"parent_str": "12345",
-		"date": "2012-01-01T12:59:59+00:00",
-		"modified": "2012-01-01T12:59:59+00:00",
-		"status": "publish",
-		"comment_status":"open",
-		"comment_count": 99,
-		"menu_order": 99,
-		"title": "Lorem Ipsum Dolor!",
-		"name": "loerm-ipsum-dolor"	,
-		"excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.",
-		"excerpt_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed lacus eros. Integer elementum urna.</p>",
-		"content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.\n\n[gallery ids=\"1,2,3,4\"]\n\nNullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas",
-		"content_display": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec consequatnibh. Quisque in consectetur ligula. Praesent pretium massa vitae neque adipiscing vita cursus nulla congue.</p>\n<img src=\"http://example.com/wp-content/uploads/2012/03/foobar.jpg\" class=\"alignleft  size-medium wp-image-17115\" alt=\"Lorem ipsum doler set amut.\" />\n<p>Cras aliquet ipsum non nisi accumsan tempor sollicitudin lacus interdum Donec in enim ut ligula dignissim tempor. Vivamus semper cursus mi, at molestie erat lobortiut. Pellentesque non mi vitae augue egestas vulputate et eu massa. Integer et sem orci. Suspendisse at augue in ipsum convallis semper.</p>\n\n<div class=\"gallery\" id=\"gallery-1234\"></div>\n\n<p>Nullam vitae libero eros, a fringilla erat. Suspendisse potenti. In dictum bibendum liberoquis facilisis risus malesuada ac. Nulla ullamcorper est ac lectus feugiat scelerisque.  Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</p>",
-		"author": [User Object],
-		"mime_type": "",
-		"meta": {
-			"featuredImage": 123456,
-			"gallery" : [
-				{
-					"ids": [23],
-					"orderby": [
-						"menu_order",
-						"ID"
-					],
-					"order": "ASC",
-					….
-				},
-				….
-			]
-		},
-		"taxonomies": {
-			"category": [
-				[Term Object],
-				….
-			],
-			"post_tag": [
-				[Term Object],
-				….
-			],
-			….
-		},
-		"media": [
-			{
-				"type":
-				"id": 123456,
-				"id_str": ""123445",
-				"altText": "Lorem ipsum doler set amut.",
-				"mime_type": "image/jpg",
-				"sizes": [
-					{
-						"name": "thumbnail",
-						"width": 100,
-						"height": 80,
-						"url": "http://example.com/wp-content/uploads/2012/02/foobar-100x80.jpg"
-					},
-					….
-				]
-			},
-			….
-		]
-	}
-
-
-##Notes
-	*    - This is a non-standard public_query_var.
-	**   - By default WordPress asks for this query_var to be passed in as a comma 
-			separated list.  This is replaced by an array in the API to better support 
-			x-www-form-urlencoded submissions.
+    {
+        "id": 597,
+        "id_str": "597",
+        "type": "comment",
+        "author": "John Doe",
+        "author_url": "http://example.org",
+        "parent": 0,
+        "parent_str": "0",
+        "date": "2013-06-11T18:39:46+00:00",
+        "content": "This is my comment text",
+        "status": "approve",
+        "user": 1,
+        "user_id_str": "1",
+        "content_display": "<p>This is my comment text<\/p>\n",
+        "avatar": [
+            {
+                "url": "http:\/\/1.gravatar.com\/avatar\/96614ec98aa0c0d2ee75796dced6df54?s=96&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D96&amp;r=G",
+                "width": 96,
+                "height": 96
+            }
+        ]
+    }

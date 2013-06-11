@@ -150,7 +150,8 @@ class CommentsController {
 			'date' => ( string ) get_comment_time( 'c', true, $comment ),
 			'content' => $comment->comment_content,
 			'status' => $status,
-			'user' => intval($comment->user_id)
+			'user' => intval($comment->user_id),
+			'user_id_str' => (string) $comment->user_id
 		);
 
 		//add extended data for 'read'
