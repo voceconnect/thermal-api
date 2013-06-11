@@ -24,6 +24,21 @@ class CommentsControllerTest extends APITestCase {
 			'comment_status' => 'open',
 			) );
 
+		$post_id_b = wp_insert_post( array(
+			'post_status' => 'publish',
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_parent' => 0,
+			'menu_order' => 0,
+			'post_content_filtered' => '',
+			'post_excerpt' => 'This is the excerpt 2.',
+			'post_content' => 'This is the content 2.',
+			'post_title' => 'Hello World A!',
+			'post_date' => '2013-04-30 20:33:36',
+			'post_date_gmt' => '2013-04-30 20:33:36',
+			'comment_status' => 'open',
+			) );
+
 		$comment_approved_minus_10 = wp_insert_comment( array(
 			'comment_post_ID' => $post_id_a,
 			'comment_author' => 'Some Guy',
@@ -45,7 +60,7 @@ class CommentsControllerTest extends APITestCase {
 			'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', ( time() - (20 * MINUTE_IN_SECONDS) ) ),
 			'comment_approved' => 1,
 			) );
-		
+
 		$comment_approved_no_user = wp_insert_comment( array(
 			'comment_post_ID' => $post_id_a,
 			'comment_author' => 'Some Guy 3',
@@ -65,10 +80,21 @@ class CommentsControllerTest extends APITestCase {
 			'user_id' => null,
 			'comment_date' => gmdate( 'Y-m-d H:i:s', ( time() - (20 * MINUTE_IN_SECONDS) + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) ),
 			'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', ( time() - (20 * MINUTE_IN_SECONDS) ) ),
+			'comment_approved' => 0,
+			) );
+
+		$comment_approved_post_b = wp_insert_comment( array(
+			'comment_post_ID' => $post_id_b,
+			'comment_author' => 'Some Guy 2',
+			'comment_author_email' => 'bob2@example.org',
+			'comment_content' => 'This is my pending comment text',
+			'user_id' => null,
+			'comment_date' => gmdate( 'Y-m-d H:i:s', ( time() - (20 * MINUTE_IN_SECONDS) + ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS ) ) ),
+			'comment_date_gmt' => gmdate( 'Y-m-d H:i:s', ( time() - (20 * MINUTE_IN_SECONDS) ) ),
 			'comment_approved' => 1,
 			) );
 
-		return compact( 'post_id_a', 'comment_approved_minus_10', 'comment_approved_minus_20', 'comment_pending_minus_20' );
+		return compact( 'post_id_a', 'post_id_b', 'comment_approved_minus_10', 'comment_approved_minus_20', 'comment_pending_minus_20' );
 	}
 
 	public function testGetComments() {
@@ -179,7 +205,7 @@ class CommentsControllerTest extends APITestCase {
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/',
 			'QUERY_STRING' => http_build_query( array( 's' => 'my comment text' ) )
-		) );
+			) );
 
 		$data = json_decode( $body );
 
@@ -199,6 +225,34 @@ class CommentsControllerTest extends APITestCase {
 		$this->assertTrue( $found_comment_minus_10 );
 		$this->assertFalse( $found_comment_minus_20 );
 	}
+
+	public function testGetCommentsByPost() {
+		$testdata = $this->_insertTestData();
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $testdata['post_id_a'] . '/comments/',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+
+		$found_comment_minus_10 = false;
+		$found_comment_minus_20 = false;
+		foreach ( $data->comments as $comment ) {
+			if ( $comment->id == $testdata['comment_approved_minus_10'] ) {
+				$found_comment_minus_10 = true;
+			}
+			if ( $comment->id == $testdata['comment_approved_minus_20'] ) {
+				$found_comment_minus_20 = true;
+			}
+		}
+
+		$this->assertTrue( $found_comment_minus_10 );
+		$this->assertTrue( $found_comment_minus_20 );
+	}
 	
 	public function testGetCommentsIn() {
 		$testdata = $this->_insertTestData();
@@ -206,8 +260,8 @@ class CommentsControllerTest extends APITestCase {
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/',
-			'QUERY_STRING' => http_build_query( array( 'in' => array($testdata['comment_approved_minus_10']) ) )
-		) );
+			'QUERY_STRING' => http_build_query( array( 'in' => array( $testdata['comment_approved_minus_10'] ) ) )
+			) );
 
 		$data = json_decode( $body );
 

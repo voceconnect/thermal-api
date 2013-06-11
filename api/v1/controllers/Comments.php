@@ -15,12 +15,12 @@ class CommentsController {
 		return self::$_model;
 	}
 
-	public static function find( $app ) {
+	protected static function _find( $app, $args ) {
+		$args = $app->request()->get();
+		$args = self::convert_request( $args );
+		
 		$found = 0;
 		$comments = array( );
-		$request_args = $app->request()->get();
-
-		$args = self::convert_request( $request_args );
 
 		$model = self::model();
 
@@ -29,6 +29,17 @@ class CommentsController {
 		array_walk( $comments, array( __CLASS__, 'format' ), 'read' );
 
 		return empty( $args['include_found'] ) ? compact( 'comments' ) : compact( 'comments', 'found' );
+	}
+
+	public static function find( $app ) {
+		return self::_find( $app, $args );
+	}
+
+	public static function findByPost( $app, $post_id ) {
+		$post = PostsController::findById( $app, $post_id );
+		$args = $app->request()->get();
+		$args['in'] = array($post->id);
+		return self::_find($app, $args);
 	}
 
 	public static function findById( $app, $id ) {
@@ -142,16 +153,16 @@ class CommentsController {
 		$data = array(
 			'id' => intval( $comment->comment_ID ),
 			'id_str' => ( string ) $comment->comment_ID,
-			'type' => empty($comment->comment_type) ? 'comment' : $comment->comment_type,
+			'type' => empty( $comment->comment_type ) ? 'comment' : $comment->comment_type,
 			'author' => $comment->comment_author,
 			'author_url' => $comment->comment_author_url,
-			'parent' => intval($comment->comment_parent),
+			'parent' => intval( $comment->comment_parent ),
 			'parent_str' => ( string ) $comment->comment_parent,
 			'date' => ( string ) get_comment_time( 'c', true, $comment ),
 			'content' => $comment->comment_content,
 			'status' => $status,
-			'user' => intval($comment->user_id),
-			'user_id_str' => (string) $comment->user_id
+			'user' => intval( $comment->user_id ),
+			'user_id_str' => ( string ) $comment->user_id
 		);
 
 		//add extended data for 'read'
