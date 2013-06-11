@@ -38,7 +38,7 @@ class CommentsController {
 	public static function findByPost( $app, $post_id ) {
 		$post = PostsController::findById( $app, $post_id );
 		$args = $app->request()->get();
-		$args['in'] = array($post->id);
+		$args['post_id'] = $post->id;
 		return self::_find($app, $args);
 	}
 

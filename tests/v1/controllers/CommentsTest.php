@@ -94,7 +94,7 @@ class CommentsControllerTest extends APITestCase {
 			'comment_approved' => 1,
 			) );
 
-		return compact( 'post_id_a', 'post_id_b', 'comment_approved_minus_10', 'comment_approved_minus_20', 'comment_pending_minus_20' );
+		return compact( 'post_id_a', 'post_id_b', 'comment_approved_minus_10', 'comment_approved_minus_20', 'comment_pending_minus_20', 'comment_approved_post_b' );
 	}
 
 	public function testGetComments() {
@@ -240,18 +240,18 @@ class CommentsControllerTest extends APITestCase {
 		$this->assertEquals( '200', $status );
 
 		$found_comment_minus_10 = false;
-		$found_comment_minus_20 = false;
+		$found_comment_approved_post_b = false;
 		foreach ( $data->comments as $comment ) {
 			if ( $comment->id == $testdata['comment_approved_minus_10'] ) {
 				$found_comment_minus_10 = true;
 			}
-			if ( $comment->id == $testdata['comment_approved_minus_20'] ) {
-				$found_comment_minus_20 = true;
+			if ( $comment->id == $testdata['comment_approved_post_b'] ) {
+				$found_comment_approved_post_b = true;
 			}
 		}
 
 		$this->assertTrue( $found_comment_minus_10 );
-		$this->assertTrue( $found_comment_minus_20 );
+		$this->assertTrue( $found_comment_approved_post_b );
 	}
 	
 	public function testGetCommentsIn() {
