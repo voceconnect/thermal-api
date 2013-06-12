@@ -106,12 +106,6 @@ class PostsController {
 			$request_args[$key] = $value;
 		}
 
-		//add filter for before/after handling, hopefully more complex date querying
-		//will exist by wp3.7
-		if ( isset( $request_args['before'] ) || isset( $request_args['after'] ) ) {
-			add_filter( __CLASS__, '_filter_posts_where_handleDateRange' );
-		}
-
 		//taxonomy
 		if ( isset( $request_args['taxonomy'] ) && is_array( $request_args['taxonomy'] ) ) {
 			$tax_query = array( );
@@ -248,7 +242,7 @@ class PostsController {
 				// get the terms related to post
 				$terms = get_the_terms( $post->ID, $taxonomy );
 				if ( !empty( $terms ) ) {
-					array_walk($terms, array(__NAMESPACE__ . '\TermsController', 'format'), $state);
+					array_walk( $terms, array( __NAMESPACE__ . '\TermsController', 'format' ), $state );
 					$post_taxonomies[$taxonomy] = $terms;
 				}
 			}
@@ -369,7 +363,7 @@ class PostsController {
 	 * @param $media
 	 * @return array
 	 */
-	public static function _get_gallery_meta( $post, $media ) {
+	protected static function _get_gallery_meta( $post, $media ) {
 		$gallery_meta = array( );
 
 		// check post content for gallery shortcode
