@@ -1293,8 +1293,8 @@ Orderby will also accept an array of multiple identifiers.
 			<td>s</td>
 			<td>string</td>
 			<td>
-				Search keyword or string, by default this searches against the author, author email, author url, author ip, and content
-				The search expression is looks for phrase entire phrase matches.
+				Search keyword or string, by default this searches against the author, author email, author url, author ip, and content.
+				The search looks for a match to the entire search expression.
 			</td>
 		</tr>
 		<tr>
@@ -1304,7 +1304,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>paged</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This filter will automatically determine the offset to use based on the per_page
-				and paged. Using this filter will cause include_found to be true.
+				and paged arguments. Using this filter will cause include_found to be true.
 			</td>
 		</tr>
 		<tr>
