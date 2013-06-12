@@ -4,6 +4,13 @@ namespace Voce\Thermal\v1;
 class PostsModel {
 
 	public function find( $args = array( ), &$found = null ) {
+		
+		//add filter for before/after handling, hopefully more complex date querying
+		//will exist by wp3.7
+		if ( isset( $args['before'] ) || isset( $args['after'] ) ) {
+			add_filter( 'posts_where', array( __CLASS__, '_filter_posts_where_handleDateRange' ), 10, 2 );
+		}
+		
 		// I would prefer the permissions handling to be in the controller
 		// rather than the model, but WP_Query is a dirty bit of code that
 		// doesn't quite give the flexibility needed with it's query_vars
@@ -80,7 +87,7 @@ class PostsModel {
 				$beforets += ( get_option( 'gmt_offset' ) * HOUR_IN_SECONDS );
 			}
 
-			$where .= sprintf( " AND post_date > '%s'", gmdate( 'Y-m-d H:i:s', $beforets ) );
+			$where .= sprintf( " AND post_date < '%s'", gmdate( 'Y-m-d H:i:s', $beforets ) );
 		}
 		if ( ($after = $wp_query->get( 'after' ) ) && $afterts = strtotime( $after ) ) {
 			if ( preg_match( '$:[0-9]{2}\s[+-][0-9]{2}$', $after ) || strpos( $after, 'GMT' ) !== false ) {

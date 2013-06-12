@@ -109,13 +109,13 @@ Examples:
 			<td>Second (from 0 to 59)</td>
 		</tr>
 		<tr>
-			<td>before* </td>
+			<td>before</td>
 			<td>string</td>
 			<td>A parsable formatted date string.  Unless specified in the format used, 
 			the result will be relative to the timezone of the site.</td>
 		</tr>
 		<tr>
-			<td>after* </td>
+			<td>after</td>
 			<td>string</td>
 			<td>A parsable formatted date string.  Unless specified in the format used, 
 			the result will be relative to the timezone of the site.</td>
@@ -146,7 +146,7 @@ Examples:
 			<td class="shade" colspan="3">Taxonomy Filters</td>
 		</tr>
 		<tr>
-			<td>cat**</td>
+			<td>cat</td>
 			<td>array|integer</td>
 			<td>The term_id of the category to include.  An array of IDs will also be accepted.</td>
 		</tr>
@@ -161,7 +161,7 @@ Examples:
 			<td>The slug of a single tag</td>
 		</tr>
 		<tr>
-			<td>taxonomy*</td>
+			<td>taxonomy</td>
 			<td>associative array</td>
 			<td>An associative array where the key is the name of the taxonomy and the value is 
 			an array of term IDs.  Post that exist in any of the terms will be included in the
@@ -178,7 +178,7 @@ Examples:
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_POSTS_PER_PAGE.</td>
 		</tr>
@@ -191,7 +191,7 @@ Examples:
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>array|string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'date'.  Supported values are:
 				<ul>
@@ -226,7 +226,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The user_nicename of the author.</td>
 		</tr>
 		<tr>
-			<td>author**</td>
+			<td>author</td>
 			<td>integer</td>
 			<td>The ID of the authors to include.  An array of IDs will also be accepted.  Negative
 			ID's can be used to denote exclusion.</td>
@@ -289,7 +289,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -616,7 +616,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_USERS_PER_PAGE.</td>
 		</tr>
@@ -629,7 +629,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'display_name'.  Supported values are:
 				<ul>
@@ -658,7 +658,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -912,14 +912,14 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Pagination Filters</td>
 		</tr>
 		<tr>
-			<td>paged*</td>
+			<td>paged</td>
 			<td>integer</td>
 			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
 				and paged. Using this filter will cause include_found to be true.
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>per_page</td>
 			<td>integer</td>
 			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_TERMS_PER_PAGE.</td>
 		</tr>
@@ -932,7 +932,7 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
+			<td>orderby</td>
 			<td>string</td>
 			<td>Sort the results by the given identifier.  Defaults to 'name'.  Supported values are:
 				<ul>
@@ -981,7 +981,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -1249,12 +1249,15 @@ Orderby will also accept an array of multiple identifiers.
 
 
 ## Comments
-<span id="comments"></span>Terms are individual classifications within a taxonomy.
+<span id="Comments"></span>A comment represents a user response to a post
+
 ### Methods
 #### List
 
 ##### Request
-    GET {api root}/taxonomies/{name}/terms
+    GET {api root}/comments
+
+    GET {api root}/posts/{#post_id}/comments
 ##### Parameters
 
 <table>
@@ -1267,19 +1270,47 @@ Orderby will also accept an array of multiple identifiers.
 	</thead>
 	<tbody>
 		<tr>
-			<td class="shade" colspan="3">Pagination Filters</td>
-		</tr>
-		<tr>
-			<td>paged*</td>
-			<td>integer</td>
-			<td>A positive integer specifiying the page (or subset of results) to return.  This 				filter will automatically determine the offset to use based on the per_page
-				and paged. Using this filter will cause include_found to be true.
+			<td class="shade" colspan="3">
+			Date Filters
 			</td>
 		</tr>
 		<tr>
-			<td>per_page*</td>
+			<td>before </td>
+			<td>string</td>
+			<td>A parsable formatted date string.  Unless specified in the format used, 
+			the result will be relative to the timezone of the site.</td>
+		</tr>
+		<tr>
+			<td>after </td>
+			<td>string</td>
+			<td>A parsable formatted date string.  Unless specified in the format used, 
+			the result will be relative to the timezone of the site.</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">Search Filtering</td>
+		</tr>
+		<tr>
+			<td>s</td>
+			<td>string</td>
+			<td>
+				Search keyword or string, by default this searches against the author, author email, author url, author ip, and content.
+				The search looks for a match to the entire search expression.
+			</td>
+		</tr>
+		<tr>
+			<td class="shade" colspan="3">Pagination Filters</td>
+		</tr>
+		<tr>
+			<td>paged</td>
 			<td>integer</td>
-			<td>The maximum number of posts to return.  The value must range from 1 to 				MAX_TERMS_PER_PAGE.</td>
+			<td>A positive integer specifiying the page (or subset of results) to return.  This filter will automatically determine the offset to use based on the per_page
+				and paged arguments. Using this filter will cause include_found to be true.
+			</td>
+		</tr>
+		<tr>
+			<td>per_page</td>
+			<td>integer</td>
+			<td>The maximum number of posts to return.  The value must range from 1 to MAX_COMMENTS_PER_PAGE.</td>
 		</tr>
 		<tr>
 			<td>offset</td>
@@ -1290,14 +1321,21 @@ Orderby will also accept an array of multiple identifiers.
 			<td class="shade" colspan="3">Ordering Parameters</td>
 		</tr>
 		<tr>
-			<td>orderby**</td>
-			<td>string</td>
-			<td>Sort the results by the given identifier.  Defaults to 'name'.  Supported values are:
+			<td>orderby</td>
+			<td>array|string</td>
+			<td>Sort the results by the given identifier.  Defaults to 'date'.  Supported values are:
 				<ul>
-					<li>'name' - The user readable name of the term.</li>
-					<li>'slug' - The slug of the term.</li>
-					<li>'count' - The number of posts the term is connected to.</li>
+					<li>'comment_date_gmt' - (Default) The GMT date of the post.</li>
+					<li>'comment_ID' - The ID of the post.</li>
+					<li>'comment_author' - The value of the author ID.</li>
+					<li>'comment_date' - The date of the comment..</li>
+					<li>'comment_type' - The type of comment.</li>
+					<li>'comment parent'- The ID of the comment's parent</li>
+					<li>'comment_post_ID' - The ID of the post which the comment belongs.</li>
+					<li>'user_id' - The ID of the user making the comments.</li>
 				</ul>
+
+Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
@@ -1310,28 +1348,38 @@ Orderby will also accept an array of multiple identifiers.
 		</tr>
 		<tr>
 			<td>in</td>
-			<td>array|integer</td>
-			<td>An array of term ID's to include.</td>
-		</tr>
-		<tr>
-			<td>slug</td>
-			<td>string</td>
-			<td>A term slug to include.</td>
+			<td>integer|array</td>
+			<td>Array of Ids of comments to include.</td>
 		</tr>
 		<tr>
 			<td>parent</td>
-			<td>id</td>
-			<td>Include the children of the provided term ID.</td>
+			<td>integer</td>
+			<td>ID of the parent comment to pull from.</td>
 		</tr>
 		<tr>
-			<td>hide_empty</td>
-			<td>boolean</td>
-			<td>If true, only terms with attached posts will be returned.  Default is true.</td>
+			<td>post_id</td>
+			<td>integer</td>
+			<td>ID of post from which to pull comments.</td>
 		</tr>
 		<tr>
-			<td>pad_counts</td>
-			<td>boolean</td>
-			<td>If true, count all of the children along with the term.  Default is false.</td>
+			<td>post_name</td>
+			<td>string</td>
+			<td>Slug/Name of the post from which to pull comments.</td>
+		</tr>
+		<tr>
+			<td>type</td>
+			<td>string</td>
+			<td>The type of comments to return.  Default options: 'comment', 'pingback', 'trackback', 'pings' (returns trackbacks and pingbacks').</td>
+		</tr>
+		<tr>
+			<td>status</td>
+			<td>string</td>
+			<td>The status of comments to return.  Default: 'approved'.</td>
+		</tr>
+		<tr>
+			<td>user_id</td>
+			<td>int</td>
+			<td>User ID of commentor making the comments.</td>
 		</tr>
 		<tr>
 			<td class="shade" colspan="3">
@@ -1339,7 +1387,7 @@ Orderby will also accept an array of multiple identifiers.
 			</td>
 		</tr>
 		<tr>
-			<td>include_found*</td>
+			<td>include_found</td>
 			<td>boolean</td>
 			<td>Defaut to false.  When true, the response will include a found rows count.  There is some
 			overhead in generating the total count so this should only be turned on when needed.  This is 
@@ -1349,11 +1397,12 @@ Orderby will also accept an array of multiple identifiers.
 </table>
 
 
+
 ##### Response
 	{
-		"found": 25,  //only provided if include_found == true
-		"terms": [
-			[Term Object]
+		'found': 40, //only provided if include_found == true
+		"comments": [
+			[Comment Object],
 			….
 		]
 	}
@@ -1363,98 +1412,116 @@ Orderby will also accept an array of multiple identifiers.
 #### Single Entity
 
 ##### Request
-    GET {api root}/taxonomies/{name}/terms/{term_id}
-    
-#### Term JSON Schema
+    GET {api root}/comments/{id}
+
+##### Comment JSON Schema
 	{
+        "title": "Comment Object",
+        "description": "A representation of a single post object",
         "type": "object",
-        "required": false,
+        "id": "#comment",
         "properties": {
-            "description": {
-                "description": "A long text describing the term.",
+            "author": {
+                "description": "Display name of the author of the comment.",
+                "type": "string",
+                "required": true
+            }
+            "author_url": {
+                "description": "URL set for the author of the comment.",
                 "type": "string",
                 "required": false
-            },
-            "meta": {
-                "description": "Extended Term data.",
-                "type": "object",
-            },
-            "name": {
-                "description": "The title/name of the term as displayed to users.",
+            }
+            "date": {
+                "description": "The comment's creation time in iso 8601 format.",
                 "type": "string",
-                "required": false
+                "format": "date-time",
+                "required": true
             },
-            "parent_str": {
-                "description": "The ID of the parent term as a string, if exists.",
+            "content": {
+                "description": "The raw comment content.",
                 "type": "string",
-                "required": false
+                "required": true
             },
-            "parent": {
-                "description": "The ID of the parent term, if exists.",
-                "type": "number",
-                "required": false
-            },
-            "post_count": {
-                "description": "The distinct count of posts attached to this term.  If 'pad_count' is set to true, this will also include all posts attached to child terms.  This only includes posts of type 'post'.",
-                "type": "number",
-                "required": false
-            },
-            "slug": {
-                "description": "The name (slug) of the term as used in URLs.",
+            "content_display": {
+                "description": "Display formatted content of the comment.",
                 "type": "string",
+                "required": true
+            },
+            "user": {
+                "description": "ID of the user making the comment",
+                "type": "integer",
                 "required": false
             },
-            "taxonomy": {
+						"user_id_str": {
+                "description": "String version of the ID of the user making the comment",
                 "type": "string",
                 "required": false
             },
             "id_str": {
-                "description": "The ID of the term as a string.",
+                "description": "The ID of the post represented as a string.",
                 "type": "string",
-                "id": "http://jsonschema.net/term_id_str",
-                "required": false
+                "required": true
             },
             "id": {
-                "description": "The ID of the term.",
-                "type": "number",
-                "id": "http://jsonschema.net/term_id",
-                "required": false
+                "description": "The ID of the post",
+                "type": "integer",
+                "minimum": 1,
+                "required": true
             },
-            "term_taxonomy_id_str": {
-                "description": "The ID that uniquely represents this term/taxonomy as ing asterms are shared across multiple taxonomies.",
+            "type": {
+                "description": "The type of comment.  Deafult enum: 'comment', 'pingback', 'trackback'",
                 "type": "string",
-                "id": "http://jsonschema.net/term_taxonomy_id_str",
+                "required": true
+            },
+            "media": {
+                "type": "array",
+                "required": false,
+                "items": {
+                    "type": {
+                        "$ref": "#mediaItem"
+                    }
+                }
+            },
+            "parent_str": {
+                "description": "The ID of the comment's parent as a string, if it has one.",
+                "type": "string",
                 "required": false
             },
-            "term_taxonomy_id": {
-                "description": "The ID that uniquely represents this term/taxonomy as terms are shared across multiple taxonomies.",
-                "type": "number",
-                "id": "http://jsonschema.net/term_taxonomy_id",
+            "parent": {
+                "description": "The ID of the comment's parent as a string, if it has one.",
+                "type": "integer",
                 "required": false
+            },
+            "status": {
+                "description": "The status of the comment.",
+                "type": {
+                    "enum": ["approve", "pending", "spam", "trash"]
+                },
+                "required": true
             }
         }
     }
-
-##### Example Term Response
-	{
-		"ID": 123456,
-		"term_id_str": "123456",
-		"term_taxonomy_id": 123456789,
-		"term_taxonomy_id_str": "123456789",
-		"parent": 1234567,
-		"parent_str": "1234567",
-		"name": "Local News",
-		"slug": "local-news",
-		"taxonomy": "category",
-		"description": "News reports from around Polk County",
-		"post_count": 25,
-		"meta":{
-		}
-	}
-
-
-##Notes
-	*    - This is a non-standard public_query_var.
-	**   - By default WordPress asks for this query_var to be passed in as a comma 
-			separated list.  This is replaced by an array in the API to better support 
-			x-www-form-urlencoded submissions.
+	
+##### Example Comment Response
+    {
+        "id": 597,
+        "id_str": "597",
+        "type": "comment",
+        "author": "John Doe",
+        "author_url": "http://example.org",
+        "parent": 0,
+        "parent_str": "0",
+        "date": "2013-06-11T18:39:46+00:00",
+        "content": "This is my comment text",
+        "status": "approve",
+        "user": 1,
+        "user_id_str": "1",
+        "content_display": "<p>This is my comment text<\/p>\n",
+        "avatar": [
+            {
+                "url": "http:\/\/1.gravatar.com\/avatar\/96614ec98aa0c0d2ee75796dced6df54?s=96&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D96&amp;r=G",
+                "width": 96,
+                "height": 96
+            }
+        ]
+    }
