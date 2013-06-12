@@ -30,7 +30,7 @@ class PostsControllerTest extends APITestCase {
 
 		$attachment_ids = array( );
 		foreach ( $imgs as $filename ) {
-			$upload = $this->_upload_file( __DIR__ . '/data/' . $filename );
+			$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/' . $filename );
 			$attachment_ids[] = $this->_make_attachment( $upload, $test_post_id );
 		}
 
@@ -98,7 +98,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
-		$this->assertInternalType('array', $data->posts);
+		$this->assertInternalType( 'array', $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
 
@@ -140,22 +140,57 @@ class PostsControllerTest extends APITestCase {
 	}
 
 	public function testGetPost() {
-		$test_post_id = wp_insert_post( array(
-			'post_status' => 'publish',
-			'post_title' => 'testGetPost',
-			'post_author' => 1,
-			) );
+		$test_data = $this->_insert_post( null, array( '100x200.png', '100x300.png' ) );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $test_post_id,
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $test_data['post_id'],
 			'QUERY_STRING' => '',
 			) );
 
 		$data = json_decode( $body );
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
-		$this->assertEquals( $test_post_id, $data->id );
+
+		$post = get_post( $test_data['post_id'] );
+
+		$checks = array(
+			'id' => array( 'type' => 'int', 'value' => $post->ID ),
+			'id_str' => array( 'type' => 'string', 'value' => $post->ID ),
+			'type' => array( 'type' => 'string', 'value' => 'post' ),
+			'permalink' => array( 'type' => 'string', 'value' => get_permalink( $post->ID ) ),
+			'parent' => array( 'type' => 'int', 'value' => $post->post_parent ),
+			'parent_str' => array( 'type' => 'string', 'value' => $post->post_parent ),
+			'date' => array( 'type' => 'string', 'value' => get_post_time( 'c', true, $post ) ),
+			'modified' => array( 'type' => 'string', 'value' => get_post_modified_time( 'c', true, $post ) ),
+			'status' => array( 'type' => 'string', 'value' => $post->post_status ),
+			'comment_status' => array( 'type' => 'string', 'value' => $post->comment_status ),
+			'comment_count' => array( 'type' => 'int', 'value' => 0 ),
+			'menu_order' => array( 'type' => 'int', 'value' => 0 ),
+			'title' => array( 'type' => 'string', 'value' => $post->post_title ),
+			'name' => array( 'type' => 'string', 'value' => $post->post_name ),
+			'excerpt' => array( 'type' => 'string' ),
+			'excerpt_display' => array( 'type' => 'string' ),
+			'content' => array( 'type' => 'string' ),
+			'content_display' => array( 'type' => 'string' ),
+			'author' => array( 'type' => 'object' ),
+			'mime_type' => array( 'type' => 'string', 'value' => '' ),
+			'meta' => array( 'type' => 'object' ),
+			'taxonomies' => array( 'type' => 'object' ),
+			'media' => array( 'type' => 'array' )
+		);
+
+		foreach ( $checks as $attrib => $check ) {
+			$this->assertObjectHasAttribute( $attrib, $data );
+			$this->assertInternalType( $check['type'], $data->$attrib );
+			if ( isset( $check['value'] ) ) {
+				$this->assertEquals( $check['value'], $data->$attrib );
+			}
+		}
+
+		$this->assertEquals( 2, count( $data->media ) );
+
+
 
 		$id = 9999999;
 
@@ -200,41 +235,12 @@ class PostsControllerTest extends APITestCase {
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
 			'QUERY_STRING' => http_build_query( $test_args ),
-		) );
+			) );
 
 		$data = json_decode( $body );
 
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertEquals( 1, count( $data->posts ) );
-	}
-
-	public function testGetUsers() {
-		list($status, $headers, $body) = $this->_getResponse( array(
-			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/',
-			'QUERY_STRING' => '',
-			) );
-
-		$data = json_decode( $body );
-		$this->assertEquals( '401', $status );
-	}
-
-	public function testGetUser() {
-		$user_id = wp_insert_user( array(
-			'user_login' => 'test_get_user',
-		) );
-		if ( is_wp_error( $user_id ) ) {
-			$user_id = get_user_by( 'login', 'test_get_user' )->ID;
-		}
-
-		list($status, $headers, $body) = $this->_getResponse( array(
-			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/' . $user_id,
-			'QUERY_STRING' => '',
-			) );
-
-		$data = json_decode( $body );
-		$this->assertEquals( '401', $status );
 	}
 
 }

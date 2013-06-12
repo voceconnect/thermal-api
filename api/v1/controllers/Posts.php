@@ -221,7 +221,7 @@ class PostsController {
 				) );
 
 			foreach ( $attachments as $attachment ) {
-				$media[$attachment->ID] = self::format_image_media_item( $attachment );
+				$media[$attachment->ID] = self::_format_image_media_item( $attachment );
 			}
 
 			// get gallery meta
@@ -272,7 +272,7 @@ class PostsController {
 				'mime_type' => $post->post_mime_type,
 				'meta' => ( object ) $meta,
 				'taxonomies' => ( object ) $post_taxonomies,
-				'media' => $media,
+				'media' => array_values($media),
 				'author' => $author
 				) );
 		}
@@ -385,7 +385,7 @@ class PostsController {
 
 				$ids = array( );
 				foreach ( $attachments as $attachment ) {
-					$media[$attachment->ID] = self::format_image_media_item( $attachment );
+					$media[$attachment->ID] = self::_format_image_media_item( $attachment );
 					$ids[] = $attachment->ID;
 				}
 
@@ -441,6 +441,47 @@ class PostsController {
 		}
 
 		return $attachments;
+	}
+
+	/**
+	 * Format the output of a media item.
+	 * @param \WP_Post $post
+	 * @return array
+	 */
+	protected static function _format_image_media_item( \WP_Post $post ) {
+		$meta = wp_get_attachment_metadata( $post->ID );
+
+		if ( isset( $meta['sizes'] ) and is_array( $meta['sizes'] ) ) {
+			$upload_dir = wp_upload_dir();
+
+			$sizes = array(
+				array(
+					'height' => $meta['height'],
+					'name' => 'full',
+					'url' => trailingslashit( $upload_dir['baseurl'] ) . $meta['file'],
+					'width' => $meta['width'],
+				),
+			);
+
+			$attachment_upload_date = dirname( $meta['file'] );
+
+			foreach ( $meta['sizes'] as $size => $data ) {
+				$sizes[] = array(
+					'height' => $data['height'],
+					'name' => $size,
+					'url' => trailingslashit( $upload_dir['baseurl'] ) . trailingslashit( $attachment_upload_date ) . $data['file'],
+					'width' => $data['width'],
+				);
+			}
+		}
+
+		return array(
+			'id' => $post->ID,
+			'id_str' => ( string ) $post->ID,
+			'mime_type' => $post->post_mime_type,
+			'alt_text' => get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
+			'sizes' => $sizes,
+		);
 	}
 
 }
