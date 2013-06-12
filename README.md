@@ -295,6 +295,11 @@ Orderby will also accept an array of multiple identifiers.
 			overhead in generating the total count so this should only be turned on when needed.  This is 
 			automatically turned on if the 'paged' filter is used.</td>
 		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -315,6 +320,29 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/posts/{id}
+
+##### Parameters
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Data Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="shade" colspan="3">
+				Response Altering Parameters
+			</td>
+		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
+	</tbody>
+</table>
 
 ##### Post JSON Schema
 	{
@@ -664,6 +692,11 @@ Orderby will also accept an array of multiple identifiers.
 			overhead in generating the total count so this should only be turned on when needed.  This is 
 			automatically turned on if the 'paged' filter is used.</td>
 		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -682,6 +715,29 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/users/{id}
+
+##### Parameters
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Data Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="shade" colspan="3">
+				Response Altering Parameters
+			</td>
+		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
+	</tbody>
+</table>
 
 ##### User JSON Schema
 	{
@@ -803,6 +859,16 @@ Orderby will also accept an array of multiple identifiers.
 			<td>array|string</td>
 			<td>An array of post_types to include taxonomies from.  Results will include any taxonomies with at least 1 of the given post_types included.</td>
 		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -820,7 +886,30 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/taxonomies/{name}
-    
+
+##### Parameters
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Data Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="shade" colspan="3">
+				Response Altering Parameters
+			</td>
+		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
+	</tbody>
+</table>
+
 ##### Taxonomy JSON Schema
 	{
         "id": "#taxonomy",
@@ -897,6 +986,7 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/taxonomies/{name}/terms
+    
 ##### Parameters
 
 <table>
@@ -987,6 +1077,11 @@ Orderby will also accept an array of multiple identifiers.
 			overhead in generating the total count so this should only be turned on when needed.  This is 
 			automatically turned on if the 'paged' filter is used.</td>
 		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -1006,7 +1101,30 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/taxonomies/{name}/terms/{term_id}
-    
+
+##### Parameters
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Data Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="shade" colspan="3">
+				Response Altering Parameters
+			</td>
+		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
+	</tbody>
+</table>
+
 #### Term JSON Schema
 	{
         "type": "object",
@@ -1393,6 +1511,11 @@ Orderby will also accept an array of multiple identifiers.
 			overhead in generating the total count so this should only be turned on when needed.  This is 
 			automatically turned on if the 'paged' filter is used.</td>
 		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
 	</tbody>
 </table>
 
@@ -1413,6 +1536,29 @@ Orderby will also accept an array of multiple identifiers.
 
 ##### Request
     GET {api root}/comments/{id}
+
+##### Parameters
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Data Type</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="shade" colspan="3">
+				Response Altering Parameters
+			</td>
+		</tr>
+		<tr>
+			<td>callback</td>
+			<td>string</td>
+			<td>When set, the response will be wrapped in a JSONP callback.</td>
+		</tr>
+	</tbody>
+</table>
 
 ##### Comment JSON Schema
 	{
