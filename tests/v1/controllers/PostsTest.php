@@ -101,6 +101,31 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
+	
+	public function testGetPostsPerPage() {
+		$this->_insert_post();
+		$this->_insert_post();
+		$this->_insert_post();
+		$this->_insert_post();
+		$this->_insert_post();
+		$this->_insert_post();
+		$this->_insert_post();
+		
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'per_page=2&include_found=1',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertObjectHasAttribute( 'found', $data );
+		$this->assertLessThan($data->found, count($data->posts));
+	}
 
 	public function testGetPostsCount() {
 		list($status, $headers, $body) = $this->_getResponse( array(

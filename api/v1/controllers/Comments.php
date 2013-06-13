@@ -108,8 +108,8 @@ class CommentsController {
 			}
 		}
 
-		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > Voce\Thermal\MAX_POSTS_PER_PAGE ) {
-			$request_args['per_page'] = Voce\Thermal\MAX_POSTS_PER_PAGE;
+		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > MAX_POSTS_PER_PAGE ) {
+			$request_args['per_page'] = MAX_POSTS_PER_PAGE;
 		}
 
 		if ( !empty( $request_args['paged'] ) && !isset( $request_args['include_found'] ) ) {

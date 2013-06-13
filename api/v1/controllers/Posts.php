@@ -159,8 +159,8 @@ class PostsController {
 			$request_args['orderby'] = implode( ' ', $request_args['orderby'] );
 		}
 
-		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > Voce\Thermal\MAX_POSTS_PER_PAGE ) {
-			$request_args['per_page'] = Voce\Thermal\MAX_POSTS_PER_PAGE;
+		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > MAX_POSTS_PER_PAGE ) {
+			$request_args['per_page'] = MAX_POSTS_PER_PAGE;
 		}
 
 		if ( empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) ) {

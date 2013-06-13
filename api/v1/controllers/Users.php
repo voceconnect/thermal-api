@@ -136,8 +136,8 @@ class UsersController {
 			unset($request_args['in']);
 		}
 
-		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > Voce\Thermal\MAX_USERS_PER_PAGE ) {
-			$request_args['per_page'] = Voce\Thermal\MAX_USERS_PER_PAGE;
+		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > MAX_USERS_PER_PAGE ) {
+			$request_args['per_page'] = MAX_USERS_PER_PAGE;
 		}
 
 		if ( empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) ) {
