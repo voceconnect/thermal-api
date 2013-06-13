@@ -124,7 +124,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertObjectHasAttribute( 'found', $data );
-		$this->assertLessThan($data->found, count($data->posts));
+		$this->assertCount(2 , $data->posts);
 	}
 
 	public function testGetPostsCount() {

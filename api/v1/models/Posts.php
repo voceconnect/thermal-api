@@ -11,6 +11,11 @@ class PostsModel {
 			add_filter( 'posts_where', array( __CLASS__, '_filter_posts_where_handleDateRange' ), 10, 2 );
 		}
 		
+		if(isset($args['per_page'])) {
+			$args['posts_per_page'] = $args['per_page'];
+			unset($args['per_page']);
+		}
+		
 		// I would prefer the permissions handling to be in the controller
 		// rather than the model, but WP_Query is a dirty bit of code that
 		// doesn't quite give the flexibility needed with it's query_vars
