@@ -243,6 +243,29 @@ class PostsControllerTest extends APITestCase {
 
 		$this->assertEquals( '401', $status );
 	}
+	
+	public function testGetPostEntityFilter() {
+		$test_data = $this->_insert_post( null, array( '100x200.png', '100x300.png' ) );
+
+		add_filter('thermal_post_entity',  function($data, &$post, $state) {
+			$data->test_value = $post->ID;
+			return $data;
+		}, 10, 3);
+			
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $test_data['post_id'],
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute('test_value', $data);
+		$this->assertEquals($test_data['post_id'], $data->test_value);
+	}
+	
 
 	public function testGetPostsByIdParameterNotRoute() {
 

@@ -18,7 +18,7 @@ class CommentsController {
 	protected static function _find( $app, $args ) {
 		$args = $app->request()->get();
 		$args = self::convert_request( $args );
-		
+
 		$found = 0;
 		$comments = array( );
 
@@ -39,7 +39,7 @@ class CommentsController {
 		$post = PostsController::findById( $app, $post_id );
 		$args = $app->request()->get();
 		$args['post_id'] = $post->id;
-		return self::_find($app, $args);
+		return self::_find( $app, $args );
 	}
 
 	public static function findById( $app, $id ) {
@@ -182,7 +182,7 @@ class CommentsController {
 				) );
 		}
 
-		$comment = ( object ) $data;
+		$comment = apply_filters_ref_array( 'thermal_comment_entity', array( ( object ) $data, &$comment, $state ) );
 	}
 
 }

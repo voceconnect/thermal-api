@@ -101,7 +101,7 @@ class TaxonomiesController {
 			'meta' => new \stdClass()
 		);
 
-		$taxonomy = (object) $data;
+		$taxonomy = apply_filters_ref_array( 'thermal_taxonomy_entity', array( ( object ) $data, &$taxonomy, $state ) );
 	}
 
 }

@@ -253,7 +253,7 @@ class CommentsControllerTest extends APITestCase {
 		$this->assertTrue( $found_comment_minus_10 );
 		$this->assertTrue( $found_comment_approved_post_b );
 	}
-	
+
 	public function testGetCommentsIn() {
 		$testdata = $this->_insertTestData();
 
@@ -330,6 +330,25 @@ class CommentsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 
 		$this->assertEquals( '404', $status );
+	}
+
+	public function testGetCommentEntityFilter() {
+		$testdata = $this->_insertTestData();
+		add_filter( 'thermal_comment_entity', function($data, &$comment, $state) {
+				$data->test_value = $comment->comment_ID;
+				return $data;
+			}, 10, 3 );
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/' . $testdata['comment_approved_minus_10'],
+			'QUERY_STRING' => ''
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+		$this->assertObjectHasAttribute( 'test_value', $data );
+		$this->assertEquals( $testdata['comment_approved_minus_10'], $data->test_value );
 	}
 
 }
