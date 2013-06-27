@@ -101,7 +101,7 @@ class UsersController {
 				) );
 		}
 		
-		$user = (object) $data;
+		$user = apply_filters_ref_array( 'thermal_user_entity', array( ( object ) $data, &$user, $state ) );
 	}
 
 	/**
