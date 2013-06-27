@@ -276,10 +276,12 @@ class PostsController {
 				'author' => $author
 				) );
 		}
+		
+		$data = apply_filters_ref_array( 'thermal_post_entity', array( ( object ) $data, &$post, $state ) );
 
 		wp_reset_postdata();
 
-		$post = ( object ) $data;
+		$post = (object) $data;
 	}
 
 	protected static function _get_post_galleries( \WP_Post $post ) {

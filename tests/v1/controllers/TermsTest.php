@@ -137,5 +137,40 @@ class TermsControllerTest extends APITestCase {
 		
 		$this->assertEquals( '404', $status );
 	}
+	
+	public function testGetTermEntityFilter() {
+		$testdata = $this->_insertTestData();
+
+		add_filter('thermal_term_entity',  function($data, $term, $state) {
+			$data->test_value = $term->term_id;
+			return $data;
+		}, 10, 3);
+		
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/' . $testdata['term_a']['term_id'],
+			'QUERY_STRING' => ''
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+		$this->assertObjectHasAttribute( 'name', $data );
+		$this->assertEquals( 'Term In Both', $data->name );
+		$this->assertObjectHasAttribute('test_value', $data);
+		$this->assertEquals($testdata['term_a']['term_id'], $data->test_value);
+
+		$id = 9999999;
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/' . $id,
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertEquals( '404', $status );
+	}
 
 }

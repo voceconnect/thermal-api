@@ -125,8 +125,8 @@ class TermsController {
 				'meta' => new \stdClass()
 				) );
 		}
-
-		$term = ( object ) $data;
+		
+		$term = apply_filters_ref_array( 'thermal_term_entity', array( ( object ) $data, &$term, $state ) );
 	}
 
 }
