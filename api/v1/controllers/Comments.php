@@ -166,7 +166,7 @@ class CommentsController {
 		);
 
 		//add extended data for 'read'
-		if ( $state = 'read' ) {
+		if ( $state == 'read' ) {
 			$avatar = get_avatar( $comment );
 			preg_match( "/src='([^']*)'/i", $avatar, $matches );
 

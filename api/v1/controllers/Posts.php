@@ -209,30 +209,36 @@ class PostsController {
 		);
 
 		//add extended data for 'read'
-		if ( $state = 'read' ) {
+		if ( $state == 'read' ) {
 			$media = array( );
 			$meta = array( );
 
 			// get direct post attachments
-			$attachments = get_posts( array(
+			$attachment_ids = get_posts( array(
 				'post_parent' => $post->ID,
 				'post_mime_type' => 'image',
 				'post_type' => 'attachment',
+				'fields' => 'ids',
+				'posts_per_page' => MAX_POSTS_PER_PAGE
 				) );
-
-			foreach ( $attachments as $attachment ) {
-				$media[$attachment->ID] = self::_format_image_media_item( $attachment );
+			//get media in content
+			if ( preg_match_all( '|<img.*?class=[\'"](.*?)wp-image-([0-9]{1,6})(.*?)[\'"].*?>|i', $post->post_content, $matches ) ) {
+				$attachment_ids = array_merge( $attachment_ids, $matches[2] );
 			}
 
-			// get gallery meta
-			$gallery_meta = self::_get_gallery_meta( $post, $media );
-			if ( !empty( $gallery_meta['gallery_meta'] ) ) {
-				$meta['gallery'] = $gallery_meta['gallery_meta'];
-				$media = $gallery_meta['media'];
+			//get media from gallery
+			$gallery_meta = self::_get_gallery_meta( $post, $attachment_ids );
+			if ( !empty( $gallery_meta ) ) {
+				$meta['gallery'] = $gallery_meta;
 			}
 
 			if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
-				$meta['featured_image'] = ( int ) $thumbnail_id;
+				$attachment_ids[] = $meta['featured_image'] = ( int ) $thumbnail_id;
+			}
+
+			$attachment_ids = array_unique( $attachment_ids );
+			foreach ( $attachment_ids as $attachment_id ) {
+				$media[$attachment_id] = self::_format_image_media_item( $attachment_id );
 			}
 
 			// get taxonomy data
@@ -272,16 +278,16 @@ class PostsController {
 				'mime_type' => $post->post_mime_type,
 				'meta' => ( object ) $meta,
 				'taxonomies' => ( object ) $post_taxonomies,
-				'media' => array_values($media),
+				'media' => array_values( $media ),
 				'author' => $author
 				) );
 		}
-		
+
 		$data = apply_filters_ref_array( 'thermal_post_entity', array( ( object ) $data, &$post, $state ) );
 
 		wp_reset_postdata();
 
-		$post = (object) $data;
+		$post = ( object ) $data;
 	}
 
 	protected static function _get_post_galleries( \WP_Post $post ) {
@@ -365,7 +371,7 @@ class PostsController {
 	 * @param $media
 	 * @return array
 	 */
-	protected static function _get_gallery_meta( $post, $media ) {
+	protected static function _get_gallery_meta( $post, &$attachment_ids = array( ) ) {
 		$gallery_meta = array( );
 
 		// check post content for gallery shortcode
@@ -383,13 +389,9 @@ class PostsController {
 					$orderby = 'none';
 				}
 
-				$attachments = self::_get_gallery_attachments( $gallery_id, $order, $orderby, $include, $exclude );
+				$ids = self::_get_gallery_attachments( $gallery_id, $order, $orderby, $include, $exclude );
 
-				$ids = array( );
-				foreach ( $attachments as $attachment ) {
-					$media[$attachment->ID] = self::_format_image_media_item( $attachment );
-					$ids[] = $attachment->ID;
-				}
+				$attachment_ids = array_unique( array_merge( $attachment_ids, $ids ) );
 
 				$gallery_meta[] = array(
 					'ids' => $ids,
@@ -399,7 +401,7 @@ class PostsController {
 			}
 		}
 
-		return array( 'gallery_meta' => $gallery_meta, 'media' => $media );
+		return $gallery_meta;
 	}
 
 	/**
@@ -416,6 +418,7 @@ class PostsController {
 			'post_type' => 'attachment',
 			'post_mime_type' => 'image',
 			'order' => $order,
+			'fields' => 'ids',
 			'orderby' => $orderby,
 		);
 
@@ -450,7 +453,10 @@ class PostsController {
 	 * @param \WP_Post $post
 	 * @return array
 	 */
-	protected static function _format_image_media_item( \WP_Post $post ) {
+	protected static function _format_image_media_item( $post ) {
+		if ( !is_a( $post, "\WP_Post" ) ) {
+			$post = get_post( $post );
+		}
 		$meta = wp_get_attachment_metadata( $post->ID );
 
 		if ( isset( $meta['sizes'] ) and is_array( $meta['sizes'] ) ) {

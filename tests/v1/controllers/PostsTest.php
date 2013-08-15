@@ -101,7 +101,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
-	
+
 	public function testGetPostsPerPage() {
 		$this->_insert_post();
 		$this->_insert_post();
@@ -110,7 +110,7 @@ class PostsControllerTest extends APITestCase {
 		$this->_insert_post();
 		$this->_insert_post();
 		$this->_insert_post();
-		
+
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
@@ -124,7 +124,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertObjectHasAttribute( 'found', $data );
-		$this->assertCount(2 , $data->posts);
+		$this->assertCount( 2, $data->posts );
 	}
 
 	public function testGetPostsCount() {
@@ -165,7 +165,22 @@ class PostsControllerTest extends APITestCase {
 	}
 
 	public function testGetPost() {
-		$test_data = $this->_insert_post( null, array( '100x200.png', '100x300.png' ) );
+
+		//add media item to test unattached images in content
+		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/250x250.png' );
+		$att_id = $this->_make_attachment( $upload );
+		$imgHtml = get_image_send_to_editor( $att_id, 'Test Caption', 'Test Title', 'left' );
+
+		$content = "Proin nec risus a metus mattis eleifend. Quisque ullamcorper porttitor aliquam. " .
+			"Donec ut vulputate diam. Etiam eu dui pretium, condimentum nisi eu, tincidunt elit. \n\n" .
+			$imgHtml . " \n\n Morbi ipsum dolor, tristique quis lorem sit amet, blandit ornare arcu. " .
+			"Phasellus facilisis varius porttitor. Nam gravida neque eros, id pellentesque nibh aliquam a.";
+		//get_image_send_to_editor
+		$test_data = $this->_insert_post( array( 'post_content' => $content ), array( '100x200.png', '100x300.png' ) );
+		
+		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/100x500.png' );
+		$att_id = $this->_make_attachment( $upload );
+		set_post_thumbnail($test_data['post_id'], $att_id);
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -212,10 +227,8 @@ class PostsControllerTest extends APITestCase {
 				$this->assertEquals( $check['value'], $data->$attrib );
 			}
 		}
-
-		$this->assertEquals( 2, count( $data->media ) );
-
-
+		
+		$this->assertEquals( 4, count( $data->media ) );
 
 		$id = 9999999;
 
@@ -243,15 +256,15 @@ class PostsControllerTest extends APITestCase {
 
 		$this->assertEquals( '401', $status );
 	}
-	
+
 	public function testGetPostEntityFilter() {
 		$test_data = $this->_insert_post( null, array( '100x200.png', '100x300.png' ) );
 
-		add_filter('thermal_post_entity',  function($data, &$post, $state) {
-			$data->test_value = $post->ID;
-			return $data;
-		}, 10, 3);
-			
+		add_filter( 'thermal_post_entity', function($data, &$post, $state) {
+				$data->test_value = $post->ID;
+				return $data;
+			}, 10, 3 );
+
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -262,10 +275,9 @@ class PostsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
-		$this->assertObjectHasAttribute('test_value', $data);
-		$this->assertEquals($test_data['post_id'], $data->test_value);
+		$this->assertObjectHasAttribute( 'test_value', $data );
+		$this->assertEquals( $test_data['post_id'], $data->test_value );
 	}
-	
 
 	public function testGetPostsByIdParameterNotRoute() {
 
