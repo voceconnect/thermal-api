@@ -238,7 +238,9 @@ class PostsController {
 
 			$attachment_ids = array_unique( $attachment_ids );
 			foreach ( $attachment_ids as $attachment_id ) {
-				$media[$attachment_id] = self::_format_image_media_item( $attachment_id );
+				if($image_item = self::_format_image_media_item( $attachment_id )) {
+					$media[$attachment_id] = $image_item;
+				}
 			}
 
 			// get taxonomy data
@@ -456,6 +458,9 @@ class PostsController {
 	protected static function _format_image_media_item( $post ) {
 		if ( !is_a( $post, "\WP_Post" ) ) {
 			$post = get_post( $post );
+			if(!$post) {
+				return false;
+			}
 		}
 		$meta = wp_get_attachment_metadata( $post->ID );
 
