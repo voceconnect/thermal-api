@@ -177,10 +177,10 @@ class PostsControllerTest extends APITestCase {
 			"Phasellus facilisis varius porttitor. Nam gravida neque eros, id pellentesque nibh aliquam a.";
 		//get_image_send_to_editor
 		$test_data = $this->_insert_post( array( 'post_content' => $content ), array( '100x200.png', '100x300.png' ) );
-		
+
 		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/100x500.png' );
 		$att_id = $this->_make_attachment( $upload );
-		set_post_thumbnail($test_data['post_id'], $att_id);
+		set_post_thumbnail( $test_data['post_id'], $att_id );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -227,7 +227,7 @@ class PostsControllerTest extends APITestCase {
 				$this->assertEquals( $check['value'], $data->$attrib );
 			}
 		}
-		
+
 		$this->assertEquals( 4, count( $data->media ) );
 
 		$id = 9999999;
@@ -301,6 +301,36 @@ class PostsControllerTest extends APITestCase {
 
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertEquals( 1, count( $data->posts ) );
+	}
+
+	public function testGetPostsCustomTaxonomy() {
+		register_taxonomy( 'test_tax', 'post', array( 'public' => true ) );
+		$post_id = $this->_insert_post();
+
+		if($term_obj = get_term_by('name', 'Test Term', 'test_tax')){
+			$term_id = $term_obj->term_id;
+		} else {
+			$term_data = wp_insert_term( 'Test Term', 'test_tax' );
+			$term_id = $term_data['term_id'];
+		}
+		wp_set_object_terms( $post_id, 'Test Term', 'test_tax' );
+
+		$args = array(
+			'taxonomy' => array( 'test_tax' => array( $term_id ) )
+		);
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => http_build_query( $args )
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
 
 }
