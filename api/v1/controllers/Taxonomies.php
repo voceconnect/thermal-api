@@ -28,7 +28,7 @@ class TaxonomiesController {
 				if ( !$taxonomy->public ) {
 					if ( is_user_logged_in() || !current_user_can( $taxonomy->cap->manage_terms, $taxonomy->ID ) ) {
 							return false;
-					} 
+					}
 				}
 				return true;
 			} );
@@ -84,10 +84,10 @@ class TaxonomiesController {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param \WP_Post $taxonomy
 	 */
-	public static function format( &$taxonomy ) {
+	public static function format( &$taxonomy, $state = 'read' ) {
 		if ( !$taxonomy ) {
 			return $taxonomy = null;
 		}
