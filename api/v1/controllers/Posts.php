@@ -171,9 +171,9 @@ class PostsController {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param \WP_Post $post
-	 * @param string $state  State of CRUD to render for, options 
+	 * @param string $state  State of CRUD to render for, options
 	 * 	include 'read', new', 'edit'
 	 */
 	public static function format( &$post, $state = 'read' ) {
@@ -463,6 +463,7 @@ class PostsController {
 			}
 		}
 		$meta = wp_get_attachment_metadata( $post->ID );
+		$src = wp_get_attachment_image_src( $post->ID, 'full' );
 
 		if ( isset( $meta['sizes'] ) and is_array( $meta['sizes'] ) ) {
 			$upload_dir = wp_upload_dir();
@@ -471,18 +472,18 @@ class PostsController {
 				array(
 					'height' => $meta['height'],
 					'name' => 'full',
-					'url' => trailingslashit( $upload_dir['baseurl'] ) . $meta['file'],
+					'url' => $src[0],
 					'width' => $meta['width'],
 				),
 			);
 
-			$attachment_upload_date = dirname( $meta['file'] );
-
 			foreach ( $meta['sizes'] as $size => $data ) {
+				$src = wp_get_attachment_image_src( $post->ID, $size );
+
 				$sizes[] = array(
 					'height' => $data['height'],
 					'name' => $size,
-					'url' => trailingslashit( $upload_dir['baseurl'] ) . trailingslashit( $attachment_upload_date ) . $data['file'],
+					'url' => $src[0],
 					'width' => $data['width'],
 				);
 			}
