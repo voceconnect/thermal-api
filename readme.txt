@@ -3,7 +3,7 @@ Contributors: voceplatforms
 Tags: thermal, JSON, API
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 0.7.5
+Stable tag: 0.7.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,10 +29,13 @@ Thermal is the WordPress plugin that gives you the power of WP_Query in a RESTfu
 Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
+= 0.7.6 =
+* Fixed undefined var within TaxonomiesController and changing how images are retreived, now using wp_get_attachment_image_src so the return value is filterable by other.
+
 = 0.7.5 =
 * Fixed missing media content for unattached featured images or images in content.
 
-= 0.7.4 = 
+= 0.7.4 =
 * Added entity filters for posts, users, taxonomies, comments, and terms.
 
 = 0.7.3 =
