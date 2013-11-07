@@ -85,6 +85,7 @@ abstract class API_Base {
 					}
 
 					$data = call_user_func_array( $callback, $args );
+			
 					if ( !is_null( $data ) ) {
 						$json = json_encode( $data );
 						$res->write( $json );
@@ -93,6 +94,8 @@ abstract class API_Base {
 					if ( $json_p ) {
 						$res->write( ')' );
 					}
+
+					do_action_ref_array( 'thermal_response', array( &$res, &$app, &$data ) );
 				} );
 	}
 
