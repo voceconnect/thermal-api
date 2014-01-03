@@ -17,15 +17,13 @@ class UsersController {
 
 	public static function find( $app ) {
 		if ( !is_user_logged_in() ) {
-			$app->halt( '401', get_status_header_desc( '401' ) );
-		}
-
-		if ( !current_user_can( 'list_users' ) ) {
-			$app->halt( '403', get_status_header_desc( '403' ) );
-		}
+			$state = 'restricted';
+		} else {
+			$state = 'read';
+		}		
 
 		$found = 0;
-		$posts = array( );
+		$users = array( );
 		$request_args = $app->request()->get();
 
 		$args = self::convert_request( $request_args );
@@ -33,26 +31,25 @@ class UsersController {
 		$model = self::model();
 
 		$users = $model->find( $args, $found );
-		array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
+		array_walk( $users, array( __CLASS__, 'format' ), $state );
 
 		return empty( $request_args['no_found_rows'] ) ? compact( 'users', 'found' ) : compact( 'users' );
 	}
 
 	public static function findById( $app, $id ) {
-		if ( !is_user_logged_in() ) {
-			$app->halt( '401', get_status_header_desc( '401' ) );
-		}
-
-		if ( !current_user_can( 'list_users' ) && $id !== get_current_user_id() ) {
-			$app->halt( '403', get_status_header_desc( '403' ) );
-		}
-
 		$model = self::model();
 		$user = $model->findById($id);
 		if ( !$user ) {
 			$user->halt( '404', get_status_header_desc('404') );
 		}
-		self::format($user, 'read');
+		
+		if ( !is_user_logged_in() ) {
+			$state = 'restricted';
+		} else {
+			$state = 'read';
+		}
+		
+		self::format( $user, $state );
 		return $user;
 	}
 
@@ -71,7 +68,7 @@ class UsersController {
 		if ( func_num_args() > 2 ) {
 			$state = func_get_arg( func_num_args() - 1 );
 		}
-		if ( !in_array( $state, array( 'read', 'new', 'edit' ) ) ) {
+		if ( !in_array( $state, array( 'read', 'new', 'edit', 'restricted' ) ) ) {
 			$state = 'read';
 		}
 
@@ -82,8 +79,24 @@ class UsersController {
 			'display_name' => $user->data->display_name,
 			'user_url' => $user->data->user_url,
 		);
+		
+		// If we are not on the restricted view then we will add some more admin fields 
+		if ( $state !== 'restricted' ) {
+			$data = array_merge( $data, array(
+					'roles' => 	$user->roles,
+					'user_login' => $user->user_login,
+					'user_pass' => $user->user_pass,
+					'user_email' => $user->user_email,
+					'user_status' => $user->user_status,
+					'user_registered' => $user->user_registered,
+					'user_activation_key' => $user->user_activation_key,
+					'caps' => $user->caps,
+					'allcaps' => $yuser->allcaps,
+					'filter' => $user->filter
+			) );
+		}		
 
-		if ( $state === 'read' ) {
+		if ( $state === 'read' || $state === 'restricted' ) {
 
 			$avatar = get_avatar( $user->ID );
 			preg_match( "/src='([^']*)'/i", $avatar, $matches );
@@ -97,8 +110,17 @@ class UsersController {
 						'height' => 96,
 					)
 				),
-				'meta' => ( object ) array( )
+				'meta' => ( object ) get_user_meta( $user->ID )
 				) );
+		}
+		
+		if ( $state === 'restricted' ) {
+			unset($data['meta']->wp_user_level);
+			unset($data['meta']->wp_capabilities);
+			unset($data['meta']->{'wp_usersettings'});
+			unset($data['meta']->{'wp_usersettingstime'});			
+			unset($data['meta']->{'wp_user-settings'});
+			unset($data['meta']->{'wp_user-settings-time'});
 		}
 		
 		$user = apply_filters_ref_array( 'thermal_user_entity', array( ( object ) $data, &$user, $state ) );
