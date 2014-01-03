@@ -97,8 +97,19 @@ class UsersController {
 						'height' => 96,
 					)
 				),
-				'meta' => ( object ) get_user_meta( $user->ID )
-				) );
+				'meta' => ( object ) array(
+					'first_name' => $user->first_name,
+					'last_name' => $user->last_name,
+					'nickname' => $user->nickname,
+					'description' => $user->description,
+					'jabber' => $user->jabber,
+					'aim' => $user->aim,
+					'yim' => $user->yim,
+					'twitter' => $user->twitter,
+					'googleplus' => $user->googleplus,
+					'facebook' => $user->facebook
+				)
+			) );
 		}
 		
 		$user = apply_filters_ref_array( 'thermal_user_entity', array( ( object ) $data, &$user, $state ) );
