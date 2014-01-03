@@ -22,7 +22,8 @@ abstract class APITestCase extends WP_UnitTestCase {
 	}
 
 	public function setUp() {
-
+		parent::setUp();
+		
 		\Slim\Slim::registerAutoloader();
 	}
 

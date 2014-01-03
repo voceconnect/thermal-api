@@ -3,7 +3,7 @@ Contributors: voceplatforms
 Tags: thermal, JSON, API
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 0.7.7
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,12 @@ Thermal is the WordPress plugin that gives you the power of WP_Query in a RESTfu
 Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
+= 0.8.0 =
+* Made users publicly accessible
+* Added description to user's default meta
+* Added filter 'thermal_list_users_cap' to allow required cap to be set for viewing user listing
+* Fixed bug with how users were returned within index
+
 = 0.7.7 =
 * Added 'thermal_response' filter to allow modification of response object.
 

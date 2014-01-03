@@ -4,8 +4,6 @@
  */
 
 
-require_once 'PHPUnit/Autoload.php';
-
 $config_file_path = dirname( __FILE__ ) . '/../wp-tests-config.php';
 
 /*

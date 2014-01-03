@@ -8,6 +8,10 @@ class UsersController {
 
 	private static $_model;
 
+	private static function get_list_users_cap() {
+		return apply_filters('thermal_list_users_cap', false);
+	}
+
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
 			self::$_model = new UsersModel();
@@ -16,16 +20,12 @@ class UsersController {
 	}
 
 	public static function find( $app ) {
-		if ( !is_user_logged_in() ) {
-			$app->halt( '401', get_status_header_desc( '401' ) );
-		}
-
-		if ( !current_user_can( 'list_users' ) ) {
+		if ( ( $list_users_cap = self::get_list_users_cap() ) && !current_user_can( $list_users_cap ) ) {
 			$app->halt( '403', get_status_header_desc( '403' ) );
 		}
 
 		$found = 0;
-		$posts = array( );
+		$users = array( );
 		$request_args = $app->request()->get();
 
 		$args = self::convert_request( $request_args );
@@ -33,17 +33,13 @@ class UsersController {
 		$model = self::model();
 
 		$users = $model->find( $args, $found );
-		array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
+		array_walk( $users, array( __CLASS__, 'format' ), 'read' );
 
-		return empty( $request_args['no_found_rows'] ) ? compact( 'users', 'found' ) : compact( 'users' );
+		return $request_args['count_total'] ? compact( 'users', 'found' ) : compact( 'users' );
 	}
 
 	public static function findById( $app, $id ) {
-		if ( !is_user_logged_in() ) {
-			$app->halt( '401', get_status_header_desc( '401' ) );
-		}
-
-		if ( !current_user_can( 'list_users' ) && $id !== get_current_user_id() ) {
+		if ( ( $list_users_cap = self::get_list_users_cap() ) && !current_user_can( $list_users_cap ) && $id !== get_current_user_id() ) {
 			$app->halt( '403', get_status_header_desc( '403' ) );
 		}
 
@@ -97,8 +93,11 @@ class UsersController {
 						'height' => 96,
 					)
 				),
-				'meta' => ( object ) array( )
-				) );
+				'meta' => ( object ) array(
+					'description' => get_user_meta($user->ID, 'description', true)
+					)
+				) 
+			);
 		}
 		
 		$user = apply_filters_ref_array( 'thermal_user_entity', array( ( object ) $data, &$user, $state ) );
@@ -117,7 +116,8 @@ class UsersController {
 			'orderby' => array( ),
 			'order' => array( ),
 			'in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
-			'include_found' => array( __NAMESPACE__ . '\\toBool' )
+			'include_found' => array( __NAMESPACE__ . '\\toBool' ),
+			'who' => array( )
 		);
 
 		//strip any nonsafe args
@@ -140,10 +140,11 @@ class UsersController {
 			$request_args['per_page'] = MAX_USERS_PER_PAGE;
 		}
 
-		if ( empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) ) {
-			$request_args['count_total'] = false;
-		}
+		$request_args['count_total'] = ! ( empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) );
 
+		if ( !empty( $request_args['who']) && !in_array( $request_args['who'], array( 'authors' ) ) ) {
+			unset( $request_args['who'] );
+		}
 		return $request_args;
 	}
 

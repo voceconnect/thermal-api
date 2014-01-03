@@ -693,6 +693,11 @@ Orderby will also accept an array of multiple identifiers.
 			automatically turned on if the 'paged' filter is used.</td>
 		</tr>
 		<tr>
+			<td>who</td>
+			<td>string</td>
+			<td>Filters to users based on a subset of roles.  Currently, only 'authors' is supported.</td>
+		</tr>
+		<tr>
 			<td>callback</td>
 			<td>string</td>
 			<td>When set, the response will be wrapped in a JSONP callback.</td>
