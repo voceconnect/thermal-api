@@ -25,7 +25,7 @@ class UsersController {
 		}
 
 		$found = 0;
-		$posts = array( );
+		$users = array( );
 		$request_args = $app->request()->get();
 
 		$args = self::convert_request( $request_args );
@@ -33,7 +33,7 @@ class UsersController {
 		$model = self::model();
 
 		$users = $model->find( $args, $found );
-		array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
+		array_walk( $users, array( __CLASS__, 'format' ), 'read' );
 
 		return empty( $request_args['no_found_rows'] ) ? compact( 'users', 'found' ) : compact( 'users' );
 	}
@@ -97,7 +97,7 @@ class UsersController {
 						'height' => 96,
 					)
 				),
-				'meta' => ( object ) array( )
+				'meta' => ( object ) get_user_meta( $user->ID )
 				) );
 		}
 		
