@@ -25,7 +25,7 @@ class UsersController {
 		}
 
 		$found = 0;
-		$posts = array( );
+		$users = array( );
 		$request_args = $app->request()->get();
 
 		$args = self::convert_request( $request_args );
@@ -33,7 +33,7 @@ class UsersController {
 		$model = self::model();
 
 		$users = $model->find( $args, $found );
-		array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
+		array_walk( $users, array( __CLASS__, 'format' ), 'read' );
 
 		return empty( $request_args['no_found_rows'] ) ? compact( 'users', 'found' ) : compact( 'users' );
 	}
@@ -97,8 +97,19 @@ class UsersController {
 						'height' => 96,
 					)
 				),
-				'meta' => ( object ) array( )
-				) );
+				'meta' => ( object ) array(
+					'first_name' => $user->first_name,
+					'last_name' => $user->last_name,
+					'nickname' => $user->nickname,
+					'description' => $user->description,
+					'jabber' => $user->jabber,
+					'aim' => $user->aim,
+					'yim' => $user->yim,
+					'twitter' => $user->twitter,
+					'googleplus' => $user->googleplus,
+					'facebook' => $user->facebook
+				)
+			) );
 		}
 		
 		$user = apply_filters_ref_array( 'thermal_user_entity', array( ( object ) $data, &$user, $state ) );
