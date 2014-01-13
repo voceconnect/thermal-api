@@ -279,6 +279,12 @@ Orderby will also accept an array of multiple identifiers.
 			<td>The post types to be included in the result set.</td>
 		</tr>
 		<tr>
+			<td>post_status</td>
+			<td>array|string</td>
+			<td>Default to 'publish'.  The post statii to include in the result set.  Note that the statii
+			passed in are run through capability checks for the current user.</td>
+		</tr>
+		<tr>
 			<td>post_parent__in</td>
 			<td>array|integer</td>
 			<td>Array or single Post ID to pull child posts from.</td>

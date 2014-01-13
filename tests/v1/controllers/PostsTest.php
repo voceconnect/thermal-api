@@ -102,6 +102,49 @@ class PostsControllerTest extends APITestCase {
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
 
+	public function testGetPostsStatus() {
+		$post_id = $this->_insert_post( array(
+			'post_status' => 'future',
+			'post_date' => date('Y-m-d H:i:s', time() + 604800 ),
+			'post_date_gmt' => '',
+			));
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'post_status=future&post__in=' . $post_id,
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertCount( 0, $data->posts );
+		$this->assertObjectNotHasAttribute( 'found', $data );
+
+		wp_set_current_user(1);
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'post_status=future&post__in=' . $post_id,
+			) );
+
+		$data = json_decode( $body );
+		wp_set_current_user(0); //log back out for other tests.
+
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertCount( 1, $data->posts );
+		$this->assertObjectNotHasAttribute( 'found', $data );
+
+		
+	}
+
 	public function testGetPostsPerPage() {
 		$this->_insert_post();
 		$this->_insert_post();

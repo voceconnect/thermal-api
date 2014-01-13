@@ -21,12 +21,16 @@ class PostsController {
 		$request_args = $app->request()->get();
 
 		$args = self::convert_request( $request_args );
+		if( empty( $args['post_status'] ) ) {
+			//if no post status is set, the user does not have privelages to view any that were given in the request
+			$posts = array();
+		} else {
+			$model = self::model();
 
-		$model = self::model();
-
-		$posts = $model->find( $args, $found );
-
-		array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
+			$posts = $model->find( $args, $found );
+	  
+			array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
+		}
 
 		return empty( $args['no_found_rows'] ) ? compact( 'posts', 'found' ) : compact( 'posts' );
 	}
@@ -83,7 +87,7 @@ class PostsController {
 			'order' => array( ),
 			'author_name' => array( ),
 			'author' => array( ),
-			'post__in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt', __NAMESPACE__ . '\\toCommaSeparated' ),
+			'post__in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
 			'p' => array( ),
 			'name' => array( ),
 			'pagename' => array( ),
@@ -92,6 +96,7 @@ class PostsController {
 			'subpost' => array( ),
 			'subpost_id' => array( ),
 			'post_type' => array( __NAMESPACE__ . '\\toArray' ),
+			'post_status' => array( __NAMESPACE__ . '\\toArray' ),
 			'post_parent__in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
 			'include_found' => array( __NAMESPACE__ . '\\toBool' ),
 		);
@@ -100,10 +105,12 @@ class PostsController {
 
 		//run through basic sanitation
 		foreach ( $request_args as $key => $value ) {
-			foreach ( $request_filters[$key] as $callback ) {
-				$value = call_user_func( $callback, $value );
+			if ( isset( $request_filters[$key] ) ) {
+				foreach ( $request_filters[$key] as $callback ) {
+					$value = call_user_func( $callback, $value );
+				}
+				$request_args[$key] = $value;
 			}
-			$request_args[$key] = $value;
 		}
 
 		//taxonomy
@@ -136,6 +143,7 @@ class PostsController {
 					}
 				}
 			}
+			$request_args['post_type'] = $post_types;
 		} else {
 			if ( empty( $request_args['s'] ) ) {
 				$request_args['post_type'] = get_post_types( array( 'publicly_queryable' => true ) );
@@ -144,7 +152,54 @@ class PostsController {
 			}
 		}
 
+		if ( empty( $request_args['post_status'] ) ) {
+			//default to publish status
+			$request_args['post_status'] = 'publish';
+		} else {
+			$request_args['post_status'] = array_filter( $request_args['post_status'], function( $status ) use ( $request_args ) {
+				$status_obj = get_post_status_object( $status );
+				if ( !$status_obj ) {
+					return false;
+				};
 
+				if ( $status_obj->public ) {
+					return true;
+				}
+
+				//below makes an assumption that a post status is one of public, protected, or private
+				//because WP Query doesn't currently handle proper mapping of status to type, if a the
+				//current user doesn't have the capability to view a for that status, the status gets kicked out
+
+				if ( $status_obj->protected ) {
+					foreach( $request_args['post_type'] as $post_type ) {
+						$post_type_obj = get_post_type_object( $post_type );
+						if ( $post_type_obj ) {
+							$edit_protected_cap = $post_type_obj->cap->edit_others_posts;
+						} else {
+							$edit_protected_cap = 'edit_others_' . $post_type;
+						}
+						if( !current_user_can( $edit_protected_cap ) ) {
+							return false;
+						}
+					}
+				} else if ( $status_obj->private ) {
+					$post_type_obj = get_post_type_object( $post_type );
+					if ( $post_type_obj ) {
+						$read_private_cap = $post_type_obj->cap->read_rivate_posts;
+					} else {
+						$read_private_cap = 'read_private_' . $post_type;
+					}
+					if( !current_user_can( $read_private_cap ) ) {
+						return false;
+					}
+				} else {
+					return false;
+				}
+				return true;
+
+			});
+
+		}
 
 		if ( isset( $request_args['author'] ) ) {
 			// WordPress only allows a single author to be excluded. We are not
