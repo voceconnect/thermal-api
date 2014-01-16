@@ -841,6 +841,10 @@ Orderby will also accept an array of multiple identifiers.
 			….
 		],
 		"meta":{
+			"nickname": "Johnny",
+			"first_name": "John",
+			"last_name": "Doe",
+			"description": "Lorem ipsum dolar set amet."
 		}
 	}
 
