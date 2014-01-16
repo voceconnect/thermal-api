@@ -12,6 +12,9 @@ class UsersControllerTest extends APITestCase {
 				'user_url' => 'http://example.org',
 				'display_name' => 'Test User1',
 				'description' => 'Test Description',
+				'first_name' => 'Test',
+				'last_name' => 'Last',
+				'nickname' => 'test_nick',
 				'role' => 'administrator'
 			),
 			array(
@@ -49,7 +52,8 @@ class UsersControllerTest extends APITestCase {
 
 	public function testGetUsers() {
 
-		$user = array_shift($this->getTestUserData());
+		$users = $this->getTestUserData();
+		$user = $users[0];
 		$user['role'] = 'subscriber';
 		$user['id'] = wp_insert_user($user);
 
@@ -72,7 +76,9 @@ class UsersControllerTest extends APITestCase {
 	}
 
 	public function testGetUser() {
-		$user = array_shift($this->getTestUserData());
+		$users = $this->getTestUserData();
+		$user = $users[0];
+
 		$user['role'] = 'editor';
 		$user['id'] = wp_insert_user($user);
 
@@ -115,6 +121,18 @@ class UsersControllerTest extends APITestCase {
 
 		$this->assertObjectHasAttribute('meta', $data );
 		$this->assertInternalType( 'object', $data->meta );
+
+		$this->assertObjectHasAttribute('first_name', $data->meta );
+		$this->assertEquals( $user['first_name'], $data->meta->first_name );
+
+		$this->assertObjectHasAttribute('last_name', $data->meta );
+		$this->assertEquals( $user['last_name'], $data->meta->last_name );
+
+		$this->assertObjectHasAttribute('nickname', $data->meta );
+		$this->assertEquals( $user['nickname'], $data->meta->nickname );
+
+		$this->assertObjectHasAttribute('description', $data->meta );
+		$this->assertEquals( $user['description'], $data->meta->description );
 
 		$data = json_decode( $body );
 

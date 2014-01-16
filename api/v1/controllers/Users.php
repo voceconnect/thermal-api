@@ -33,7 +33,7 @@ class Users {
 		$users = $model->find( $args, $found );
 		array_walk( $users, array( __CLASS__, 'format' ), 'read' );
 
-		return $request_args['count_total'] ? compact( 'users', 'found' ) : compact( 'users' );
+		return ! empty( $request_args['count_total'] ) ? compact( 'users', 'found' ) : compact( 'users' );
 	}
 
 	public static function findById( $app, $id ) {
@@ -92,7 +92,10 @@ class Users {
 					)
 				),
 				'meta' => ( object ) array(
-					'description' => get_user_meta($user->ID, 'description', true)
+					'description' => get_user_meta($user->ID, 'description', true),
+					'first_name' => get_user_meta( $user->ID, 'first_name', true),
+					'last_name' => get_user_meta( $user->ID, 'last_name', true),
+					'nickname' => get_user_meta( $user->ID, 'nickname', true),
 					)
 				) 
 			);
