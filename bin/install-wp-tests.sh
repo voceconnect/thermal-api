@@ -16,6 +16,10 @@ WP_CORE_DIR=/tmp/wordpress/
 
 set -ex
 
+install_dependencies() {
+        composer install
+}
+
 install_wp() {
         mkdir -p $WP_CORE_DIR
 
@@ -73,11 +77,7 @@ install_db() {
         mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
-install_dependencies() {
-        composer install
-}
-
+install_dependencies
 install_wp
 install_test_suite
 install_db
-install_dependencies

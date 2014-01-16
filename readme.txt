@@ -3,7 +3,7 @@ Contributors: voceplatforms
 Tags: thermal, JSON, API
 Requires at least: 3.5
 Tested up to: 3.5.1
-Stable tag: 0.9.0
+Stable tag: 0.10.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,12 @@ Thermal is the WordPress plugin that gives you the power of WP_Query in a RESTfu
 Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
+= 0.10.0 =
+* Converted phpunit structure to match suggested testing structure for WP plugins.
+* Added Travis support
+* Converted Slim inclusion from submodule to composer.
+* Switched from require/include inclusions to custom autoloader.
+
 = 0.9.0 =
 * Added support for 'post_status' query argument
 
