@@ -1,5 +1,7 @@
 # Thermal API 
 
+[![Build Status](https://travis-ci.org/voceconnect/thermal-api.png?branch=master)](https://travis-ci.org/voceconnect/thermal-api)
+
 Current API version: v1
 
 ## Overview
