@@ -1,16 +1,14 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Controllers;
 
-require_once(__DIR__ . '/../models/Posts.php');
-
-class PostsController {
+class Posts {
 
 	private static $_model;
 
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
-			self::$_model = new PostsModel();
+			self::$_model = new \Voce\Thermal\v1\Models\Posts();
 		}
 		return self::$_model;
 	}
@@ -74,12 +72,12 @@ class PostsController {
 			'before' => array( ),
 			'after' => array( ),
 			's' => array( ),
-			'exact' => array( __NAMESPACE__ . '\\toBool' ),
-			'sentence' => array( __NAMESPACE__ . '\\toBool' ),
-			'cat' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt', __NAMESPACE__ . '\\toCommaSeparated' ),
+			'exact' => array( '\\Voce\\Thermal\\v1\\toBool' ),
+			'sentence' => array( '\\Voce\\Thermal\\v1\\toBool' ),
+			'cat' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt', '\\Voce\\Thermal\\v1\\toCommaSeparated' ),
 			'category_name' => array( ),
 			'tag' => array( ),
-			'taxonomy' => array( __NAMESPACE__ . '\\toArray' ),
+			'taxonomy' => array( '\\Voce\\Thermal\\v1\\toArray' ),
 			'paged' => array( ),
 			'per_page' => array( '\\intval' ),
 			'offset' => array( '\\intval' ),
@@ -87,7 +85,7 @@ class PostsController {
 			'order' => array( ),
 			'author_name' => array( ),
 			'author' => array( ),
-			'post__in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
+			'post__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'p' => array( ),
 			'name' => array( ),
 			'pagename' => array( ),
@@ -95,10 +93,10 @@ class PostsController {
 			'attachment_id' => array( ),
 			'subpost' => array( ),
 			'subpost_id' => array( ),
-			'post_type' => array( __NAMESPACE__ . '\\toArray' ),
-			'post_status' => array( __NAMESPACE__ . '\\toArray' ),
-			'post_parent__in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
-			'include_found' => array( __NAMESPACE__ . '\\toBool' ),
+			'post_type' => array( '\\Voce\\Thermal\\v1\\toArray' ),
+			'post_status' => array( '\\Voce\\Thermal\\v1\\toArray' ),
+			'post_parent__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'include_found' => array( '\\Voce\\Thermal\\v1\\toBool' ),
 		);
 		//strip any nonsafe args
 		$request_args = array_intersect_key( $request_args, $request_filters );
@@ -214,8 +212,8 @@ class PostsController {
 			$request_args['orderby'] = implode( ' ', $request_args['orderby'] );
 		}
 
-		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > MAX_POSTS_PER_PAGE ) {
-			$request_args['per_page'] = MAX_POSTS_PER_PAGE;
+		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > \Voce\Thermal\v1\MAX_POSTS_PER_PAGE ) {
+			$request_args['per_page'] = \Voce\Thermal\v1\MAX_POSTS_PER_PAGE;
 		}
 
 		if ( empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) ) {
@@ -274,7 +272,7 @@ class PostsController {
 				'post_mime_type' => 'image',
 				'post_type' => 'attachment',
 				'fields' => 'ids',
-				'posts_per_page' => MAX_POSTS_PER_PAGE
+				'posts_per_page' => \Voce\Thermal\v1\MAX_POSTS_PER_PAGE
 				) );
 			//get media in content
 			if ( preg_match_all( '|<img.*?class=[\'"](.*?)wp-image-([0-9]{1,6})(.*?)[\'"].*?>|i', $post->post_content, $matches ) ) {
@@ -305,7 +303,7 @@ class PostsController {
 				// get the terms related to post
 				$terms = get_the_terms( $post->ID, $taxonomy );
 				if ( !empty( $terms ) ) {
-					array_walk( $terms, array( __NAMESPACE__ . '\TermsController', 'format' ), $state );
+					array_walk( $terms, array( __NAMESPACE__ . '\Terms', 'format' ), $state );
 					$post_taxonomies[$taxonomy] = $terms;
 				}
 			}
@@ -318,10 +316,10 @@ class PostsController {
 			$post_more = get_extended( $post->post_content );
 			$content_display = $post_more['extended'] ? $post_more['extended'] : $post_more['main'];
 
-			$userModel = UsersController::model();
+			$userModel = Users::model();
 			$author = $userModel->findById( $post->post_author );
 
-			UsersController::format( $author, 'read' );
+			Users::format( $author, 'read' );
 
 			$data = array_merge( $data, array(
 				'id' => $post->ID,

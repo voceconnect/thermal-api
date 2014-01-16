@@ -1,22 +1,19 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Controllers;
 
-require_once(__DIR__ . '/../models/Comments.php');
-
-class CommentsController {
+class Comments {
 
 	private static $_model;
 
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
-			self::$_model = new CommentsModel();
+			self::$_model = new \Voce\Thermal\v1\Models\Comments();
 		}
 		return self::$_model;
 	}
 
 	protected static function _find( $app, $args ) {
-		$args = $app->request()->get();
 		$args = self::convert_request( $args );
 
 		$found = 0;
@@ -32,11 +29,12 @@ class CommentsController {
 	}
 
 	public static function find( $app ) {
+		$args = $app->request()->get();
 		return self::_find( $app, $args );
 	}
 
 	public static function findByPost( $app, $post_id ) {
-		$post = PostsController::findById( $app, $post_id );
+		$post = Posts::findById( $app, $post_id );
 		$args = $app->request()->get();
 		$args['post_id'] = $post->id;
 		return self::_find( $app, $args );
@@ -68,14 +66,14 @@ class CommentsController {
 			'offset' => array( '\\intval' ),
 			'orderby' => array( ),
 			'order' => array( ),
-			'in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
+			'in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'parent' => array( '\\intval' ),
 			'post_id' => array( '\\intval' ),
 			'post_name' => array( ),
 			'type' => array( ),
 			'status' => array( ),
 			'user_id' => array( '\\intval' ),
-			'include_found' => array( __NAMESPACE__ . '\\toBool' ),
+			'include_found' => array( '\\Voce\\Thermal\\v1\\toBool' ),
 		);
 		//strip any nonsafe args
 		$request_args = array_intersect_key( $request_args, $request_filters );
@@ -90,8 +88,8 @@ class CommentsController {
 
 		//make sure per_page is below MAX
 		if ( !empty( $request_args['per_page'] ) ) {
-			if ( absint( $request_args['per_page'] ) > MAX_TERMS_PER_PAGE ) {
-				$request_args['per_page'] = MAX_COMMENTS_PER_PAGE;
+			if ( absint( $request_args['per_page'] ) > \Voce\Thermal\v1\MAX_TERMS_PER_PAGE ) {
+				$request_args['per_page'] = \Voce\Thermal\v1\MAX_COMMENTS_PER_PAGE;
 			} else {
 				$request_args['per_page'] = absint( $request_args['per_page'] );
 			}
@@ -108,8 +106,8 @@ class CommentsController {
 			}
 		}
 
-		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > MAX_POSTS_PER_PAGE ) {
-			$request_args['per_page'] = MAX_POSTS_PER_PAGE;
+		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > \Voce\Thermal\v1\MAX_POSTS_PER_PAGE ) {
+			$request_args['per_page'] = \Voce\Thermal\v1\MAX_POSTS_PER_PAGE;
 		}
 
 		if ( !empty( $request_args['paged'] ) && !isset( $request_args['include_found'] ) ) {

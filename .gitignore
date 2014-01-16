@@ -1,4 +1,5 @@
 # config files
+.DS_Store
 tests/wp-tests-config.php
 composer.json
 composer.lock

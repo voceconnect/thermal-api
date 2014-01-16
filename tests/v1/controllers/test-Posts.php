@@ -1,10 +1,5 @@
 <?php
 
-define( 'Voce\\Thermal\\API_BASE', 'api' );
-define( 'WP_USE_THEMES', false );
-
-require_once( __DIR__ . '/../../APITestCase.php' );
-
 class PostsControllerTest extends APITestCase {
 
 	protected function _insert_post( $args = array( ), $imgs = array( ) ) {

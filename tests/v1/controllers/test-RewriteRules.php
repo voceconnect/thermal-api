@@ -1,10 +1,5 @@
 <?php
 
-define( 'Voce\\Thermal\\API_BASE', 'api' );
-define( 'WP_USE_THEMES', false );
-
-require_once( __DIR__ . '/../../APITestCase.php' );
-
 class RewriteRulesControllerTest extends APITestCase {
 
 	public function testGetRewriteRules() {

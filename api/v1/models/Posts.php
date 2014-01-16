@@ -1,7 +1,7 @@
 <?php
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Models;
 
-class PostsModel {
+class Posts {
 
 	public function find( $args = array( ), &$found = null ) {
 		

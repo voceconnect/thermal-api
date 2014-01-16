@@ -1,7 +1,7 @@
 <?php
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Models;
 
-class UsersModel {
+class Users {
 
 	public function find( $args = array( ), &$found = null) {
 		$wp_users = new \WP_User_Query($args);

@@ -20,6 +20,7 @@ function thermal_activation() {
 }
 
 if ( version_compare( phpversion(), THERMAL_API_MIN_PHP_VER, '>=' ) ) {
+  @include(__DIR__ . '/vendor/autoload.php');
 	require(__DIR__ . '/dispatcher.php');
 	new Voce\Thermal\API_Dispatcher();
 }

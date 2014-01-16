@@ -1,11 +1,5 @@
 <?php
 
-define( 'Voce\\Thermal\\API_BASE', 'api' );
-define( 'WP_USE_THEMES', false );
-
-require_once( __DIR__ . '/../../APITestCase.php' );
-
-
 class UsersControllerTest extends APITestCase {
 
 	private function getTestUserData() {

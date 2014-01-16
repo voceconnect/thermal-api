@@ -1,8 +1,8 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Models;
 
-class TaxonomiesModel {
+class Taxonomies {
 
 	public function find( $args = array( ) ) {
 		$taxonomies = get_taxonomies( array( ), 'objects' );

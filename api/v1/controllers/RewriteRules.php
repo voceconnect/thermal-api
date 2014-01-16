@@ -1,8 +1,8 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Controllers;
 
-class RewriteRulesController {
+class RewriteRules {
 
 	public static function find( $app ) {
 		global $wp_rewrite;

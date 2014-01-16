@@ -1,10 +1,8 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Controllers;
 
-require_once(__DIR__ . '/../models/Users.php');
-
-class UsersController {
+class Users {
 
 	private static $_model;
 
@@ -14,7 +12,7 @@ class UsersController {
 
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
-			self::$_model = new UsersModel();
+			self::$_model = new \Voce\Thermal\v1\Models\Users();
 		}
 		return self::$_model;
 	}
@@ -115,8 +113,8 @@ class UsersController {
 			'offset' => array( '\\intval' ),
 			'orderby' => array( ),
 			'order' => array( ),
-			'in' => array( __NAMESPACE__ . '\\toArray', __NAMESPACE__ . '\\applyInt' ),
-			'include_found' => array( __NAMESPACE__ . '\\toBool' ),
+			'in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'include_found' => array( '\\Voce\\Thermal\\v1\\toBool' ),
 			'who' => array( )
 		);
 
@@ -136,8 +134,8 @@ class UsersController {
 			unset($request_args['in']);
 		}
 
-		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > MAX_USERS_PER_PAGE ) {
-			$request_args['per_page'] = MAX_USERS_PER_PAGE;
+		if ( !empty( $request_args['per_page'] ) && $request_args['per_page'] > \Voce\Thermal\v1\MAX_USERS_PER_PAGE ) {
+			$request_args['per_page'] = \Voce\Thermal\v1\MAX_USERS_PER_PAGE;
 		}
 
 		$request_args['count_total'] = ! ( empty( $request_args['paged'] ) && empty( $request_args['include_found'] ) );

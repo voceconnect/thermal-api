@@ -1,16 +1,14 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Controllers;
 
-require_once(__DIR__ . '/../models/Taxonomies.php');
-
-class TaxonomiesController {
+class Taxonomies {
 
 	private static $_model;
 
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
-			self::$_model = new TaxonomiesModel();
+			self::$_model = new \Voce\Thermal\v1\Models\Taxonomies();
 		}
 		return self::$_model;
 	}
@@ -26,7 +24,7 @@ class TaxonomiesController {
 
 		$taxonomies = array_filter( $taxonomies, function($taxonomy) {
 				if ( !$taxonomy->public ) {
-					if ( is_user_logged_in() || !current_user_can( $taxonomy->cap->manage_terms, $taxonomy->ID ) ) {
+					if ( is_user_logged_in() || !current_user_can( $taxonomy->cap->manage_terms ) ) {
 							return false;
 					}
 				}
@@ -66,8 +64,8 @@ class TaxonomiesController {
 	protected static function convert_request( $request_args ) {
 		// Remove any args that are not allowed by the API
 		$request_filters = array(
-			'in' => array( __NAMESPACE__ . '\\toArray' ),
-			'post_type' => array( __NAMESPACE__ . '\\toArray' ),
+			'in' => array( '\\Voce\\Thermal\\v1\\toArray' ),
+			'post_type' => array( '\\Voce\\Thermal\\v1\\toArray' ),
 		);
 		//strip any nonsafe args
 		$request_args = array_intersect_key( $request_args, $request_filters );

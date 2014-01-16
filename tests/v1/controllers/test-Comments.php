@@ -1,10 +1,5 @@
 <?php
 
-define( 'Voce\\Thermal\\API_BASE', 'api' );
-define( 'WP_USE_THEMES', false );
-
-require_once( __DIR__ . '/../../APITestCase.php' );
-
 class CommentsControllerTest extends APITestCase {
 
 	protected function _insertTestData() {
@@ -159,7 +154,6 @@ class CommentsControllerTest extends APITestCase {
 		foreach ( $data->comments as $comment ) {
 			if ( $comment->id == $testdata['comment_approved_minus_10'] ) {
 				$found_comment_minus_10 = true;
-				var_dump( $comment );
 			}
 			if ( $comment->id == $testdata['comment_approved_minus_20'] ) {
 				$found_comment_minus_20 = true;
@@ -236,7 +230,6 @@ class CommentsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-
 		$this->assertEquals( '200', $status );
 
 		$found_comment_minus_10 = false;
@@ -251,7 +244,7 @@ class CommentsControllerTest extends APITestCase {
 		}
 
 		$this->assertTrue( $found_comment_minus_10 );
-		$this->assertTrue( $found_comment_approved_post_b );
+		$this->assertFalse( $found_comment_approved_post_b );
 	}
 
 	public function testGetCommentsIn() {

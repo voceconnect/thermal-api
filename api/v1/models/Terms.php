@@ -1,14 +1,14 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Models;
 
-class TermsModel {
+class Terms {
 
 	public function find( $taxonomy, $args = array( ), &$found = null ) {
 
 		//setup paging
-		if ( empty( $request_args['per_page'] ) || absint($request_args['per_page']) > MAX_TERMS_PER_PAGE ) {
-			$number = MAX_TERMS_PER_PAGE;
+		if ( empty( $request_args['per_page'] ) || absint($request_args['per_page']) > \Voce\Thermal\v1\MAX_TERMS_PER_PAGE ) {
+			$number = \Voce\Thermal\v1\MAX_TERMS_PER_PAGE;
 		} else {
 			$number = absint( $request_args['per_page'] );
 		}

@@ -1,8 +1,8 @@
 <?php
 
-namespace Voce\Thermal\v1;
+namespace Voce\Thermal\v1\Models;
 
-class CommentsModel {
+class Comments {
 
 	public function find( $args = array( ), &$found = null ) {
 
@@ -16,7 +16,7 @@ class CommentsModel {
 		if ( empty( $args['per_page'] ) ) {
 			$number = get_option( 'comments_per_page' );
 			if ( $number < 1 )
-				$number = MAX_COMMENTS_PER_PAGE;
+				$number = \Voce\Thermal\v1\MAX_COMMENTS_PER_PAGE;
 		}
 		if ( isset( $args['offset'] ) ) {
 			$offset = $args['offset'];
