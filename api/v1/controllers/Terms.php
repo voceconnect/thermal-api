@@ -27,7 +27,6 @@ class Terms {
 		if($lastModified = apply_filters('thermal_get_lasttermmodified', false ) ) {
 			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
 		}
-
 		$terms = $model->find( $taxonomy->name, $args, $found );
 
 		array_walk( $terms, array( __CLASS__, 'format' ), 'read' );

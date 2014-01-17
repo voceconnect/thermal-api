@@ -76,6 +76,9 @@ class TermsControllerTest extends APITestCase {
 	}
 
 	public function testGetTermsLastModified() {
+		if ( !function_exists( 'wp_using_ext_object_cache' ) ) {
+			return;
+		}
 		$tmp = wp_using_ext_object_cache();
 		wp_using_ext_object_cache(true);
 		$testdata = $this->_insertTestData();
@@ -163,6 +166,9 @@ class TermsControllerTest extends APITestCase {
 	}
 
 	public function testGetTermLastModified() {
+		if ( !function_exists( 'wp_using_ext_object_cache' ) ) {
+			return;
+		}
 		//temporarily turn on object cache since no core methods provide last modified for terms without caching enabled
 		$tmp = wp_using_ext_object_cache();
 		wp_using_ext_object_cache(true);

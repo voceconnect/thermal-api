@@ -44,11 +44,11 @@ class API extends \Voce\Thermal\API_Base {
 		$this->registerRoute( 'GET', 'comments/?', array( __NAMESPACE__ . '\\controllers\\Comments', 'find' ) );
 		$this->registerRoute( 'GET', 'comments/:id?', array( __NAMESPACE__ . '\\controllers\\Comments', 'findById' ) );
 
-		if ( wp_using_ext_object_cache() ) {
+		if ( function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache() ) {
 			//add filters for last-modified based off of the 'last_changed' caching in core
 			$filter_last_post_mod = function($last_modified) {
 				if( $last_changed = wp_cache_get( 'last_changed', 'posts' ) ) {
-					list( $time ) = explode( ' ', $last_changed );
+					list( $micro, $time ) = explode( ' ', $last_changed );
 					$last_modified = gmdate( 'Y-m-d H:i:s', $time );
 					
 				}
@@ -58,7 +58,7 @@ class API extends \Voce\Thermal\API_Base {
 
 			$filter_last_comment_mod = function( $last_modified ) {
 				if( $last_changed = wp_cache_get( 'last_changed', 'comments' ) ) {
-					list( $time ) = explode( ' ', $last_changed );
+					list( $micro, $time ) = explode( ' ', $last_changed );
 					$last_modified = gmdate( 'Y-m-d H:i:s', $time );
 					
 				}
@@ -70,9 +70,8 @@ class API extends \Voce\Thermal\API_Base {
 
 			$filter_last_term_mod = function( $last_modified ) {
 				if( $last_changed = wp_cache_get( 'last_changed', 'terms' ) ) {
-					list( $time ) = explode( ' ', $last_changed );
+					list( $micro, $time ) = explode( ' ', $last_changed );
 					$last_modified = gmdate( 'Y-m-d H:i:s', $time );
-					
 				}
 				return $last_modified;
 			};
