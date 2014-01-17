@@ -75,6 +75,38 @@ class TermsControllerTest extends APITestCase {
 		$this->assertEquals( 3, count( $data->terms ) );
 	}
 
+	public function testGetTermsLastModified() {
+		if ( !function_exists( 'wp_using_ext_object_cache' ) ) {
+			return;
+		}
+		$tmp = wp_using_ext_object_cache();
+		wp_using_ext_object_cache(true);
+		$testdata = $this->_insertTestData();
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+		$this->assertNotEmpty( $headers['last-modified']);
+		$last_modified = $headers['last-modified'];
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/',
+			'QUERY_STRING' => '',
+			'IF_MODIFIED_SINCE' => $last_modified
+			) );
+
+		$this->assertEquals( '304', $status );
+		$this->assertEmpty( $body );
+		wp_using_ext_object_cache($tmp);
+	}
+
 	public function testGetTermsCount() {
 		$testdata = $this->_insertTestData();
 
@@ -131,6 +163,39 @@ class TermsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 		
 		$this->assertEquals( '404', $status );
+	}
+
+	public function testGetTermLastModified() {
+		if ( !function_exists( 'wp_using_ext_object_cache' ) ) {
+			return;
+		}
+		//temporarily turn on object cache since no core methods provide last modified for terms without caching enabled
+		$tmp = wp_using_ext_object_cache();
+		wp_using_ext_object_cache(true);
+		$testdata = $this->_insertTestData();
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/' . $testdata['term_a']['term_id'],
+			'QUERY_STRING' => ''
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertEquals( '200', $status );
+		$this->assertNotEmpty( $headers['last-modified']);
+		$last_modified = $headers['last-modified'];
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/' . $testdata['term_a']['term_id'],
+			'QUERY_STRING' => '',
+			'IF_MODIFIED_SINCE' => $last_modified
+			) );
+
+		$this->assertEquals( '304', $status );
+		$this->assertEmpty( $body );
+		wp_using_ext_object_cache($tmp);
 	}
 	
 	public function testGetTermEntityFilter() {

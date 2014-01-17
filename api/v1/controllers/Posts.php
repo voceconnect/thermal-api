@@ -19,6 +19,11 @@ class Posts {
 		$request_args = $app->request()->get();
 
 		$args = self::convert_request( $request_args );
+
+		if($lastModified = apply_filters('thermal_get_lastpostmodified', get_lastpostmodified( 'gmt' ) ) ) {
+			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
+		}
+
 		if( empty( $args['post_status'] ) ) {
 			//if no post status is set, the user does not have privelages to view any that were given in the request
 			$posts = array();
@@ -47,6 +52,10 @@ class Posts {
 			}
 		} elseif ( !($post_type_obj->public && $post_status_obj->public) ) {
 			$app->halt( '401', get_status_header_desc( '401' ) );
+		}
+
+		if( $lastModified = apply_filters('thermal_post_last_modified', $post->post_modified_gmt ) ) {
+			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
 		}
 
 		self::format( $post, 'read' );

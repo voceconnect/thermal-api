@@ -16,9 +16,7 @@ function autoload($class) {
 			$filename = $class . '.php';
 			$path = '';
 		}
-		if(!file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'api' .DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $filename)) {
-			var_dump(__DIR__ . DIRECTORY_SEPARATOR . 'api' .DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $filename);
-		}
+		
 		@include( __DIR__ . DIRECTORY_SEPARATOR . 'api' .DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $filename );
 	}
 }

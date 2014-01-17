@@ -21,6 +21,10 @@ class Comments {
 
 		$model = self::model();
 
+		if($lastModified = apply_filters('thermal_get_lastcommentmodified', get_lastcommentmodified( 'gmt' ) ) ) {
+			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
+		}
+
 		$comments = $model->find( $args, $found );
 
 		array_walk( $comments, array( __CLASS__, 'format' ), 'read' );
@@ -44,6 +48,10 @@ class Comments {
 		$comment = self::model()->findById( $id );
 		if ( !$comment ) {
 			$app->halt( '404', get_status_header_desc( '404' ) );
+		}
+
+		if( $lastModified = apply_filters('thermal_comment_last_modified', $comment->comment_date_gmt ) ) {
+			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
 		}
 
 		self::format( $comment, 'read' );

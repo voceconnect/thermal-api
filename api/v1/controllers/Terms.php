@@ -24,6 +24,9 @@ class Terms {
 
 		$model = self::model();
 
+		if($lastModified = apply_filters('thermal_get_lasttermmodified', false ) ) {
+			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
+		}
 		$terms = $model->find( $taxonomy->name, $args, $found );
 
 		array_walk( $terms, array( __CLASS__, 'format' ), 'read' );
@@ -38,6 +41,11 @@ class Terms {
 		if ( !$term ) {
 			$app->halt( '404', get_status_header_desc( '404' ) );
 		}
+
+		if( $lastModified = apply_filters('thermal_term_last_modified', false ) ) {
+			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
+		}
+
 		self::format( $term, 'read' );
 		return $term;
 	}

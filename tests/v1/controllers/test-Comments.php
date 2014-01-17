@@ -110,6 +110,32 @@ class CommentsControllerTest extends APITestCase {
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
 
+	public function testGetCommentsLastModified() {
+		$this->_insertTestData();
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+		$this->assertNotEmpty( $headers['last-modified']);
+		$last_modified = $headers['last-modified'];
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/',
+			'QUERY_STRING' => '',
+			'IF_MODIFIED_SINCE' => $last_modified
+			) );
+
+		$this->assertEquals( '304', $status );
+		$this->assertEmpty( $body );
+	}
+
 	public function testGetCommentsCount() {
 		$testdata = $this->_insertTestData();
 
@@ -323,6 +349,32 @@ class CommentsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 
 		$this->assertEquals( '404', $status );
+	}
+
+	public function testGetCommentLastModified() {
+		$testdata = $this->_insertTestData();
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/' . $testdata['comment_approved_minus_10'],
+			'QUERY_STRING' => ''
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertEquals( '200', $status );
+		$this->assertNotEmpty( $headers['last-modified']);
+		$last_modified = $headers['last-modified'];
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/comments/' . $testdata['comment_approved_minus_10'],
+			'QUERY_STRING' => '',
+			'IF_MODIFIED_SINCE' => $last_modified
+			) );
+
+		$this->assertEquals( '304', $status );
+		$this->assertEmpty( $body );
 	}
 
 	public function testGetCommentEntityFilter() {
