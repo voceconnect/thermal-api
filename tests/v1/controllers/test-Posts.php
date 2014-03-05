@@ -82,6 +82,7 @@ class PostsControllerTest extends APITestCase {
 	}
 
 	public function testGetPosts() {
+		$this->_insert_post();
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
@@ -94,7 +95,30 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
+		$this->assertNotEmpty($data->posts);
 		$this->assertObjectNotHasAttribute( 'found', $data );
+	}
+
+	public function testGetAttachments() {
+		wp_set_current_user(1);
+		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/250x250.png' );
+		$attachment_id = $this->_make_attachment( $upload );
+		
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'post_type=attachment',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertNotEmpty($data->posts);
+		$this->assertObjectNotHasAttribute( 'found', $data );
+		wp_set_current_user(0);
 	}
 
 	public function testLastGetPostsModified() {
@@ -107,7 +131,7 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$this->assertEquals( '200', $status );
-		$this->assertNotEmpty( $headers['last-modified']);
+		$this->assertNotEmpty( $headers['last-modified'] );
 		$last_modified = $headers['last-modified'];
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -124,9 +148,9 @@ class PostsControllerTest extends APITestCase {
 	public function testGetPostsStatus() {
 		$post_id = $this->_insert_post( array(
 			'post_status' => 'future',
-			'post_date' => date('Y-m-d H:i:s', time() + 604800 ),
+			'post_date' => date( 'Y-m-d H:i:s', time() + 604800 ),
 			'post_date_gmt' => '',
-			));
+		) );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -135,7 +159,7 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
@@ -143,7 +167,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertCount( 0, $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
 
-		wp_set_current_user(1);
+		wp_set_current_user( 1 );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -152,7 +176,7 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		wp_set_current_user(0); //log back out for other tests.
+		wp_set_current_user( 0 ); //log back out for other tests.
 
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
@@ -160,8 +184,6 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertCount( 1, $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
-
-		
 	}
 
 	public function testGetPostsPerPage() {
@@ -329,7 +351,7 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$this->assertEquals( '200', $status );
-		$this->assertNotEmpty( $headers['last-modified']);
+		$this->assertNotEmpty( $headers['last-modified'] );
 		$last_modified = $headers['last-modified'];
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -393,7 +415,7 @@ class PostsControllerTest extends APITestCase {
 		register_taxonomy( 'test_tax', 'post', array( 'public' => true ) );
 		$post_id = $this->_insert_post();
 
-		if($term_obj = get_term_by('name', 'Test Term', 'test_tax')){
+		if ( $term_obj = get_term_by( 'name', 'Test Term', 'test_tax' ) ) {
 			$term_id = $term_obj->term_id;
 		} else {
 			$term_data = wp_insert_term( 'Test Term', 'test_tax' );
@@ -411,7 +433,7 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
