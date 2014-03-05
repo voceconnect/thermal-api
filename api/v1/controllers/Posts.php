@@ -24,16 +24,11 @@ class Posts {
 			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
 		}
 
-		if( empty( $args['post_status'] ) ) {
-			//if no post status is set, the user does not have privelages to view any that were given in the request
-			$posts = array();
-		} else {
-			$model = self::model();
+		$model = self::model();
 
-			$posts = $model->find( $args, $found );
-	  
-			array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
-		}
+		$posts = $model->find( $args, $found );
+
+		array_walk( $posts, array( __CLASS__, 'format' ), 'read' );
 
 		return empty( $args['no_found_rows'] ) ? compact( 'posts', 'found' ) : compact( 'posts' );
 	}
@@ -164,6 +159,10 @@ class Posts {
 			$request_args['post_status'] = 'publish';
 		} else {
 			$request_args['post_status'] = array_filter( $request_args['post_status'], function( $status ) use ( $request_args ) {
+				if($status =='inherit') {
+					return true;
+				}
+				
 				$status_obj = get_post_status_object( $status );
 				if ( !$status_obj ) {
 					return false;
@@ -205,7 +204,9 @@ class Posts {
 				return true;
 
 			});
-
+			if(empty($request_args['post_status'])) {
+				unset($request_args['post_status']);
+			}
 		}
 
 		if ( isset( $request_args['author'] ) ) {
