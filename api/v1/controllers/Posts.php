@@ -298,6 +298,8 @@ class Posts {
 			if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
 				$attachment_ids[] = $meta['featured_image'] = ( int ) $thumbnail_id;
 			}
+			
+			$attachment_ids = apply_filters_ref_array( 'thermal_attachment_ids', array( $attachment_ids, &$post ) );
 
 			$attachment_ids = array_unique( $attachment_ids );
 			foreach ( $attachment_ids as $attachment_id ) {
