@@ -29,9 +29,9 @@ class Posts {
 			unset($args['per_page']);
 		}
 		$wp_posts = new \WP_Query( $args );
+		$found = ( int ) $wp_posts->found_posts;
 
 		if ( $wp_posts->have_posts() ) {
-			$found = ( int ) $wp_posts->found_posts;
 			return $wp_posts->posts;
 		}
 		return array();

@@ -6,6 +6,10 @@ class Posts {
 
 	private static $_model;
 
+	/**
+	 * 
+	 * @return \Voce\Thermal\v1\Models\Posts
+	 */
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
 			self::$_model = new \Voce\Thermal\v1\Models\Posts();
@@ -148,7 +152,7 @@ class Posts {
 			$request_args['post_type'] = $post_types;
 		} else {
 			if ( empty( $request_args['s'] ) ) {
-				$request_args['post_type'] = get_post_types( array( 'publicly_queryable' => true ) );
+				$request_args['post_type'] = get_post_types( array( 'public' => true ) );
 			} else {
 				$request_args['post_type'] = get_post_types( array( 'exclude_from_search' => false ) );
 			}

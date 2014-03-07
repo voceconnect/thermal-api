@@ -50,10 +50,6 @@ class PostsControllerTest extends APITestCase {
 		}
 	}
 
-	/*
-	 * Method pulled from WordPress testing suite
-	 */
-
 	protected function _make_attachment( $upload, $parent_post_id = -1 ) {
 		$type = '';
 		if ( !empty( $upload['type'] ) ) {
@@ -81,47 +77,39 @@ class PostsControllerTest extends APITestCase {
 		return $id;
 	}
 
-	public function testGetPosts() {
-		$this->_insert_post();
+	public function testGetPostsStatus() {
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
 			'QUERY_STRING' => '',
 			) );
 
-		$data = json_decode( $body );
-
 		$this->assertEquals( '200', $status );
-		$this->assertInternalType( 'object', $data );
-		$this->assertObjectHasAttribute( 'posts', $data );
-		$this->assertInternalType( 'array', $data->posts );
-		$this->assertNotEmpty($data->posts);
-		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
 
-	public function testGetAttachments() {
-		wp_set_current_user(1);
-		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/250x250.png' );
-		$attachment_id = $this->_make_attachment( $upload );
-		
+	public function testGetPostsContentTypeHeaderJSON() {
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
-			'QUERY_STRING' => 'post_type=attachment',
+			'QUERY_STRING' => '',
 			) );
 
-		$data = json_decode( $body );
-
-		$this->assertEquals( '200', $status );
-		$this->assertInternalType( 'object', $data );
-		$this->assertObjectHasAttribute( 'posts', $data );
-		$this->assertInternalType( 'array', $data->posts );
-		$this->assertNotEmpty($data->posts);
-		$this->assertObjectNotHasAttribute( 'found', $data );
-		wp_set_current_user(0);
+		$this->assertTrue( $headers->offsetExists( 'Content-Type' ) );
+		$this->assertStringStartsWith( 'application/json', $headers['Content-Type'] );
 	}
 
-	public function testLastGetPostsModified() {
+	public function testGetPostsContentTypeHeaderJSONP() {
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'callback=test',
+			) );
+
+		$this->assertTrue( $headers->offsetExists( 'Content-Type' ) );
+		$this->assertStringStartsWith( 'application/javascript', $headers['Content-Type'] );
+	}
+
+	public function testLastGetPostsIfModifiedResponse() {
 		$this->_insert_post();
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -130,8 +118,6 @@ class PostsControllerTest extends APITestCase {
 			'QUERY_STRING' => '',
 			) );
 
-		$this->assertEquals( '200', $status );
-		$this->assertNotEmpty( $headers['last-modified'] );
 		$last_modified = $headers['last-modified'];
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -144,18 +130,126 @@ class PostsControllerTest extends APITestCase {
 		$this->assertEquals( '304', $status );
 		$this->assertEmpty( $body );
 	}
-
-	public function testGetPostsStatus() {
-		$post_id = $this->_insert_post( array(
-			'post_status' => 'future',
-			'post_date' => date( 'Y-m-d H:i:s', time() + 604800 ),
-			'post_date_gmt' => '',
-		) );
+	
+	public function testLastGetPostsLastModifiedHeader() {
+		$this->_insert_post();
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
-			'QUERY_STRING' => 'post_status=future&post__in=' . $post_id,
+			'QUERY_STRING' => '',
+			) );
+
+		$this->assertTrue( $headers->offsetExists( 'Last-Modified' ) );
+		$this->assertNotEmpty( $headers['last-modified'] );
+	}
+
+	public function testGetPostsValidJSON() {
+		$this->_insert_post();
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		$this->assertInternalType( 'object', $data );
+	}
+
+	/**
+	 * @depends testGetPostsValidJSON
+	 */
+	public function testGetPostsNotHasFound() {
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertObjectNotHasAttribute( 'found', $data );
+	}
+
+	/**
+	 * @depends testGetPostsValidJSON
+	 */
+	public function testGetPostsHasFoundTrue() {
+		$this->_insert_post();
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'include_found=1',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertObjectHasAttribute( 'found', $data );
+		$this->assertEquals( 1, $data->found );
+	}
+
+	/**
+	 * @depends testGetPostsValidJSON
+	 */
+	public function testGetPostsHasFoundForPaging() {
+		$this->_insert_post();
+		$this->_insert_post();
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'paged=2&per_page=1',
+			) );
+
+		$data = json_decode( $body );
+		$this->assertObjectHasAttribute( 'found', $data );
+		$this->assertEquals( 2, $data->found );
+	}
+
+	/**
+	 * @depends testGetPostsValidJSON
+	 */
+	public function testGetPostsHasPostsArray() {
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => '',
+			) );
+		
+		$data = json_decode( $body );
+
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertCount(0, $data->posts);
+	}
+	
+	/**
+	 * @depends testGetPostsValidJSON
+	 */
+	public function testGetPostsHasPostsContent() {
+		$this->_insert_post();
+		
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertCount(1, $data->posts);
+	}
+	
+	public function testGetAttachments() {
+		wp_set_current_user( 1 );
+		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/250x250.png' );
+		$attachment_id = $this->_make_attachment( $upload );
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'post_type=attachment',
 			) );
 
 		$data = json_decode( $body );
@@ -164,10 +258,17 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
-		$this->assertCount( 0, $data->posts );
+		$this->assertNotEmpty( $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
+		wp_set_current_user( 0 );
+	}
 
-		wp_set_current_user( 1 );
+	public function testGetPostsByPostStatusFutureUnprivelaged() {
+		$post_id = $this->_insert_post( array(
+			'post_status' => 'future',
+			'post_date' => date( 'Y-m-d H:i:s', time() + 604800 ),
+			'post_date_gmt' => '',
+			) );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -176,7 +277,31 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		wp_set_current_user( 0 ); //log back out for other tests.
+		
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		$this->assertObjectHasAttribute( 'posts', $data );
+		$this->assertInternalType( 'array', $data->posts );
+		$this->assertCount( 0, $data->posts );
+		$this->assertObjectNotHasAttribute( 'found', $data );
+	}
+	
+	public function testGetPostsByPostStatusFuturePrivelaged() {
+		wp_set_current_user( 1 );
+
+		$post_id = $this->_insert_post( array(
+			'post_status' => 'future',
+			'post_date' => date( 'Y-m-d H:i:s', time() + 604800 ),
+			'post_date_gmt' => '',
+			) );
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
+			'QUERY_STRING' => 'post_status=future&post__in=' . $post_id,
+			) );
+
+		$data = json_decode( $body );
 
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
@@ -184,6 +309,8 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertCount( 1, $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
+		wp_set_current_user( 0 ); //log back out for other tests.
+		
 	}
 
 	public function testGetPostsPerPage() {
@@ -210,44 +337,39 @@ class PostsControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'found', $data );
 		$this->assertCount( 2, $data->posts );
 	}
-
-	public function testGetPostsCount() {
+	
+	public function testGetPostsByPostTypeDefaultPublicPostTypes() {
+		$this->_insert_post(array('post_type'=> 'page'));
+		$this->_insert_post(null, array('250x250.png'));
+		
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
-			'QUERY_STRING' => 'include_found=true',
+			'QUERY_STRING' => '',
 			) );
 
 		$data = json_decode( $body );
-
-		$this->assertObjectHasAttribute( 'posts', $data );
-		$this->assertObjectHasAttribute( 'found', $data );
-
-
-		list($status, $headers, $body) = $this->_getResponse( array(
-			'REQUEST_METHOD' => 'GET',
-			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
-			'QUERY_STRING' => 'paged=1',
-			) );
-
-		$data = json_decode( $body );
-
-		$this->assertObjectHasAttribute( 'posts', $data );
-		$this->assertObjectHasAttribute( 'found', $data );
-
+		//should have a post for each post, page, attachment as all are publicly_queryable
+		$this->assertCount( 3, $data->posts );
+	}
+	
+	public function testGetPostsByPostTypePost() {
+		$this->_insert_post(array('post_type'=> 'page'));
+		$this->_insert_post(null, array('250x250.png'));
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
-			'QUERY_STRING' => 'paged=1',
+			'QUERY_STRING' => 'post_type=post&include_found=1',
 			) );
 
 		$data = json_decode( $body );
 
-		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertObjectHasAttribute( 'found', $data );
+		$this->assertCount( 1, $data->posts );
 	}
 
+	
 	public function testGetPost() {
 
 		//add media item to test unattached images in content
@@ -313,7 +435,9 @@ class PostsControllerTest extends APITestCase {
 		}
 
 		$this->assertEquals( 4, count( $data->media ) );
-
+	}
+	
+	public function testGetPostNotExist() {
 		$id = 9999999;
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -324,7 +448,28 @@ class PostsControllerTest extends APITestCase {
 
 		$data = json_decode( $body );
 		$this->assertEquals( '404', $status );
+	}
+	
+	public function testGetPostHasPermissionForDraftStatus() {
+		wp_set_current_user(1);
+		$test_post_id = wp_insert_post( array(
+			'post_status' => 'draft',
+			'post_title' => 'testGetPostDraft',
+			) );
 
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $test_post_id,
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+		$this->assertEquals( '200', $status );
+		$this->assertInternalType( 'object', $data );
+		wp_set_current_user(0);
+	}
+	
+	public function testGetPostNotHasPermissionForDraftStatus() {
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'draft',
 			'post_title' => 'testGetPostDraft',
