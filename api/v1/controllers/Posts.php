@@ -24,7 +24,7 @@ class Posts {
 
 		$args = self::convert_request( $request_args );
 
-		if($lastModified = apply_filters('thermal_get_lastpostmodified', get_lastpostmodified( 'gmt' ) ) ) {
+		if ( $lastModified = apply_filters( 'thermal_get_lastpostmodified', get_lastpostmodified( 'gmt' ) ) ) {
 			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
 		}
 
@@ -53,7 +53,7 @@ class Posts {
 			$app->halt( '401', get_status_header_desc( '401' ) );
 		}
 
-		if( $lastModified = apply_filters('thermal_post_last_modified', $post->post_modified_gmt ) ) {
+		if ( $lastModified = apply_filters( 'thermal_post_last_modified', $post->post_modified_gmt ) ) {
 			$app->lastModified( strtotime( $lastModified . ' GMT' ) );
 		}
 
@@ -163,53 +163,52 @@ class Posts {
 			$request_args['post_status'] = 'publish';
 		} else {
 			$request_args['post_status'] = array_filter( $request_args['post_status'], function( $status ) use ( $request_args ) {
-				if($status =='inherit') {
-					return true;
-				}
-				
-				$status_obj = get_post_status_object( $status );
-				if ( !$status_obj ) {
-					return false;
-				};
+					if ( $status == 'inherit' ) {
+						return true;
+					}
 
-				if ( $status_obj->public ) {
-					return true;
-				}
+					$status_obj = get_post_status_object( $status );
+					if ( !$status_obj ) {
+						return false;
+					};
 
-				//below makes an assumption that a post status is one of public, protected, or private
-				//because WP Query doesn't currently handle proper mapping of status to type, if a the
-				//current user doesn't have the capability to view a for that status, the status gets kicked out
+					if ( $status_obj->public ) {
+						return true;
+					}
 
-				if ( $status_obj->protected ) {
-					foreach( $request_args['post_type'] as $post_type ) {
+					//below makes an assumption that a post status is one of public, protected, or private
+					//because WP Query doesn't currently handle proper mapping of status to type, if a the
+					//current user doesn't have the capability to view a for that status, the status gets kicked out
+
+					if ( $status_obj->protected ) {
+						foreach ( $request_args['post_type'] as $post_type ) {
+							$post_type_obj = get_post_type_object( $post_type );
+							if ( $post_type_obj ) {
+								$edit_protected_cap = $post_type_obj->cap->edit_others_posts;
+							} else {
+								$edit_protected_cap = 'edit_others_' . $post_type;
+							}
+							if ( !current_user_can( $edit_protected_cap ) ) {
+								return false;
+							}
+						}
+					} else if ( $status_obj->private ) {
 						$post_type_obj = get_post_type_object( $post_type );
 						if ( $post_type_obj ) {
-							$edit_protected_cap = $post_type_obj->cap->edit_others_posts;
+							$read_private_cap = $post_type_obj->cap->read_rivate_posts;
 						} else {
-							$edit_protected_cap = 'edit_others_' . $post_type;
+							$read_private_cap = 'read_private_' . $post_type;
 						}
-						if( !current_user_can( $edit_protected_cap ) ) {
+						if ( !current_user_can( $read_private_cap ) ) {
 							return false;
 						}
-					}
-				} else if ( $status_obj->private ) {
-					$post_type_obj = get_post_type_object( $post_type );
-					if ( $post_type_obj ) {
-						$read_private_cap = $post_type_obj->cap->read_rivate_posts;
 					} else {
-						$read_private_cap = 'read_private_' . $post_type;
-					}
-					if( !current_user_can( $read_private_cap ) ) {
 						return false;
 					}
-				} else {
-					return false;
-				}
-				return true;
-
-			});
-			if(empty($request_args['post_status'])) {
-				unset($request_args['post_status']);
+					return true;
+				} );
+			if ( empty( $request_args['post_status'] ) ) {
+				unset( $request_args['post_status'] );
 			}
 		}
 
@@ -281,7 +280,7 @@ class Posts {
 			$meta = array( );
 
 			// get direct post attachments
-			$attachment_ids = get_posts( array(
+			$media_image_ids = get_posts( array(
 				'post_parent' => $post->ID,
 				'post_mime_type' => 'image',
 				'post_type' => 'attachment',
@@ -290,23 +289,25 @@ class Posts {
 				) );
 			//get media in content
 			if ( preg_match_all( '|<img.*?class=[\'"](.*?)wp-image-([0-9]{1,6})(.*?)[\'"].*?>|i', $post->post_content, $matches ) ) {
-				$attachment_ids = array_merge( $attachment_ids, $matches[2] );
+				$media_image_ids = array_merge( $media_image_ids, $matches[2] );
 			}
 
 			//get media from gallery
-			$gallery_meta = self::_get_gallery_meta( $post, $attachment_ids );
+			$gallery_meta = self::_get_gallery_meta( $post, $media_image_ids );
 			if ( !empty( $gallery_meta ) ) {
 				$meta['gallery'] = $gallery_meta;
 			}
 
 			if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
-				$attachment_ids[] = $meta['featured_image'] = ( int ) $thumbnail_id;
+				$media_image_ids[] = $meta['featured_image'] = ( int ) $thumbnail_id;
 			}
 
-			$attachment_ids = array_unique( $attachment_ids );
-			foreach ( $attachment_ids as $attachment_id ) {
-				if($image_item = self::_format_image_media_item( $attachment_id )) {
-					$media[$attachment_id] = $image_item;
+			$media_image_ids = apply_filters('thermal_media_image_ids', $media_image_ids, $post);
+			
+			$media_image_ids = array_unique( $media_image_ids );
+			foreach ( $media_image_ids as $media_image_id ) {
+				if ( $image_item = self::_format_image_media_item( $media_image_id ) ) {
+					$media[$media_image_id] = $image_item;
 				}
 			}
 
@@ -525,7 +526,7 @@ class Posts {
 	protected static function _format_image_media_item( $post ) {
 		if ( !is_a( $post, "\WP_Post" ) ) {
 			$post = get_post( $post );
-			if(!$post) {
+			if ( !$post ) {
 				return false;
 			}
 		}
