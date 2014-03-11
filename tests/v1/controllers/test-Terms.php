@@ -46,7 +46,6 @@ class TermsControllerTest extends APITestCase {
 		$term_b = wp_create_term( 'Term In A', 'public_taxonomy_a' );
 		$term_c = wp_create_term( 'Term In B', 'public_taxonomy_a' );
 		$term_d = wp_create_term( 'Term In None', 'public_taxonomy_a' );
-
 		$term_e = wp_create_term( 'Term In Private', 'private_taxonomy_a' );
 
 		wp_set_object_terms( $post_id_a, array( intval( $term_a['term_id'] ), intval( $term_b['term_id'] ) ), 'public_taxonomy_a' );
@@ -75,12 +74,35 @@ class TermsControllerTest extends APITestCase {
 		$this->assertEquals( 3, count( $data->terms ) );
 	}
 
+	public function testGetTermsByParent() {
+		register_taxonomy( 'hierarchical_taxonomy', array( 'post' ), array(
+			'public' => true,
+			'hierarchical' => true
+		) );
+
+		$parent_term = (object) wp_insert_term( 'parent_term', 'hierarchical_taxonomy' );
+		$child_term_1 = (object) wp_insert_term( 'child_term_1', 'hierarchical_taxonomy', array( 'parent' => ( int ) $parent_term->term_id ) );
+		$child_term_2 = (object) wp_insert_term( 'child_term_2', 'hierarchical_taxonomy', array( 'parent' => ( int ) $parent_term->term_id ) );
+		
+		delete_option("hierarchical_taxonomy_children"); //work around for https://core.trac.wordpress.org/ticket/14485
+		
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/hierarchical_taxonomy/terms/',
+			'QUERY_STRING' => 'hide_empty=0&parent=' . $parent_term->term_id,
+			) );
+
+		$data = json_decode( $body );
+		
+		$this->assertEquals( 2, count( $data->terms ) );
+	}
+
 	public function testGetTermsLastModified() {
 		if ( !function_exists( 'wp_using_ext_object_cache' ) ) {
 			return;
 		}
 		$tmp = wp_using_ext_object_cache();
-		wp_using_ext_object_cache(true);
+		wp_using_ext_object_cache( true );
 		$testdata = $this->_insertTestData();
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -92,7 +114,7 @@ class TermsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 
 		$this->assertEquals( '200', $status );
-		$this->assertNotEmpty( $headers['last-modified']);
+		$this->assertNotEmpty( $headers['last-modified'] );
 		$last_modified = $headers['last-modified'];
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -104,7 +126,7 @@ class TermsControllerTest extends APITestCase {
 
 		$this->assertEquals( '304', $status );
 		$this->assertEmpty( $body );
-		wp_using_ext_object_cache($tmp);
+		wp_using_ext_object_cache( $tmp );
 	}
 
 	public function testGetTermsCount() {
@@ -161,7 +183,7 @@ class TermsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertEquals( '404', $status );
 	}
 
@@ -171,7 +193,7 @@ class TermsControllerTest extends APITestCase {
 		}
 		//temporarily turn on object cache since no core methods provide last modified for terms without caching enabled
 		$tmp = wp_using_ext_object_cache();
-		wp_using_ext_object_cache(true);
+		wp_using_ext_object_cache( true );
 		$testdata = $this->_insertTestData();
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -181,9 +203,9 @@ class TermsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertEquals( '200', $status );
-		$this->assertNotEmpty( $headers['last-modified']);
+		$this->assertNotEmpty( $headers['last-modified'] );
 		$last_modified = $headers['last-modified'];
 
 		list($status, $headers, $body) = $this->_getResponse( array(
@@ -195,17 +217,17 @@ class TermsControllerTest extends APITestCase {
 
 		$this->assertEquals( '304', $status );
 		$this->assertEmpty( $body );
-		wp_using_ext_object_cache($tmp);
+		wp_using_ext_object_cache( $tmp );
 	}
-	
+
 	public function testGetTermEntityFilter() {
 		$testdata = $this->_insertTestData();
 
-		add_filter('thermal_term_entity',  function($data, $term, $state) {
-			$data->test_value = $term->term_id;
-			return $data;
-		}, 10, 3);
-		
+		add_filter( 'thermal_term_entity', function($data, $term, $state) {
+				$data->test_value = $term->term_id;
+				return $data;
+			}, 10, 3 );
+
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/taxonomies/public_taxonomy_a/terms/' . $testdata['term_a']['term_id'],
@@ -217,8 +239,8 @@ class TermsControllerTest extends APITestCase {
 		$this->assertEquals( '200', $status );
 		$this->assertObjectHasAttribute( 'name', $data );
 		$this->assertEquals( 'Term In Both', $data->name );
-		$this->assertObjectHasAttribute('test_value', $data);
-		$this->assertEquals($testdata['term_a']['term_id'], $data->test_value);
+		$this->assertObjectHasAttribute( 'test_value', $data );
+		$this->assertEquals( $testdata['term_a']['term_id'], $data->test_value );
 
 		$id = 9999999;
 
@@ -229,7 +251,7 @@ class TermsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertEquals( '404', $status );
 	}
 

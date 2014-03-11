@@ -6,6 +6,10 @@ class Terms {
 
 	private static $_model;
 
+	/**
+	 * 
+	 * @return \Voce\Thermal\v1\Models\Terms
+	 */
 	public static function model() {
 		if ( !isset( self::$_model ) ) {
 			self::$_model = new \Voce\Thermal\v1\Models\Terms();
