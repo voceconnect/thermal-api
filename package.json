@@ -1,0 +1,15 @@
+{
+    "name": "thermal-api",
+    "description": "Thermal is the WordPress plugin that gives you the power of WP_Query in a RESTful API.",
+    "version": "0.13.0",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:voceconnect/thermal-api.git"
+    },
+    "bugs": {
+        "url": "https://github.com/voceconnect/thermal-api/issues"
+    },
+    "devDependencies": {
+      "grunt-voce-plugins": "latest"
+    }
+}
