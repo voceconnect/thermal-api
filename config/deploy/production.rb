@@ -19,5 +19,6 @@ set :build_folders, (
   	./config
   	./bin
   	./tests
+  	./vendor/slim/slim/tests
   }
 ).flatten
