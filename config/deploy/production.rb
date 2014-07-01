@@ -16,9 +16,8 @@ set :build_files, (
 
 set :build_folders, (
   fetch(:build_folders) << %w{
-  	./config
-  	./bin
-  	./tests
-  	./vendor/slim/slim/tests
+  	config
+  	tests
+  	bin
   }
 ).flatten
