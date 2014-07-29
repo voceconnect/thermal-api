@@ -497,11 +497,7 @@ class Posts {
 		if ( !empty( $include ) ) {
 
 			$args['include'] = $include;
-			$_attachments = get_posts( $args );
-
-			foreach ( $_attachments as $key => $val ) {
-				$attachments[$val->ID] = $_attachments[$key];
-			}
+			$attachments = get_posts( $args );
 		} else if ( !empty( $exclude ) ) {
 
 			$args = array_merge( $args, array(
