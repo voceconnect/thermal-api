@@ -497,7 +497,10 @@ class Posts {
 		if ( !empty( $include ) ) {
 
 			$args['include'] = $include;
-			$attachments = get_posts( $args );
+			$_attachments = get_posts( $args );
+			if ( is_array($_attachments) && count($_attachments) ) {
+				$attachments = $_attachments;
+			}
 		} else if ( !empty( $exclude ) ) {
 
 			$args = array_merge( $args, array(
