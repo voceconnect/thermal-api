@@ -603,6 +603,9 @@ class PostsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 
 		$this->assertAttributeNotEmpty( 'gallery', $data->meta );
+		$this->assertObjectHasAttribute( 'ids', $data->meta->gallery[0] );
+		$this->assertObjectHasAttribute( 'order', $data->meta->gallery[0] );
+		$this->assertObjectHasAttribute( 'orderby', $data->meta->gallery[0] );
 		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
 	}
 
@@ -617,7 +620,7 @@ class PostsControllerTest extends APITestCase {
 		self::_insert_post(
 			array(
 				'ID'           => $post_id,
-				'post_content' => sprintf( '[gallery exclude="%s"]', array_shift($attachment_ids) ),
+				'post_content' => sprintf( '[gallery exclude="%d"]', array_shift($attachment_ids) ),
 			)
 		);
 
@@ -652,6 +655,29 @@ class PostsControllerTest extends APITestCase {
 
 		$this->assertEquals( 'ID', $data->meta->gallery[0]->orderby[0] );
 		$this->assertEquals( 'DESC', $data->meta->gallery[0]->order );
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
+	public function testGetPostGalleryID() {
+		$post_content = 'Lorem Ipsum';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		$post_2_content = sprintf( 'Lorem Ipsum [gallery id="%d"]', $post_id );
+		$post_2_args = array( 'post_content' => $post_2_content );
+		$post_2_id = self::_insert_post( $post_2_args );
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_2_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
 		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
 	}
 
