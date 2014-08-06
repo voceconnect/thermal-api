@@ -105,6 +105,7 @@ class Posts {
 			'post_status' => array( '\\Voce\\Thermal\\v1\\toArray' ),
 			'post_parent__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'include_found' => array( '\\Voce\\Thermal\\v1\\toBool' ),
+			'ignore_sticky_posts' => array( '\\Voce\\Thermal\\v1\\toBool' ),
 		);
 		//strip any nonsafe args
 		$request_args = array_intersect_key( $request_args, $request_filters );
@@ -272,6 +273,7 @@ class Posts {
 			'excerpt' => $post->post_excerpt,
 			'content' => $post->post_content,
 			'author' => $post->post_author,
+			'is_sticky' => is_sticky(),
 		);
 
 		//add extended data for 'read'
