@@ -632,4 +632,27 @@ class PostsControllerTest extends APITestCase {
 		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
 	}
 
+	public function testGetPostGallerySort() {
+		$post_content = 'Lorem Ipsum [gallery order="DESC" orderby="ID"]';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		rsort($attachment_ids);
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( 'ID', $data->meta->gallery[0]->orderby[0] );
+		$this->assertEquals( 'DESC', $data->meta->gallery[0]->order );
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
 }
