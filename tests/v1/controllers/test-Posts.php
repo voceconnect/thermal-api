@@ -602,10 +602,6 @@ class PostsControllerTest extends APITestCase {
 
 		$data = json_decode( $body );
 
-		$this->assertAttributeNotEmpty( 'gallery', $data->meta );
-		$this->assertObjectHasAttribute( 'ids', $data->meta->gallery[0] );
-		$this->assertObjectHasAttribute( 'order', $data->meta->gallery[0] );
-		$this->assertObjectHasAttribute( 'orderby', $data->meta->gallery[0] );
 		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
 	}
 
