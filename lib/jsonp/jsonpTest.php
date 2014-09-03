@@ -40,17 +40,17 @@ class JSONPTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue( \Voce\JSONP::has_valid_syntax('$.ajaxHandler'));
 	}
 
-    public function testHasValidSyntaxSquareBrackets(){
-        $this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass["callback"]'));
-    }
-    
-    public function testHasValidSyntaxSquareBracketsWithoutParens(){
-        $this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass[callback]'));
-    }
+	public function testHasValidSyntaxSquareBrackets(){
+		$this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass["callback"]'));
+	}
 
-    public function testHasValidSyntaxDotNotationSquareBrackets(){
-        $this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass.callbackList["callback"]'));
-    }
+	public function testHasValidSyntaxSquareBracketsWithoutParens(){
+		$this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass[callback]'));
+	}
+
+	public function testHasValidSyntaxDotNotationSquareBrackets(){
+		$this->assertTrue( \Voce\JSONP::has_valid_syntax('someClass.callbackList["callback"]'));
+	}
 
 	public function testHasValidSyntaxFalse() {
 		$this->assertFalse( \Voce\JSONP::has_valid_syntax('foo()'));
