@@ -590,7 +590,7 @@ class PostsControllerTest extends APITestCase {
 		$post_content = 'Lorem Ipsum [gallery]';
 		$post_args = array( 'post_content' => $post_content );
 		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
-		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_data = $this->_insert_post( $post_args, $post_images );
 		$post_id = $post_data['post_id'];
 		$attachment_ids = $post_data['attachment_ids'];
 
@@ -609,11 +609,11 @@ class PostsControllerTest extends APITestCase {
 		$post_content = 'Lorem Ipsum';
 		$post_args = array( 'post_content' => $post_content );
 		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
-		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_data = $this->_insert_post( $post_args, $post_images );
 		$post_id = $post_data['post_id'];
 		$attachment_ids = $post_data['attachment_ids'];
 
-		self::_insert_post(
+		$this->_insert_post(
 			array(
 				'ID'           => $post_id,
 				'post_content' => sprintf( '[gallery exclude="%d"]', array_shift($attachment_ids) ),
@@ -635,7 +635,7 @@ class PostsControllerTest extends APITestCase {
 		$post_content = 'Lorem Ipsum [gallery order="DESC" orderby="ID"]';
 		$post_args = array( 'post_content' => $post_content );
 		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
-		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_data = $this->_insert_post( $post_args, $post_images );
 		$post_id = $post_data['post_id'];
 		$attachment_ids = $post_data['attachment_ids'];
 
@@ -658,13 +658,13 @@ class PostsControllerTest extends APITestCase {
 		$post_content = 'Lorem Ipsum';
 		$post_args = array( 'post_content' => $post_content );
 		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
-		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_data = $this->_insert_post( $post_args, $post_images );
 		$post_id = $post_data['post_id'];
 		$attachment_ids = $post_data['attachment_ids'];
 
 		$post_2_content = sprintf( 'Lorem Ipsum [gallery id="%d"]', $post_id );
 		$post_2_args = array( 'post_content' => $post_2_content );
-		$post_2_id = self::_insert_post( $post_2_args );
+		$post_2_id = $this->_insert_post( $post_2_args );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
@@ -681,13 +681,13 @@ class PostsControllerTest extends APITestCase {
 		$post_content = 'Lorem Ipsum';
 		$post_args = array( 'post_content' => $post_content );
 		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
-		$post_data = self::_insert_post( $post_args, $post_images );
+		$post_data = $this->_insert_post( $post_args, $post_images );
 		$post_id = $post_data['post_id'];
 		$attachment_ids = $post_data['attachment_ids'];
 
 		array_shift($attachment_ids);
 
-		self::_insert_post(
+		$this->_insert_post(
 			array(
 				'ID'           => $post_id,
 				'post_content' => sprintf( '[gallery ids="%s"]', implode(',', $attachment_ids) )
