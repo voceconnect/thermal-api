@@ -7,7 +7,7 @@ class Posts {
 	private static $_model;
 
 	/**
-	 * 
+	 *
 	 * @return \Voce\Thermal\v1\Models\Posts
 	 */
 	public static function model() {
@@ -303,7 +303,7 @@ class Posts {
 			}
 
 			$media_image_ids = apply_filters('thermal_media_image_ids', $media_image_ids, $post);
-			
+
 			$media_image_ids = array_unique( $media_image_ids );
 			foreach ( $media_image_ids as $media_image_id ) {
 				if ( $image_item = self::_format_image_media_item( $media_image_id ) ) {
@@ -497,21 +497,18 @@ class Posts {
 		if ( !empty( $include ) ) {
 
 			$args['include'] = $include;
-			$_attachments = get_posts( $args );
-			if ( is_array($_attachments) && count($_attachments) ) {
-				$attachments = $_attachments;
-			}
+			$attachments = get_posts( $args );
 		} else if ( !empty( $exclude ) ) {
 
 			$args = array_merge( $args, array(
 				'post_parent' => $gallery_id,
 				'exclude' => $exclude,
 				) );
-			$attachments = get_children( $args );
+			$attachments = get_posts( $args );
 		} else {
 
 			$args['post_parent'] = $gallery_id;
-			$attachments = get_children( $args );
+			$attachments = get_posts( $args );
 		}
 
 		return $attachments;
