@@ -130,7 +130,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertEquals( '304', $status );
 		$this->assertEmpty( $body );
 	}
-	
+
 	public function testLastGetPostsLastModifiedHeader() {
 		$this->_insert_post();
 
@@ -214,20 +214,20 @@ class PostsControllerTest extends APITestCase {
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
 			'QUERY_STRING' => '',
 			) );
-		
+
 		$data = json_decode( $body );
 
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertCount(0, $data->posts);
 	}
-	
+
 	/**
 	 * @depends testGetPostsValidJSON
 	 */
 	public function testGetPostsHasPostsContent() {
 		$this->_insert_post();
-		
+
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
@@ -235,12 +235,12 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertCount(1, $data->posts);
 	}
-	
+
 	public function testGetAttachments() {
 		wp_set_current_user( 1 );
 		$upload = $this->_upload_file( dirname( dirname( __DIR__ ) ) . '/data/250x250.png' );
@@ -277,7 +277,7 @@ class PostsControllerTest extends APITestCase {
 			) );
 
 		$data = json_decode( $body );
-		
+
 		$this->assertEquals( '200', $status );
 		$this->assertInternalType( 'object', $data );
 		$this->assertObjectHasAttribute( 'posts', $data );
@@ -285,7 +285,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertCount( 0, $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
 	}
-	
+
 	public function testGetPostsByPostStatusFuturePrivelaged() {
 		wp_set_current_user( 1 );
 
@@ -310,7 +310,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertCount( 1, $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
 		wp_set_current_user( 0 ); //log back out for other tests.
-		
+
 	}
 
 	public function testGetPostsPerPage() {
@@ -337,11 +337,11 @@ class PostsControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'found', $data );
 		$this->assertCount( 2, $data->posts );
 	}
-	
+
 	public function testGetPostsByPostTypeDefaultPublicPostTypes() {
 		$this->_insert_post(array('post_type'=> 'page'));
 		$this->_insert_post(null, array('250x250.png'));
-		
+
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
 			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts',
@@ -352,7 +352,7 @@ class PostsControllerTest extends APITestCase {
 		//should have a post for each post, page, attachment as all are publicly_queryable
 		$this->assertCount( 3, $data->posts );
 	}
-	
+
 	public function testGetPostsByPostTypePost() {
 		$this->_insert_post(array('post_type'=> 'page'));
 		$this->_insert_post(null, array('250x250.png'));
@@ -369,7 +369,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertCount( 1, $data->posts );
 	}
 
-	
+
 	public function testGetPost() {
 
 		//add media item to test unattached images in content
@@ -436,7 +436,7 @@ class PostsControllerTest extends APITestCase {
 
 		$this->assertEquals( 4, count( $data->media ) );
 	}
-	
+
 	public function testGetPostNotExist() {
 		$id = 9999999;
 
@@ -449,7 +449,7 @@ class PostsControllerTest extends APITestCase {
 		$data = json_decode( $body );
 		$this->assertEquals( '404', $status );
 	}
-	
+
 	public function testGetPostHasPermissionForDraftStatus() {
 		wp_set_current_user(1);
 		$test_post_id = wp_insert_post( array(
@@ -468,7 +468,7 @@ class PostsControllerTest extends APITestCase {
 		$this->assertInternalType( 'object', $data );
 		wp_set_current_user(0);
 	}
-	
+
 	public function testGetPostNotHasPermissionForDraftStatus() {
 		$test_post_id = wp_insert_post( array(
 			'post_status' => 'draft',
@@ -584,6 +584,153 @@ class PostsControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'posts', $data );
 		$this->assertInternalType( 'array', $data->posts );
 		$this->assertObjectNotHasAttribute( 'found', $data );
+	}
+
+	public function testPostMetaGallery() {
+		$post_content = 'Lorem Ipsum [gallery]';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = $this->_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
+	public function testGetPostGalleryExclude() {
+		$post_content = 'Lorem Ipsum';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = $this->_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		$this->_insert_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => sprintf( '[gallery exclude="%d"]', array_shift($attachment_ids) ),
+			)
+		);
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
+	public function testGetPostGallerySort() {
+		$post_content = 'Lorem Ipsum [gallery order="DESC" orderby="ID"]';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = $this->_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		rsort($attachment_ids);
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( 'ID', $data->meta->gallery[0]->orderby[0] );
+		$this->assertEquals( 'DESC', $data->meta->gallery[0]->order );
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
+	public function testGetPostGalleryID() {
+		$post_content = 'Lorem Ipsum';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = $this->_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		$post_2_content = sprintf( 'Lorem Ipsum [gallery id="%d"]', $post_id );
+		$post_2_args = array( 'post_content' => $post_2_content );
+		$post_2_id = $this->_insert_post( $post_2_args );
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_2_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
+	public function testGetPostGalleryIDs() {
+		$post_content = 'Lorem Ipsum';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = $this->_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		array_shift($attachment_ids);
+
+		$this->_insert_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => sprintf( '[gallery ids="%s"]', implode(',', $attachment_ids) )
+			)
+		);
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
+	}
+
+	public function testGetPostGalleryInclude() {
+		$post_content = 'Lorem Ipsum';
+		$post_args = array( 'post_content' => $post_content );
+		$post_images = array( '100x200.png', '100x300.png', '100x400.png' );
+		$post_data = $this->_insert_post( $post_args, $post_images );
+		$post_id = $post_data['post_id'];
+		$attachment_ids = $post_data['attachment_ids'];
+
+		array_shift($attachment_ids);
+
+		$this->_insert_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => sprintf( '[gallery include="%s"]', implode(',', $attachment_ids) )
+			)
+		);
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/posts/' . $post_id,
+			'QUERY_STRING' => '',
+		) );
+
+		$data = json_decode( $body );
+
+		$this->assertEquals( $attachment_ids, $data->meta->gallery[0]->ids );
 	}
 
 }
