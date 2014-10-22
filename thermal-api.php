@@ -2,7 +2,7 @@
 
 /*
   Plugin Name: Thermal API
-  Version:     0.13.1
+  Version:     0.13.2
   Plugin URI:  http://thermal-api.com/
   Description: The power of WP_Query in a RESTful API.
   Author:      Voce Platforms
