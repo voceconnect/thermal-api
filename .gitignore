@@ -3,3 +3,4 @@
 tests/wp-tests-config.php
 vendor/
 DOCS.md
+node_modules/
