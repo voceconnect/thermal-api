@@ -7,10 +7,10 @@ class Terms {
 	public function find( $taxonomy, $args = array( ), &$found = null ) {
 
 		//setup paging
-		if ( empty( $request_args['per_page'] ) || absint($request_args['per_page']) > \Voce\Thermal\v1\MAX_TERMS_PER_PAGE ) {
+		if ( empty( $args['per_page'] ) || absint($args['per_page']) > \Voce\Thermal\v1\MAX_TERMS_PER_PAGE ) {
 			$number = \Voce\Thermal\v1\MAX_TERMS_PER_PAGE;
 		} else {
-			$number = absint( $request_args['per_page'] );
+			$number = absint( $args['per_page'] );
 		}
 		if ( isset( $args['offset'] ) ) {
 			$offset = $args['offset'];
