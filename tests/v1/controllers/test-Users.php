@@ -174,7 +174,7 @@ class UsersControllerTest extends APITestCase {
 		$user['role'] = 'editor';
 		$user['id'] = wp_insert_user($user);
 
-		update_option( 'show_avatars', true );
+		update_option( 'show_avatars', false );
 
 		list($status, $headers, $body) = $this->_getResponse( array(
 			'REQUEST_METHOD' => 'GET',
