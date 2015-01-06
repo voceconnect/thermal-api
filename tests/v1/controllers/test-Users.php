@@ -157,14 +157,16 @@ class UsersControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'avatar', $data );
 		$this->assertInternalType( 'array', $data->avatar );
 
-		$this->assertArrayHasKey( 'url', $data->avatar );
-		$this->assertInternalType( 'string', $data->avatar['url'] );
+		$obj_avatar = $data->avatar[0];
 
-		$this->assertArrayHasKey( 'width', $data->avatar );
-		$this->assertInternalType( 'int', $data->avatar['width'] );
+		$this->assertObjectHasAttribute( 'url', $obj_avatar );
+		$this->assertInternalType( 'string', $obj_avatar->url );
 
-		$this->assertArrayHasKey( 'height', $data->avatar );
-		$this->assertInternalType( 'int', $data->avatar['height'] );
+		$this->assertObjectHasAttribute( 'width', $obj_avatar );
+		$this->assertInternalType( 'int', $obj_avatar->width );
+
+		$this->assertObjectHasAttribute( 'height', $data->avatar );
+		$this->assertInternalType( 'int', $obj_avatar->height );
 	}
 
 	public function testUserAvatarDisabled() {
