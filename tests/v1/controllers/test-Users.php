@@ -165,7 +165,7 @@ class UsersControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute( 'width', $obj_avatar );
 		$this->assertInternalType( 'int', $obj_avatar->width );
 
-		$this->assertObjectHasAttribute( 'height', $data->avatar );
+		$this->assertObjectHasAttribute( 'height', $obj_avatar );
 		$this->assertInternalType( 'int', $obj_avatar->height );
 	}
 
