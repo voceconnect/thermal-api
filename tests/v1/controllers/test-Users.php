@@ -116,9 +116,6 @@ class UsersControllerTest extends APITestCase {
 		$this->assertObjectHasAttribute('posts_url', $data );
 		$this->assertInternalType( 'string', $data->posts_url );
 
-		$this->assertObjectHasAttribute('avatar', $data );
-		$this->assertInternalType( 'array', $data->avatar );
-
 		$this->assertObjectHasAttribute('meta', $data );
 		$this->assertInternalType( 'object', $data->meta );
 
@@ -138,6 +135,47 @@ class UsersControllerTest extends APITestCase {
 
 		//clean up
 		wp_delete_user($user['id']);
+	}
+
+	public function testUserAvatarEnabled() {
+		$users = $this->getTestUserData();
+		$user = $users[0];
+
+		$user['role'] = 'editor';
+		$user['id'] = wp_insert_user($user);
+
+		update_option( 'show_avatars', true );
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/' . $user['id'],
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertObjectHasAttribute('avatar', $data );
+		$this->assertInternalType( 'array', $data->avatar );
+	}
+
+	public function testUserAvatarDisabled() {
+		$users = $this->getTestUserData();
+		$user = $users[0];
+
+		$user['role'] = 'editor';
+		$user['id'] = wp_insert_user($user);
+
+		update_option( 'show_avatars', true );
+
+		list($status, $headers, $body) = $this->_getResponse( array(
+			'REQUEST_METHOD' => 'GET',
+			'PATH_INFO' => Voce\Thermal\get_api_base() . 'v1/users/' . $user['id'],
+			'QUERY_STRING' => '',
+			) );
+
+		$data = json_decode( $body );
+
+		$this->assertObjectNotHasAttribute('avatar', $data );
 	}
 }
 
