@@ -29,6 +29,10 @@ Thermal is the WordPress plugin that gives you the power of WP_Query in a RESTfu
 Yes. https://github.com/voceconnect/thermal-api
 
 == Changelog ==
+= 0.13.4 =
+* Testing with WordPress 4.1
+* Fixing issue with null avatar
+
 = 0.13.3 =
 * Fixing bug with terms per_page arg
 
