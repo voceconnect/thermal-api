@@ -51,9 +51,9 @@ class Users {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param \WP_User $user
-	 * @param string $state  State of CRUD to render for, options 
+	 * @param string $state  State of CRUD to render for, options
 	 * 	include 'read', new', 'edit'
 	 */
 	public static function format( &$user, $state = 'read' ) {
@@ -80,27 +80,32 @@ class Users {
 		if ( $state === 'read' ) {
 
 			$avatar = get_avatar( $user->ID );
-			preg_match( "/src='([^']*)'/i", $avatar, $matches );
+			$a_match = preg_match( "/src='([^']*)'/i", $avatar, $matches );
+
+			if ( $avatar and $a_match ) {
+				$data = array_merge( $data, array(
+					'avatar' => array(
+						array(
+							'url' => array_pop( $matches ),
+							'width' => 96,
+							'height' => 96,
+						)
+					)
+				) );
+			}
 
 			$data = array_merge( $data, array(
 				'posts_url' => get_author_posts_url( $user->ID ),
-				'avatar' => array(
-					array(
-						'url' => array_pop( $matches ),
-						'width' => 96,
-						'height' => 96,
-					)
-				),
 				'meta' => ( object ) array(
 					'description' => get_user_meta($user->ID, 'description', true),
 					'first_name' => get_user_meta( $user->ID, 'first_name', true),
 					'last_name' => get_user_meta( $user->ID, 'last_name', true),
 					'nickname' => get_user_meta( $user->ID, 'nickname', true),
 					)
-				) 
+				)
 			);
 		}
-		
+
 		$user = apply_filters_ref_array( 'thermal_user_entity', array( ( object ) $data, &$user, $state ) );
 	}
 
@@ -131,7 +136,7 @@ class Users {
 			}
 			$request_args[$key] = $value;
 		}
-		
+
 		if(!empty($request_args['in'])) {
 			$request_args['include'] = $request_args['in'];
 			unset($request_args['in']);
