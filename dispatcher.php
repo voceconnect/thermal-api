@@ -56,11 +56,27 @@ class API_Dispatcher {
 		\Slim\Slim::registerAutoloader();
 
 		$app = new \Slim\Slim();
-
+		$app->add(new WPFix());
 		new \Voce\Thermal\v1\API( $app );
 
 		$app->run();
 
 		exit;
+	}
+}
+
+class WPFix extends \Slim\Middleware
+{
+	public function call()
+	{
+		$requestUri = $_SERVER['REQUEST_URI']; // <-- "/foo/bar?test=abc" or "/foo/index.php/bar?test=abc"
+		$queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''; // <-- "test=abc" or ""
+
+		$path = $requestUri;
+		$path = str_replace('?' . $queryString, '', $path); // <-- Remove query string
+		$path = '/' . ltrim($path, '/'); // <-- Ensure leading slash
+
+		$this->app->environment->offsetSet('PATH_INFO',$path);
+		$this->next->call();
 	}
 }
