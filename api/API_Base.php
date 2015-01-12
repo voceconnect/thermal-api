@@ -34,6 +34,7 @@ abstract class API_Base {
 				$app->contentType( 'application/json' );
 				$app->halt( 400, json_encode( $data ) );
 			} );
+
 	}
 
 	/**
@@ -60,12 +61,15 @@ abstract class API_Base {
 			return false;
 		}
 
-		$match = get_api_base() . trailingslashit( 'v' . $this->version ) . $pattern;
+		$match = ((is_multisite() && get_current_blog_id()!==1)?'/:base':'') . get_api_base() . trailingslashit( 'v' . $this->version ) . $pattern;
 
 		$app = $this->app;
 
 		return $this->app->$method( $match, function() use ( $app, $callback ) {
-					$args = func_get_args();
+					$args =func_get_args();
+					if(!empty($args) && is_multisite() && get_current_blog_id()!==1){
+						array_shift($args);
+					}
 					array_unshift( $args, $app );
 
 					$res = $app->response();
