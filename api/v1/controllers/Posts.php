@@ -569,10 +569,10 @@ class Posts {
 				);
 			}
 			// fill in the gaps of missing image sizes
-			if (!isset( $meta['sizes']['large'])) $meta['sizes']['large'] =  $meta['sizes']['full'];
-			if (!isset( $meta['sizes']['medium'])) $meta['sizes']['medium'] =  $meta['sizes']['large'];
-			if (!isset( $meta['sizes']['post-thumbnail'])) $meta['sizes']['post-thumbnail'] = $meta['sizes']['medium'];
-			if (!isset( $meta['sizes']['thumbnail'])) $meta['sizes']['thumbnail'] = $meta['sizes']['post-thumbnail'];
+			if (!isset( $sizes['large']))$sizes['large'] = $sizes['full'];
+			if (!isset($sizes['medium']))$sizes['medium'] = $sizes['large'];
+			if (!isset($sizes['post-thumbnail']))$sizes['post-thumbnail'] =$sizes['medium'];
+			if (!isset($sizes['thumbnail']))$sizes['thumbnail'] =$sizes['post-thumbnail'];
 		}
 
 		return array(
