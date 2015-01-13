@@ -76,7 +76,7 @@ class WPFix extends \Slim\Middleware
 		$path = str_replace('?' . $queryString, '', $path); // <-- Remove query string
 		$path = '/' . ltrim($path, '/'); // <-- Ensure leading slash
 
-		$this->app->environment->offsetSet('PATH_INFO',$path);
+		$this->app->environment()->offsetSet('PATH_INFO',$path);
 		$this->next->call();
 	}
 }
