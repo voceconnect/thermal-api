@@ -345,6 +345,9 @@ class Posts {
 			remove_filter( 'the_content', 'convert_smilies' );
 			remove_filter( 'the_content', 'shortcode_unautop' );
 
+			//remove report concern links
+			remove_filter( 'the_content', 'rc_process_post' );
+
 			// remove "<!--more-->" teaser text for display content
 			$post_more = get_extended( $post->post_content );
 			$content_display = $post_more['extended'] ? $post_more['extended'] : $post_more['main'];
