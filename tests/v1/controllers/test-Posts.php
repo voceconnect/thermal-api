@@ -414,7 +414,7 @@ class PostsControllerTest extends APITestCase {
 			//'comment_count' => array( 'type' => 'int', 'value' => 0 ),
 			//'menu_order' => array( 'type' => 'int', 'value' => 0 ),
 			'title' => array( 'type' => 'string', 'value' => $post->post_title ),
-			'name' => array( 'type' => 'string', 'value' => $post->post_name ),
+			'slug' => array( 'type' => 'string', 'value' => $post->post_name ),
 			'excerpt' => array( 'type' => 'string' ),
 			//'excerpt_display' => array( 'type' => 'string' ),
 			'content' => array( 'type' => 'string' ),
