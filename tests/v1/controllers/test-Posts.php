@@ -420,7 +420,7 @@ class PostsControllerTest extends APITestCase {
 			'content' => array( 'type' => 'string' ),
 			//'content_display' => array( 'type' => 'string' ),
 			'author' => array( 'type' => 'object' ),
-			'mime_type' => array( 'type' => 'string', 'value' => '' ),
+			//'mime_type' => array( 'type' => 'string', 'value' => '' ),
 			'meta' => array( 'type' => 'object' ),
 			'taxonomies' => array( 'type' => 'object' ),
 			'media' => array( 'type' => 'array' )
