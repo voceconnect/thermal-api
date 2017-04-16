@@ -301,6 +301,8 @@ class Posts {
 			if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
 				$media_image_ids[] = $meta['featured_image'] = ( int ) $thumbnail_id;
 			}
+			
+			$attachment_ids = apply_filters_ref_array( 'thermal_attachment_ids', array( $attachment_ids, &$post ) );
 
 			$media_image_ids = apply_filters('thermal_media_image_ids', $media_image_ids, $post);
 
