@@ -39,14 +39,19 @@ class API_Dispatcher {
 		//if requested url starts with api_base_url()
 		if ( false !== strpos( $_SERVER['REQUEST_URI'], get_api_base() ) ) {
 			require_once( 'api/v1/API.php' );
-
-			add_action( 'wp_loaded', array( $this, 'dispatch_api' ) );
+			
+			// Add API dispatch action
+			add_action('dispatch_api', array( $this, 'dispatch_api' ) );
+			
+			add_action( 'wp_loaded', function(){
+				do_action('dispatch_api');
+			});
 		}
 	}
 
 	public function dispatch_api() {
-		require_once( 'lib/jsonp/jsonp.php' );
 
+		require_once( 'lib/jsonp/jsonp.php' );
 
 		\Slim\Slim::registerAutoloader();
 
@@ -58,5 +63,4 @@ class API_Dispatcher {
 
 		exit;
 	}
-
 }
