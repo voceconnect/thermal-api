@@ -84,7 +84,16 @@ class Posts {
 			'sentence' => array( '\\Voce\\Thermal\\v1\\toBool' ),
 			'cat' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt', '\\Voce\\Thermal\\v1\\toCommaSeparated' ),
 			'category_name' => array( ),
+			'category__and' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'category__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'category__not_in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'tag' => array( ),
+			'tag_id' => array( '\\intval' ),
+			'tag__and' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'tag__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'tag__not_in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'tag_slug__and' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'tag_slug__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'taxonomy' => array( '\\Voce\\Thermal\\v1\\toArray' ),
 			'paged' => array( ),
 			'per_page' => array( '\\intval' ),
@@ -94,6 +103,7 @@ class Posts {
 			'author_name' => array( ),
 			'author' => array( ),
 			'post__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
+			'post__not_in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'p' => array( ),
 			'name' => array( ),
 			'pagename' => array( ),
@@ -105,6 +115,7 @@ class Posts {
 			'post_status' => array( '\\Voce\\Thermal\\v1\\toArray' ),
 			'post_parent__in' => array( '\\Voce\\Thermal\\v1\\toArray', '\\Voce\\Thermal\\v1\\applyInt' ),
 			'include_found' => array( '\\Voce\\Thermal\\v1\\toBool' ),
+			'ignore_sticky_posts' => array( '\\Voce\\Thermal\\v1\\toBool' ),
 		);
 		//strip any nonsafe args
 		$request_args = array_intersect_key( $request_args, $request_filters );
@@ -239,8 +250,9 @@ class Posts {
 	/**
 	 *
 	 * @param \WP_Post $post
-	 * @param string $state  State of CRUD to render for, options
-	 * 	include 'read', new', 'edit'
+	 * @param string $state State of CRUD to render for, options
+	 *    include 'read', new', 'edit'
+	 * @return null
 	 */
 	public static function format( &$post, $state = 'read' ) {
 		if ( !$post ) {
@@ -261,17 +273,18 @@ class Posts {
 
 		$data = array(
 			'type' => $post->post_type,
-			'parent' => $post->post_parent,
-			'parent_str' => ( string ) $post->post_parent,
+			//'parent' => $post->post_parent,
+			//'parent_str' => ( string ) $post->post_parent,
 			'date' => ( string ) get_post_time( 'c', true, $post ),
 			'status' => $post->post_status,
-			'comment_status' => $post->comment_status,
-			'menu_order' => $post->menu_order,
+			//'comment_status' => $post->comment_status,
+			//'menu_order' => $post->menu_order,
 			'title' => $post->post_title,
-			'name' => $post->post_name,
-			'excerpt' => $post->post_excerpt,
+			'slug' => $post->post_name,
+			//'excerpt' => $post->post_excerpt,
 			'content' => $post->post_content,
 			'author' => $post->post_author,
+			'is_sticky' => is_sticky(),
 		);
 
 		//add extended data for 'read'
@@ -298,8 +311,10 @@ class Posts {
 				$meta['gallery'] = $gallery_meta;
 			}
 
+			$featured_image =false;
+
 			if ( $thumbnail_id = get_post_thumbnail_id( $post->ID ) ) {
-				$media_image_ids[] = $meta['featured_image'] = ( int ) $thumbnail_id;
+				$media_image_ids[] = ( int ) $thumbnail_id;
 			}
 
 			$media_image_ids = apply_filters('thermal_media_image_ids', $media_image_ids, $post);
@@ -308,6 +323,9 @@ class Posts {
 			foreach ( $media_image_ids as $media_image_id ) {
 				if ( $image_item = self::_format_image_media_item( $media_image_id ) ) {
 					$media[$media_image_id] = $image_item;
+					if($media_image_id == $thumbnail_id){
+						$featured_image = $image_item;
+					}
 				}
 			}
 
@@ -327,6 +345,9 @@ class Posts {
 			remove_filter( 'the_content', 'convert_smilies' );
 			remove_filter( 'the_content', 'shortcode_unautop' );
 
+			//remove report concern links
+			remove_filter( 'the_content', 'rc_process_post' );
+
 			// remove "<!--more-->" teaser text for display content
 			$post_more = get_extended( $post->post_content );
 			$content_display = $post_more['extended'] ? $post_more['extended'] : $post_more['main'];
@@ -338,15 +359,16 @@ class Posts {
 
 			$data = array_merge( $data, array(
 				'id' => $post->ID,
-				'id_str' => ( string ) $post->ID,
+				//'id_str' => ( string ) $post->ID,
 				'permalink' => get_permalink( $post ),
 				'modified' => get_post_modified_time( 'c', true, $post ),
-				'comment_status' => $post->comment_status,
-				'comment_count' => ( int ) $post->comment_count,
-				'excerpt_display' => apply_filters( 'the_excerpt', get_the_excerpt() ),
-				'content_display' => apply_filters( 'the_content', $content_display ),
-				'mime_type' => $post->post_mime_type,
+				//'comment_status' => $post->comment_status,
+				//'comment_count' => ( int ) $post->comment_count,
+				'excerpt' => apply_filters( 'the_excerpt', get_the_excerpt() ),
+				'content' => apply_filters( 'the_content', $content_display ),
+				//'mime_type' => $post->post_mime_type,
 				'meta' => ( object ) $meta,
+				'featured_image' => $featured_image,
 				'taxonomies' => ( object ) $post_taxonomies,
 				'media' => array_values( $media ),
 				'author' => $author
@@ -533,9 +555,8 @@ class Posts {
 			$upload_dir = wp_upload_dir();
 
 			$sizes = array(
-				array(
+				'full' => array(
 					'height' => $meta['height'],
-					'name' => 'full',
 					'url' => $src[0],
 					'width' => $meta['width'],
 				),
@@ -544,18 +565,26 @@ class Posts {
 			foreach ( $meta['sizes'] as $size => $data ) {
 				$src = wp_get_attachment_image_src( $post->ID, $size );
 
-				$sizes[] = array(
+				$sizes[$size] = array(
 					'height' => $data['height'],
-					'name' => $size,
 					'url' => $src[0],
 					'width' => $data['width'],
 				);
 			}
+			// fill in the gaps of missing image sizes
+			if (!isset( $sizes['large']))$sizes['large'] = $sizes['full'];
+			if (!isset($sizes['medium']))$sizes['medium'] = $sizes['large'];
+			if (!isset($sizes['post-thumbnail']))$sizes['post-thumbnail'] =$sizes['medium'];
+			if (!isset($sizes['thumbnail']))$sizes['thumbnail'] =$sizes['post-thumbnail'];
 		}
 
 		return array(
 			'id' => $post->ID,
-			'id_str' => ( string ) $post->ID,
+			'slug' => $post->post_name,
+			'description' => $post->post_content,
+			'caption' => $post->post_excerpt,
+			'title' => $post->post_title,
+			//'id_str' => ( string ) $post->ID,
 			'mime_type' => $post->post_mime_type,
 			'alt_text' => get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
 			'sizes' => $sizes,

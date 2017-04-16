@@ -39,24 +39,44 @@ class API_Dispatcher {
 		//if requested url starts with api_base_url()
 		if ( false !== strpos( $_SERVER['REQUEST_URI'], get_api_base() ) ) {
 			require_once( 'api/v1/API.php' );
-
-			add_action( 'wp_loaded', array( $this, 'dispatch_api' ) );
+			
+			// Add API dispatch action
+			add_action('dispatch_api', array( $this, 'dispatch_api' ) );
+			
+			add_action( 'wp_loaded', function(){
+				do_action('dispatch_api');
+			});
 		}
 	}
 
 	public function dispatch_api() {
-		require_once( 'lib/jsonp/jsonp.php' );
 
+		require_once( 'lib/jsonp/jsonp.php' );
 
 		\Slim\Slim::registerAutoloader();
 
 		$app = new \Slim\Slim();
-
+		$app->add(new WPFix());
 		new \Voce\Thermal\v1\API( $app );
 
 		$app->run();
 
 		exit;
 	}
+}
 
+class WPFix extends \Slim\Middleware
+{
+	public function call()
+	{
+		$requestUri = $_SERVER['REQUEST_URI']; // <-- "/foo/bar?test=abc" or "/foo/index.php/bar?test=abc"
+		$queryString = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''; // <-- "test=abc" or ""
+
+		$path = $requestUri;
+		$path = str_replace('?' . $queryString, '', $path); // <-- Remove query string
+		$path = '/' . ltrim($path, '/'); // <-- Ensure leading slash
+
+		$this->app->environment()->offsetSet('PATH_INFO',$path);
+		$this->next->call();
+	}
 }
